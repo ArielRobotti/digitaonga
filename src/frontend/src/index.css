@@ -4,6 +4,8 @@
   --color-kokowai: #2c131a; /* Dark Red */
   --color-wheua: #f8f2e2; /* Light Yellow */
   --color-gray-100: #f8f8f8; /* Light Gray */
+  --color-gray-300: #b3b3b3; /* Gray */
+  --color-gray-900: #252525; /* Dark Gray */
 }
 
 :root {
@@ -28,9 +30,9 @@ body {
   min-height: 100vh;
 }
 
-/* main {
-  min-height: 100vh;
-} */
+main {
+  margin-top: 60px;
+}
 
 /* media query */
 @media (width < 768px) {
@@ -47,9 +49,9 @@ body {
   }
 
   button {
-    font-size: 16px;
+    font-size: 14px;
     line-height: 16px;
-    font-weight: bold;
+    font-weight: medium;
   }
 
   h5 {
