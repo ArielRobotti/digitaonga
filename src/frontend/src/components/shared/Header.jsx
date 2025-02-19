@@ -22,13 +22,13 @@ const Header = () => {
         <BurgerMenu className="cursor-pointer" onClick={toggleMenu} />
       </div>
 
-      <h2 className="basis-1/3">HEADLINE</h2>
+      <h2 className="basis-1/3 text-center">HEADLINE</h2>
 
       <motion.aside
         initial={{ x: "-100%" }}
         animate={{ x: open ? 0 : "-100%" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="fixed top-[60px] left-0 z-20 bg-kokowai text-white pt-[60px] h-[calc(100vh-60px)] w-full bg-primary text-primary-foreground"
+        className="fixed top-[60px] left-0 z-30 bg-kokowai text-white pt-[60px] h-[calc(100vh-60px)] w-full bg-primary text-primary-foreground"
       >
         <nav className="p-4">
           <ul className="space-y-4 grid place-items-center gap-[60px]">

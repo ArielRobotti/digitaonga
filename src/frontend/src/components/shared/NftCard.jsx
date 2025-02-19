@@ -17,14 +17,14 @@ const NftCard = ({
         <h2>{name}</h2>
 
         <div>
-          <p>Token ID: {tokenId}</p>
-          <p>Label: {label}</p>
-          <p>Date created {dateCreated}</p>
+          <p className="text-white">Token ID: {tokenId}</p>
+          <p className="text-white">Label: {label}</p>
+          <p className="text-white">Date created {dateCreated}</p>
         </div>
       </section>
 
       <div className="flex justify-end mt-4">
-        <Button>Manage</Button>
+        <Button className="max-w-[166px] uppercase">Manage</Button>
       </div>
     </article>
   );

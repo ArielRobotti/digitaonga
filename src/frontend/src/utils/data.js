@@ -24,3 +24,16 @@ export const onBoardingSteps = [
       "Proposals are created to suggest changes or actions within the DAO and these are voted on and either approved or rejected by other members.",
   },
 ];
+
+export const proposalTypes = [
+  {
+    type: "Motion proposal",
+    description:
+      "Choose this option if your proposal include a non-binding decisions (e.g. electing a DAO Sheriff)",
+  },
+  {
+    type: "Action proposal",
+    description:
+      "Choose this option if your proposal includes an action, such as inviting a member or updating a role",
+  },
+];

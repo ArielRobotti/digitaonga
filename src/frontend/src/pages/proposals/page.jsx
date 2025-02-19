@@ -1,7 +1,10 @@
 import Button from "../../components/shared/Button";
 import ProposalContainer from "../../components/shared/ProposalContainer";
+import { useNavigate } from "react-router";
 
 const Proposals = () => {
+  const navigate = useNavigate();
+
   return (
     <main className="p-4">
       <section className="mb-6">
@@ -23,7 +26,11 @@ const Proposals = () => {
         <ProposalContainer className="mt-4" />
       </section>
 
-      <Button className="bg-kokowai text-white shadow=[0px_4px_8px_0px_#00000026] w-[316px] fixed bottom-4 left-1/2 transform -translate-x-1/2    ">
+      <Button
+        variant="kokowai"
+        className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-10"
+        onClick={() => navigate("/proposals/create")}
+      >
         New proposal
       </Button>
     </main>

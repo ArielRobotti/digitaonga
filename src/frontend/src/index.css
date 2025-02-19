@@ -3,6 +3,7 @@
 @theme {
   --color-kokowai: #2c131a; /* Dark Red */
   --color-wheua: #f8f2e2; /* Light Yellow */
+  --color-digitaonga-orange: #9e590a; /* Orange */
   --color-gray-100: #f8f8f8; /* Light Gray */
   --color-gray-300: #b3b3b3; /* Gray */
   --color-gray-900: #252525; /* Dark Gray */
@@ -27,60 +28,75 @@ body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  min-height: 100vh;
+  min-height: calc(100vh - 60px);
 }
 
 main {
   margin-top: 60px;
 }
 
+/* material ui */
+.material_input label.Mui-focused,
+.Mui-focused fieldset {
+  color: var(--color-digitaonga-orange) !important;
+  border-color: var(--color-digitaonga-orange) !important;
+}
+
+.MuiPickersLayout-root button.Mui-selected {
+  background-color: var(--color-digitaonga-orange) !important;
+}
+
 /* media query */
-@media (width < 768px) {
-  span {
-    font-size: 12px;
-    line-height: 16px;
-    font-weight: normal;
-  }
+@layer base {
+  @media (width < 768px) {
+    span {
+      font-size: 12px;
+      line-height: 16px;
+      font-weight: normal;
+      color: var(--color-gray-900);
+    }
 
-  p {
-    font-size: 14px;
-    line-height: 20px;
-    font-weight: normal;
-  }
+    p {
+      font-size: 14px;
+      line-height: 20px;
+      font-weight: normal;
+      color: var(--color-gray-900);
+    }
 
-  button {
-    font-size: 14px;
-    line-height: 16px;
-    font-weight: medium;
-  }
+    button {
+      font-size: 14px;
+      line-height: 16px;
+      font-weight: medium;
+    }
 
-  h5 {
-    font-size: 18px;
-    line-height: 24px;
-    font-weight: medium;
-  }
+    h5 {
+      font-size: 18px;
+      line-height: 24px;
+      font-weight: medium;
+    }
 
-  h4 {
-    font-size: 20px;
-    line-height: 30px;
-    font-weight: medium;
-  }
+    h4 {
+      font-size: 20px;
+      line-height: 30px;
+      font-weight: medium;
+    }
 
-  h3 {
-    font-size: 24px;
-    line-height: 34px;
-    font-weight: 600;
-  }
+    h3 {
+      font-size: 24px;
+      line-height: 34px;
+      font-weight: 600;
+    }
 
-  h2 {
-    font-size: 28px;
-    line-height: 38px;
-    font-weight: bold;
-  }
+    h2 {
+      font-size: 28px;
+      line-height: 38px;
+      font-weight: bold;
+    }
 
-  h1 {
-    font-size: 32px;
-    line-height: 42px;
-    font-weight: bold;
+    h1 {
+      font-size: 32px;
+      line-height: 42px;
+      font-weight: bold;
+    }
   }
 }

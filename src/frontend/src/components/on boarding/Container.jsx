@@ -1,6 +1,7 @@
 import Button from "../shared/Button";
+import ProgressBar from "../shared/ProgressBar";
 
-const Container = ({ title, description, onNext, onBack, step }) => {
+const Container = ({ title, description, onNext, onBack, step, totalSteps }) => {
   return (
     // <section className="flex flex-col justify-between items-center gap-4 text-center">
     <section className="grid place-items-center gap-12 text-center mt-12">
@@ -19,12 +20,7 @@ const Container = ({ title, description, onNext, onBack, step }) => {
         </Button>
       </div>
 
-      <div className="w-[288px] h-2 bg-gray-300 overflow-hidden">
-        <div
-          className="h-full bg-kokowai transition-all duration-300"
-          style={{ width: `${(step + 1) * 25}%` }}
-        />
-      </div>
+      <ProgressBar step={step} totalSteps={totalSteps} />
     </section>
   );
 };

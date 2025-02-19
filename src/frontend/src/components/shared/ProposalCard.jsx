@@ -1,5 +1,7 @@
 import "../../index.css";
 
+import { CommentIcon, DislikeIcon, LikeIcon } from "../ui/icons";
+
 import Button from "./Button";
 
 const ProposalCard = ({
@@ -25,9 +27,9 @@ const ProposalCard = ({
 
       <section className="flex justify-between items-center p-2.5">
         <div className="flex gap-4">
-          <span>lik</span>
-          <span>dis</span>
-          <span>com</span>
+          <LikeIcon />
+          <DislikeIcon />
+          <CommentIcon />
         </div>
 
         <Button className="w-fit text-white bg-kokowai shadow-[0px_1px_3px_0px_#0000004D]">
