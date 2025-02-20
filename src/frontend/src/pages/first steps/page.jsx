@@ -3,7 +3,7 @@ import Button from "../../components/shared/Button";
 const FirstSteps = () => {
   return (
     <main>
-      <div className="absolute top-[60px] w-full h-32 bg-gray-300 -z-10" />
+      {/* <div className="absolute top-[60px] w-full h-32 bg-gray-300 -z-10" />
 
       <div className="grid place-items-center pt-16">
         <img
@@ -11,9 +11,12 @@ const FirstSteps = () => {
           alt="placeholder"
           className="w-36 h-36 object-cover rounded-full"
         />
+      </div> */}
+      <div className="grid place-items-center">
+        <img src="/images/png/pattern_kokowaif.png" alt="kokowaif pattern" />
       </div>
 
-      <section className="grid place-items-center">
+      <section className="grid place-items-center mt-6">
         <h2 className="uppercase my-6">Welcome user!</h2>
 
         <h4 className="uppercase mb-12">First steps</h4>

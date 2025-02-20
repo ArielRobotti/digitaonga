@@ -3,6 +3,7 @@ import "../../index.css";
 import { CommentIcon, DislikeIcon, LikeIcon } from "../ui/icons";
 
 import Button from "./Button";
+import { useNavigate } from "react-router";
 
 const ProposalCard = ({
   name = "Proposal name",
@@ -11,9 +12,12 @@ const ProposalCard = ({
   creator = "akdfa...cai",
   className = "",
 } = {}) => {
+  const navigate = useNavigate();
+
   return (
     <article
-      className={`flex flex-col justify-between min-w-[251px] min-h-[246px] bg-wheua shadow-[0px_4px_8px_0px_rgba(0,0,0,0.25)] ${className}`}
+      className={`flex flex-col justify-between min-w-[251px] min-h-[246px] bg-wheua shadow-[0px_4px_8px_0px_rgba(0,0,0,0.25)] cursor-pointer ${className}`}
+      onClick={() => navigate(`/proposals/${id}`)}
     >
       <section className="py-4 px-6">
         <span className="text-kokowai font-medium">{status}</span>

@@ -9,6 +9,7 @@ const links = [
   { title: "Community", link: "/community" },
   { title: "Profile", link: "/profile" },
   { title: "About Digitaonga", link: "/about" },
+  { title: "Log In", link: "/login" },
 ];
 
 const Header = () => {

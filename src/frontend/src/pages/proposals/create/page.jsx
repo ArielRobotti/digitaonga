@@ -84,7 +84,9 @@ const CreateProposal = () => {
           {proposalTypes.map(({ type }) => (
             <Button
               key={type}
-              onClick={() => navigate(`/proposals/create?type=${type.split(" ")[0].toLowerCase()}`)}
+              onClick={() =>
+                navigate(`/proposals/create?type=${type.split(" ")[0]?.toLowerCase()}`)
+              }
             >
               {type}
             </Button>
