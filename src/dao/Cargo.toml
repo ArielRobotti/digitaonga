@@ -1,5 +1,5 @@
 [package]
-name = "digitaonga-dao-backend"
+name = "dao"
 version = "0.1.0"
 edition = "2021"
 
@@ -9,5 +9,6 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-candid = "0.10"
-ic-cdk = "0.16"
+candid = "0.10.11"
+ic-cdk = "0.17.0"
+serde = "1.0.216"

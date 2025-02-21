@@ -1,3 +1,99 @@
-service : {
-    "greet": (text) -> (text) query;
+type ActionType = variant {
+  ChangeRole : record { principal; MemberRole };
+  MintNFT : MintNftParams;
+  TransferNFT : record { principal; nat; principal };
+  UpdatePolicy : record {};
+  InviteMember : record { principal; MemberRole };
+};
+type LikeProposal = variant { Like; Dislike };
+type LocalNft = record {
+  token_id : nat;
+  owner : principal;
+  name : text;
+  collection_id : principal;
+  description : text;
+  created_at : nat64;
+  image : text;
+  last_update : nat64;
+};
+type Member = record {
+  "principal" : principal;
+  liked_proposals : vec record { nat; LikeProposal };
+  role : MemberRole;
+  created_at : nat64;
+  last_activity : nat64;
+  cover_img : text;
+  profile_pic : text;
+};
+type MemberError = variant {
+  NotFound;
+  MemberIsNotViewer;
+  MemberIsNotPendingMember;
+};
+type MemberRole = variant {
+  Viewer;
+  PendingMember : MemberRole;
+  Admin;
+  Voter;
+  NFTCreator;
+};
+type MintNftParams = record {
+  to : principal;
+  name : text;
+  collection_id : principal;
+  description : text;
+  image : text;
+};
+type MotionType = variant {};
+type Proposal = record {
+  id : nat;
+  status : ProposalStatus;
+  title : text;
+  creator : principal;
+  votes : vec record { principal; Vote };
+  kind : ProposalType;
+  description : text;
+  deadline : nat64;
+  created_at : nat64;
+  likes : vec record { principal; LikeProposal };
+  active_members : nat;
+  comments : vec ProposalComment;
+};
+type ProposalComment = record {
+  creator : principal;
+  created_at : nat64;
+  comment : text;
+};
+type ProposalError = variant { LastAdmin; Closed; NotFound; Unauthorized };
+type ProposalStatus = variant { Open; Review; Approved; Rejected; Voting };
+type ProposalType = variant { Action : ActionType; Motion : MotionType };
+type Result = variant { Ok : Member; Err : MemberError };
+type Result_1 = variant { Ok : Proposal; Err : ProposalError };
+type Vote = variant { Approve; Abstain; Disapprove };
+service : () -> {
+  accept_member_invitation : () -> (Result);
+  add_owner : (principal) -> ();
+  check_proposal_status : (nat) -> (Result_1);
+  create_member : () -> (Member);
+  create_proposal : (text, text, ProposalType, nat64) -> (Proposal);
+  edit_member : (opt text, opt text) -> (Result);
+  edit_proposal : (nat, text, text, ProposalType) -> (opt Proposal);
+  get_active_members : () -> (vec Member) query;
+  get_all_collection_ids : () -> (vec principal) query;
+  get_all_members : () -> (vec Member) query;
+  get_all_nfts : () -> (vec record { principal; vec LocalNft }) query;
+  get_all_proposals : () -> (vec Proposal) query;
+  get_collection_id : (principal) -> (vec LocalNft) query;
+  get_member : (principal) -> (Result) query;
+  get_nfts_of : (principal) -> (vec record { principal; vec LocalNft }) query;
+  get_proposal : (nat) -> (opt Proposal) query;
+  has_voted : (nat) -> (opt Vote) query;
+  like_proposal : (nat, LikeProposal) -> ();
+  new_comment_proposal : (nat, text) -> ();
+  reject_member_invitation : () -> (Result);
+  remove_owner : (principal) -> ();
+  set_last_activity_member : () -> ();
+  test_mint_nft : (principal, nat, principal, text, text, text) -> (nat);
+  transfer_ownership_nft : (principal, nat, principal) -> (nat);
+  vote_proposal : (nat, Vote) -> (Result_1);
 }

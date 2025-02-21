@@ -1,5 +1,6 @@
 [workspace]
 members = [
-    "src/dao"
+    "src/dao",
+    "src/ledger",
 ]
 resolver = "2"

@@ -5,10 +5,19 @@
       "package": "dao",
       "type": "rust"
     },
+    "ledger": {
+      "candid": "src/ledger/ledger.did",
+      "package": "ledger",
+      "type": "rust"
+    },
     "frontend": {
       "source": ["src/frontend/dist"],
       "type": "assets",
       "workspace": "frontend"
+    },
+    "assets": {
+      "source": [],
+      "type": "assets"
     }
   },
   "defaults": {
