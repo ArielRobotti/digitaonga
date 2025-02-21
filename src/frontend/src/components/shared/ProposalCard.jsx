@@ -16,7 +16,7 @@ const ProposalCard = ({
 
   return (
     <article
-      className={`flex flex-col justify-between min-w-[251px] min-h-[246px] bg-wheua shadow-[0px_4px_8px_0px_rgba(0,0,0,0.25)] cursor-pointer ${className}`}
+      className={`flex flex-col justify-between min-w-[251px] min-h-[246px] rounded-[5px] bg-wheua shadow-digitaonga cursor-pointer ${className} shadow__digitaonga`}
       onClick={() => navigate(`/proposals/${id}`)}
     >
       <section className="py-4 px-6">

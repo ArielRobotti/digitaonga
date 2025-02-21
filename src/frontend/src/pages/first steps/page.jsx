@@ -16,10 +16,10 @@ const FirstSteps = () => {
         <img src="/images/png/pattern_kokowaif.png" alt="kokowaif pattern" />
       </div>
 
-      <section className="grid place-items-center mt-6">
-        <h2 className="uppercase my-6">Welcome user!</h2>
+      <section className="grid place-items-center gap-14 mt-6">
+        <h2 className="uppercase">Welcome user!</h2>
 
-        <h4 className="uppercase mb-12">First steps</h4>
+        <h4 className="uppercase">First steps</h4>
 
         <p className="max-w-[300px]">
           This platform empowers advocacy, preserves cultural artifacts, and enables member

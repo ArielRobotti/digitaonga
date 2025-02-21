@@ -2,6 +2,7 @@ import "./index.css";
 import "@nfid/identitykit/react/styles.css";
 
 import { BrowserRouter, Route, Routes } from "react-router";
+import { IdentityKitAuthType, InternetIdentity, NFIDW, OISY } from "@nfid/identitykit";
 
 import CreateProposal from "./pages/proposals/create/page";
 import FirstSteps from "./pages/first steps/page";
@@ -19,10 +20,12 @@ import ReactDOM from "react-dom/client";
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <IdentityKitProvider
-    // authType={IdentityKitAuthType.DELEGATION}
-    // signerClientOptions={{
-    //   targets: [], // **IMPORTANT**: these are *your* canisters, not ledger canisters
-    // }}
+      authType={IdentityKitAuthType.DELEGATION}
+      signers={[OISY, InternetIdentity, NFIDW]}
+      featureSigner={OISY}
+      // signerClientOptions={{
+      //   targets: [], // **IMPORTANT**: these are *your* canisters, not ledger canisters
+      // }}
     >
       <BrowserRouter>
         <Header />

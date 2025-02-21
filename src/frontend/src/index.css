@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap");
 @import "tailwindcss";
 
 @theme {
@@ -7,12 +8,16 @@
   --color-gray-100: #f8f8f8; /* Light Gray */
   --color-gray-200: #e4e4e4; /* Gray */
   --color-gray-300: #b3b3b3; /* Gray */
+  --color-gray-500: #767676; /* Gray */
   --color-gray-900: #252525; /* Dark Gray */
+
+  --shadow-digitaonga: 0px 4px 8px 0px rgba(0, 0, 0, 0.15), 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
 }
 
 :root {
   --background: var(--color-gray-100);
   --foreground: #171717;
+  font-family: "Poppins", serif;
 }
 
 @media (prefers-color-scheme: light) {
@@ -36,6 +41,14 @@ main {
   margin-top: 60px;
 }
 
+.custom__button:disabled {
+  box-shadow: var(--shadow-digitaonga);
+}
+
+.shadow__digitaonga {
+  box-shadow: var(--shadow-digitaonga);
+}
+
 /* material ui */
 .material_input label.Mui-focused,
 .Mui-focused fieldset {
@@ -47,55 +60,86 @@ main {
   background-color: var(--color-digitaonga-orange) !important;
 }
 
+.material_select {
+  background-color: var(--color-kokowai) !important;
+  color: white !important;
+}
+
+.material_select svg {
+  color: white !important;
+}
+
+ul.MuiMenu-list {
+  background-color: var(--color-kokowai) !important;
+  color: white !important;
+}
+
+ul.MuiMenu-list li.Mui-selected {
+  background-color: #3a1f27 !important;
+}
+
+ul.MuiMenu-list li:hover {
+  background-color: #3a1f27 !important;
+}
+
+#vote-select-label {
+  color: white !important;
+}
+
+.material_dialog .MuiDialog-container .MuiPaper-root {
+  background-color: var(--color-gray-200) !important;
+  box-shadow: var(--shadow-digitaonga) !important;
+}
+
 /* media query */
 @layer base {
-  @media (width < 768px) {
+  @media (width >= 1440px) {
     span {
-      font-size: 12px;
-      line-height: 16px;
-      font-weight: normal;
-      color: var(--color-gray-900);
-    }
-
-    p {
       font-size: 14px;
-      line-height: 20px;
+      line-height: 16px;
       font-weight: normal;
       color: var(--color-gray-900);
     }
 
     button {
-      font-size: 14px;
+      font-size: 16px;
       line-height: 16px;
-      font-weight: medium;
+      font-weight: bold;
+    }
+
+    p {
+      font-size: 18px;
+      line-height: 20px;
+      font-weight: normal;
+      color: var(--color-gray-900);
     }
 
     h5 {
-      font-size: 18px;
+      font-size: 24px;
       line-height: 24px;
       font-weight: medium;
     }
 
     h4 {
-      font-size: 20px;
+      font-size: 28px;
       line-height: 30px;
       font-weight: medium;
     }
 
     h3 {
-      font-size: 24px;
+      font-size: 32px;
       line-height: 34px;
       font-weight: 600;
     }
 
     h2 {
-      font-size: 28px;
+      font-size: 40px;
       line-height: 38px;
       font-weight: bold;
     }
 
     h1 {
-      font-size: 32px;
+      font-size: 48px;
       line-height: 42px;
       font-weight: bold;
     }
@@ -153,8 +197,15 @@ main {
     }
   }
 
-  @media (width >= 1440px) {
+  @media (width < 768px) {
     span {
+      font-size: 12px;
+      line-height: 16px;
+      font-weight: normal;
+      color: var(--color-gray-900);
+    }
+
+    p {
       font-size: 14px;
       line-height: 16px;
       font-weight: normal;
@@ -162,44 +213,37 @@ main {
     }
 
     button {
-      font-size: 16px;
+      font-size: 14px;
       line-height: 16px;
-      font-weight: bold;
-    }
-
-    p {
-      font-size: 18px;
-      line-height: 20px;
-      font-weight: normal;
-      color: var(--color-gray-900);
+      font-weight: medium;
     }
 
     h5 {
-      font-size: 24px;
+      font-size: 18px;
       line-height: 24px;
       font-weight: medium;
     }
 
     h4 {
-      font-size: 28px;
+      font-size: 20px;
       line-height: 30px;
       font-weight: medium;
     }
 
     h3 {
-      font-size: 32px;
+      font-size: 24px;
       line-height: 34px;
       font-weight: 600;
     }
 
     h2 {
-      font-size: 40px;
+      font-size: 28px;
       line-height: 38px;
       font-weight: bold;
     }
 
     h1 {
-      font-size: 48px;
+      font-size: 32px;
       line-height: 42px;
       font-weight: bold;
     }
