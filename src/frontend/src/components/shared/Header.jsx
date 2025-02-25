@@ -1,6 +1,9 @@
-import { BurgerMenu } from "../ui/icons";
-import { NavLink } from "react-router";
+import { BellIcon, BurgerMenu } from "../ui/icons";
+import { NavLink, useNavigate } from "react-router";
+
+import Badge from "@mui/material/Badge";
 import { motion } from "framer-motion";
+import useNotification from "../../store/useNotifications";
 import { useState } from "react";
 
 const links = [
@@ -14,6 +17,8 @@ const links = [
 
 const Header = () => {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const { notifications } = useNotification();
 
   const toggleMenu = () => setOpen(!open);
 
@@ -24,6 +29,14 @@ const Header = () => {
       </div>
 
       <h2 className="basis-1/3 text-center">HEADLINE</h2>
+
+      <Badge
+        badgeContent={notifications?.length || 0}
+        color="primary"
+        className="basis-1/3 flex justify-end mr-4"
+      >
+        <BellIcon className="cursor-pointer" onClick={() => navigate("/notifications")} />
+      </Badge>
 
       <motion.aside
         initial={{ x: "-100%" }}

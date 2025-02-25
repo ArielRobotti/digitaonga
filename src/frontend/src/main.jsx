@@ -11,6 +11,7 @@ import Home from "./pages/Home";
 import { IdentityKitProvider } from "@nfid/identitykit/react";
 import Login from "./pages/login/page";
 import Nfts from "./pages/nfts/page";
+import Notifications from "./pages/notifications/page";
 import OnBoarding from "./pages/on boarding/page";
 import ProposalDetail from "./pages/proposals/[id]/page";
 import Proposals from "./pages/proposals/page";
@@ -40,6 +41,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           <Route path="on_boarding" element={<OnBoarding />} />
           <Route path="first_steps" element={<FirstSteps />} />
           <Route path="nfts" element={<Nfts />} />
+          <Route path="notifications" element={<Notifications />} />
         </Routes>
       </BrowserRouter>
     </IdentityKitProvider>

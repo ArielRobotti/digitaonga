@@ -86,6 +86,10 @@ ul.MuiMenu-list li:hover {
   color: white !important;
 }
 
+.MuiBadge-colorPrimary {
+  background-color: var(--color-digitaonga-orange) !important;
+}
+
 .material_dialog .MuiDialog-container .MuiPaper-root {
   background-color: var(--color-gray-200) !important;
   box-shadow: var(--shadow-digitaonga) !important;
