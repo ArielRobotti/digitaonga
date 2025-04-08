@@ -1,7 +1,16 @@
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Radio,
+} from "@mui/material";
 import { useNavigate, useSearchParams } from "react-router";
 
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import Button from "../../../components/shared/Button";
+import { CloseIcon } from "../../../components/ui/icons";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -18,26 +27,53 @@ const CreateProposal = () => {
     description: "",
     date: dayjs(new Date().toDateString()),
   });
+  const [open, setOpen] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedValue, setSelectedValue] = useState(null);
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const type = searchParams.get("type");
-  const filterTypes = proposalTypes.filter((t) => t.type.toLowerCase().includes(type));
+  const filterTypes = proposalTypes.filter((t) => t.title.toLowerCase().includes(type));
+  const step = !type ? 0 : !form.title || !form.description || !form.date ? 1 : 2;
 
   // TODO (fran): validar datos de form antes de seguir
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleRadioChange = (e) => setSelectedValue(e.target.value);
+  const toggleDialog = () => setOpen(!open);
+  const toggleOpenDialog = () => setOpenDialog(!openDialog);
 
-  const Content = ({ type, description }) => (
-    <section key={type} className="p-6">
-      <h4 className="uppercase">{type}</h4>
+  const Content = ({ title, subtitle, description, Icon }) => (
+    <article
+      key={title}
+      className="grid gap-2 p-4 cursor-pointer rounded-xl shadow-[0px_1px_2px_0px_rgba(0,0,0,0.30),0px_1px_3px_1px_rgba(0,0,0,0.15)]"
+      style={{ boxShadow: "0px 1px 2px 0px rgba(0,0,0,0.30), 0px 1px 3px 1px rgba(0,0,0,0.15)" }}
+      onClick={() => handleRadioChange({ target: { value: title } })}
+    >
+      <section className="flex items-center gap-1">
+        <Radio
+          checked={selectedValue === title}
+          onChange={handleRadioChange}
+          value={title}
+          name="radio-buttons"
+          inputProps={{ "aria-label": title }}
+          size="small"
+        />
+        <p className="font-bold">{title}</p>
+      </section>
+      <section className="flex items-center gap-2">
+        {<Icon />}
+        <p>{subtitle}</p>
+      </section>
       <p>{description}</p>
-    </section>
+    </article>
   );
 
   return (
     <main>
-      {filterTypes.length ? filterTypes.map(Content) : proposalTypes.map(Content)}
+      <h4 className="uppercase p-6">{type || "Create a new Proposal"}</h4>
 
       {type ? (
         <section className="grid gap-8 p-12">
@@ -71,28 +107,98 @@ const CreateProposal = () => {
               />
             </DemoContainer>
           </LocalizationProvider>
-
-          <div className="absolute bottom-[72px] left-1/2 transform -translate-x-1/2 grid gap-8 z-0 place-items-center">
-            <Button className="shadow-[0px_4px_8px_0px_#00000026,0px_1px_3px_0px_#0000004c] border-none">
-              Next
-            </Button>
-            <ProgressBar step={0} totalSteps={4} />
-          </div>
         </section>
       ) : (
-        <section className="absolute bottom-[72px] left-1/2 transform -translate-x-1/2 grid place-items-center gap-4 z-0">
-          {proposalTypes.map(({ type }) => (
-            <Button
-              key={type}
-              onClick={() =>
-                navigate(`/proposals/create?type=${type.split(" ")[0]?.toLowerCase()}`)
-              }
-            >
-              {type}
-            </Button>
-          ))}
+        <section className="grid gap-4 p-10">
+          {filterTypes.length ? filterTypes.map(Content) : proposalTypes.map(Content)}
         </section>
       )}
+
+      {/* TODO (fran): crear custom dialog */}
+      <Dialog onClose={toggleDialog} open={open} fullWidth>
+        <h3 className="text-[#525252] text-center p-4 pt-6">PROPOSAL SUMMARY</h3>
+        <IconButton
+          aria-label="close"
+          onClick={toggleDialog}
+          sx={(theme) => ({
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: theme.palette.grey[500],
+          })}
+        >
+          <CloseIcon />
+        </IconButton>
+
+        <DialogContent className="grid gap-4">
+          <p>
+            <span className="font-bold">Title:</span> {form.title}
+          </p>
+          <p>
+            <span className="font-bold">Description:</span> {form.description}
+          </p>
+          <p>
+            <span className="font-bold">Deadline:</span> {form.date.format("DD/MM/YYYY")}
+          </p>
+        </DialogContent>
+
+        <section className="w-full flex justify-center gap-4 p-4 pb-6">
+          <Button size="small" onClick={toggleDialog}>
+            Cancel
+          </Button>
+          <Button
+            size="small"
+            variant="kokowai"
+            onClick={() => {
+              toggleDialog();
+              toggleOpenDialog();
+              // navigate(`/proposals/create?type=${selectedValue}`);
+            }}
+          >
+            Submit
+          </Button>
+        </section>
+      </Dialog>
+
+      {/* TODO (fran): ver que cuando se cierre este dialog deberia mandarlo a la proposal o la lista de proposals */}
+      <Dialog onClose={toggleOpenDialog} open={openDialog} fullWidth>
+        <IconButton
+          aria-label="close"
+          onClick={toggleOpenDialog}
+          sx={(theme) => ({
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: theme.palette.grey[500],
+          })}
+        >
+          <CloseIcon />
+        </IconButton>
+
+        <DialogContent>
+          <h5 className="text-center">Proposal created successfully!</h5>
+        </DialogContent>
+
+        <section className="w-full flex justify-center gap-4 p-4 pb-6">
+          <Button size="small" variant="kokowai" onClick={toggleOpenDialog}>
+            Accept
+          </Button>
+        </section>
+      </Dialog>
+
+      <div className="absolute bottom-[72px] left-1/2 transform -translate-x-1/2 grid gap-8 z-0 place-items-center">
+        <Button
+          className="shadow-[0px_4px_8px_0px_#00000026,0px_1px_3px_0px_#0000004c] border-none"
+          variant="kokowai"
+          onClick={() =>
+            type ? setOpen(true) : navigate(`/proposals/create?type=${selectedValue}`)
+          }
+          disabled={type ? !form.title || !form.description || !form.date : !selectedValue}
+        >
+          {type ? "Create proposal" : "Next"}
+        </Button>
+        <ProgressBar step={step} totalSteps={4} />
+      </div>
     </main>
   );
 };

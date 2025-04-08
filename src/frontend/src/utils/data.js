@@ -1,3 +1,9 @@
+import {
+  ActionProposalIcon,
+  DigitalTaongaProposalIcon,
+  GuardianProposalIcon,
+} from "../components/ui/icons";
+
 export const onBoardingSteps = [
   {
     step: 1,
@@ -27,13 +33,24 @@ export const onBoardingSteps = [
 
 export const proposalTypes = [
   {
-    type: "Motion proposal",
+    title: "Digital Taonga Proposal",
+    subtitle: "For managing cultural assets.",
     description:
-      "Choose this option if your proposal include a non-binding decisions (e.g. electing a DAO Sheriff)",
+      "Guardians can propose the addition, update, or removal of a Digital Taonga. This process ensures that cultural assets are effectively managed within the DAO framework.",
+    Icon: DigitalTaongaProposalIcon,
   },
   {
-    type: "Action proposal",
+    title: "Action proposal",
+    subtitle: "For suggesting and voting on non-executive decisions.",
     description:
-      "Choose this option if your proposal includes an action, such as inviting a member or updating a role",
+      "Guardians can create Motion Proposals to align the DAO on important matters without executing immediate changes. These proposals facilitate discussion and collective decision-making.",
+    Icon: ActionProposalIcon,
+  },
+  {
+    title: "Guardian Proposal",
+    subtitle: "For managing DAO membership.",
+    description:
+      "Guardians can create proposals to add, update, or remove a Guardian. This ensures DAO membership remains controlled and secure, maintaining the integrity of the organization.",
+    Icon: GuardianProposalIcon,
   },
 ];

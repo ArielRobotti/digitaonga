@@ -4,6 +4,8 @@ import "@nfid/identitykit/react/styles.css";
 import { BrowserRouter, Route, Routes } from "react-router";
 import { IdentityKitAuthType, InternetIdentity, NFIDW, OISY } from "@nfid/identitykit";
 
+import Community from "./pages/community/page";
+import CreateNft from "./pages/nfts/create/page";
 import CreateProposal from "./pages/proposals/create/page";
 import FirstSteps from "./pages/first steps/page";
 import Header from "./components/shared/Header";
@@ -40,8 +42,12 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           </Route>
           <Route path="on_boarding" element={<OnBoarding />} />
           <Route path="first_steps" element={<FirstSteps />} />
-          <Route path="nfts" element={<Nfts />} />
+          <Route path="nfts">
+            <Route index element={<Nfts />} />
+            <Route path="create" element={<CreateNft />} />
+          </Route>
           <Route path="notifications" element={<Notifications />} />
+          <Route path="community" element={<Community />} />
         </Routes>
       </BrowserRouter>
     </IdentityKitProvider>
