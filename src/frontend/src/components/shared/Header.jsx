@@ -42,7 +42,7 @@ const Header = () => {
         initial={{ x: "-100%" }}
         animate={{ x: open ? 0 : "-100%" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="fixed top-[60px] left-0 z-30 bg-kokowai text-white pt-[60px] h-[calc(100vh-60px)] w-full bg-primary text-primary-foreground"
+        className="fixed top-[60px] left-0 bg-kokowai text-white pt-[60px] h-[calc(100vh-60px)] w-full bg-primary text-primary-foreground !z-50"
       >
         <nav className="p-4">
           <ul className="space-y-4 grid place-items-center gap-[60px]">

@@ -15,7 +15,6 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import ProgressBar from "../../../components/shared/ProgressBar";
-import React from "react";
 import TextField from "@mui/material/TextField";
 import dayjs from "dayjs";
 import { proposalTypes } from "../../../utils/data";
@@ -34,16 +33,16 @@ const CreateProposal = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const type = searchParams.get("type");
-  const filterTypes = proposalTypes.filter((t) => t.title.toLowerCase().includes(type));
-  const step = !type ? 0 : !form.title || !form.description || !form.date ? 1 : 2;
+  //   const type = searchParams.get("type");
+  //   const filterTypes = proposalTypes.filter((t) => t.title.toLowerCase().includes(type));
+  //   const step = !type ? 0 : !form.title || !form.description || !form.date ? 1 : 2;
 
   // TODO (fran): validar datos de form antes de seguir
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  //   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
   const handleRadioChange = (e) => setSelectedValue(e.target.value);
-  const toggleDialog = () => setOpen(!open);
-  const toggleOpenDialog = () => setOpenDialog(!openDialog);
+  //   const toggleDialog = () => setOpen(!open);
+  //   const toggleOpenDialog = () => setOpenDialog(!openDialog);
 
   const Content = ({ title, subtitle, description, Icon }) => (
     <article
@@ -73,9 +72,9 @@ const CreateProposal = () => {
 
   return (
     <main>
-      <h4 className="uppercase p-6">{type || "Create a new Proposal"}</h4>
+      <h4 className="uppercase p-6">{"Create a new Proposal"}</h4>
 
-      {type ? (
+      {/* {type ? (
         <section className="grid gap-8 p-12">
           <TextField
             label="Title"
@@ -108,14 +107,12 @@ const CreateProposal = () => {
             </DemoContainer>
           </LocalizationProvider>
         </section>
-      ) : (
-        <section className="grid gap-4 p-10">
-          {filterTypes.length ? filterTypes.map(Content) : proposalTypes.map(Content)}
-        </section>
-      )}
+      ) : ( */}
+      <section className="grid gap-4 p-10">{proposalTypes.map(Content)}</section>
+      {/* )} */}
 
       {/* TODO (fran): crear custom dialog */}
-      <Dialog onClose={toggleDialog} open={open} fullWidth>
+      {/* <Dialog onClose={toggleDialog} open={open} fullWidth>
         <h3 className="text-[#525252] text-center p-4 pt-6">PROPOSAL SUMMARY</h3>
         <IconButton
           aria-label="close"
@@ -158,10 +155,10 @@ const CreateProposal = () => {
             Submit
           </Button>
         </section>
-      </Dialog>
+      </Dialog> */}
 
       {/* TODO (fran): ver que cuando se cierre este dialog deberia mandarlo a la proposal o la lista de proposals */}
-      <Dialog onClose={toggleOpenDialog} open={openDialog} fullWidth>
+      {/* <Dialog onClose={toggleOpenDialog} open={openDialog} fullWidth>
         <IconButton
           aria-label="close"
           onClick={toggleOpenDialog}
@@ -184,20 +181,18 @@ const CreateProposal = () => {
             Accept
           </Button>
         </section>
-      </Dialog>
+      </Dialog> */}
 
       <div className="absolute bottom-[72px] left-1/2 transform -translate-x-1/2 grid gap-8 z-0 place-items-center">
         <Button
           className="shadow-[0px_4px_8px_0px_#00000026,0px_1px_3px_0px_#0000004c] border-none"
           variant="kokowai"
-          onClick={() =>
-            type ? setOpen(true) : navigate(`/proposals/create?type=${selectedValue}`)
-          }
-          disabled={type ? !form.title || !form.description || !form.date : !selectedValue}
+          onClick={() => navigate(`/proposals/create/${selectedValue}`)}
+          disabled={!selectedValue}
         >
-          {type ? "Create proposal" : "Next"}
+          Next
         </Button>
-        <ProgressBar step={step} totalSteps={4} />
+        <ProgressBar step={0} totalSteps={4} />
       </div>
     </main>
   );

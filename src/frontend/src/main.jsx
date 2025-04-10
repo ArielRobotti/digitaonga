@@ -4,9 +4,11 @@ import "@nfid/identitykit/react/styles.css";
 import { BrowserRouter, Route, Routes } from "react-router";
 import { IdentityKitAuthType, InternetIdentity, NFIDW, OISY } from "@nfid/identitykit";
 
+import ActionProposalCreation from "./pages/proposals/create/action proposal/page";
 import Community from "./pages/community/page";
 import CreateNft from "./pages/nfts/create/page";
 import CreateProposal from "./pages/proposals/create/page";
+import DigitalTaongaProposalCreation from "./pages/proposals/create/digital taonga proposal/page";
 import FirstSteps from "./pages/first steps/page";
 import Header from "./components/shared/Header";
 import Home from "./pages/Home";
@@ -37,7 +39,11 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           <Route path="login" element={<Login />} />
           <Route path="proposals">
             <Route index element={<Proposals />} />
-            <Route path="create" element={<CreateProposal />} />
+            <Route path="create">
+              <Route index element={<CreateProposal />} />
+              <Route path="Action proposal" element={<ActionProposalCreation />} />
+              <Route path="Digital Taonga proposal" element={<DigitalTaongaProposalCreation />} />
+            </Route>
             <Route path=":id" element={<ProposalDetail />} />
           </Route>
           <Route path="on_boarding" element={<OnBoarding />} />

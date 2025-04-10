@@ -1,7 +1,11 @@
 import {
   ActionProposalIcon,
   DigitalTaongaProposalIcon,
+  DownloadIcon,
   GuardianProposalIcon,
+  PencilIcon,
+  TrashIcon,
+  UploadIcon,
 } from "../components/ui/icons";
 
 export const onBoardingSteps = [
@@ -52,5 +56,36 @@ export const proposalTypes = [
     description:
       "Guardians can create proposals to add, update, or remove a Guardian. This ensures DAO membership remains controlled and secure, maintaining the integrity of the organization.",
     Icon: GuardianProposalIcon,
+  },
+];
+
+export const digitalTaongaProposals = [
+  {
+    title: "Create or Upload a New Digital Taonga",
+    subtitle: "For Adding New Cultural Assets.",
+    description:
+      "Guardians can propose the creation or upload of new Digital Taonga to preserve and share cultural heritage within the DAO framework.",
+    Icon: UploadIcon,
+  },
+  {
+    title: "Update an Existing Digital Taonga",
+    subtitle: "For Editing Asset Information.",
+    description:
+      "Guardians can propose updates to the metadata, details, or attributes of an existing Digital Taonga, ensuring its accuracy and relevance.",
+    Icon: PencilIcon,
+  },
+  {
+    title: "Delete an Existing Digital Taonga",
+    subtitle: "For Removing Cultural Assets.",
+    description:
+      "Guardians can propose the removal of a Digital Taonga from the DAO. This ensures outdated or inappropriate assets are managed responsibly.",
+    Icon: TrashIcon,
+  },
+  {
+    title: "Request Download Permission",
+    subtitle: "For Accessing Assigned Cultural Assets.",
+    description:
+      "Guardians can propose to request download permissions for a specific Digital Taonga. This ensures controlled access to assets, respecting the DAO's governance and security principles.",
+    Icon: DownloadIcon,
   },
 ];
