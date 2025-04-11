@@ -89,3 +89,20 @@ export const digitalTaongaProposals = [
     Icon: DownloadIcon,
   },
 ];
+
+export const updateAnExistingDigitalTaonga = [
+  {
+    title: "Update Digital Taonga Description",
+    subtitle: "For editing the description of an existing asset.",
+    description:
+      "Propose updates to the description of an existing Digital Taonga to enhance its clarity and accuracy. All changes must be reviewed and approved by the DAO community.",
+    Icon: PencilIcon,
+  },
+  {
+    title: "Update Digital Taonga File",
+    subtitle: "For modifying files of existing assets.",
+    description:
+      "Suggest uploading an updated version of an existing file, such as a higher-quality scan, to maintain the asset's quality and relevance. New files require DAO community approval before implementation.",
+    Icon: UploadIcon,
+  },
+];

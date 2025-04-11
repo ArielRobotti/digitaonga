@@ -8,13 +8,18 @@ import {
   Radio,
   styled,
 } from "@mui/material";
+import { digitalTaongaProposals, updateAnExistingDigitalTaonga } from "../../../../utils/data";
 import { useNavigate, useSearchParams } from "react-router";
 
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import Button from "../../../../components/shared/Button";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { Button as MUIButton } from "@mui/material";
 import ProgressBar from "../../../../components/shared/ProgressBar";
 import TextField from "@mui/material/TextField";
-import { digitalTaongaProposals } from "../../../../utils/data";
+import dayjs from "dayjs";
 import { useState } from "react";
 
 const DigitalTaongaProposalCreation = () => {
@@ -23,6 +28,7 @@ const DigitalTaongaProposalCreation = () => {
     description: "",
     history: "",
     file: null,
+    date: dayjs(new Date().toDateString()),
   });
   const [open, setOpen] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
@@ -40,8 +46,6 @@ const DigitalTaongaProposalCreation = () => {
   const handleRadioChange = (e) => setSelectedValue(e.target.value);
   const toggleDialog = () => setOpen(!open);
   const toggleOpenDialog = () => setOpenDialog(!openDialog);
-
-  console.log(form);
 
   const Content = ({ title, subtitle, description, Icon }) => (
     <article
@@ -69,6 +73,79 @@ const DigitalTaongaProposalCreation = () => {
     </article>
   );
 
+  const SelectedProposal = () => {
+    switch (action) {
+      case "Create or Upload a New Digital Taonga":
+        return (
+          <section className="grid gap-8 p-12">
+            <TextField
+              label="Name"
+              variant="outlined"
+              onChange={handleChange}
+              value={form.name}
+              name="name"
+              required
+              className="material_input"
+            />
+            <TextField
+              label="Cultural Description"
+              variant="outlined"
+              onChange={handleChange}
+              value={form.description}
+              name="description"
+              required
+              className="material_input"
+            />
+            <TextField
+              label="History"
+              variant="outlined"
+              onChange={handleChange}
+              value={form.history}
+              name="history"
+              required
+              className="material_input"
+            />
+
+            <MUIButton
+              component="label"
+              role={undefined}
+              tabIndex={-1}
+              endIcon={<UploadIcon />}
+              className="!rounded-[5px] !border !border-[#2C131A] !bg-[#F8F8F8] !shadow-[0px_4px_8px_0px_rgba(0,0,0,0.15),0px_1px_3px_0px_rgba(0,0,0,0.30)] !text-black"
+            >
+              Upload your file
+              <VisuallyHiddenInput
+                type="file"
+                onChange={(e) => setForm({ ...form, file: e.target.files[0] })}
+                multiple
+              />
+            </MUIButton>
+
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DemoContainer components={["DatePicker"]}>
+                <DatePicker
+                  label="Voting deadline"
+                  onChange={(v) => setForm({ ...form, date: v })}
+                  value={form.date}
+                  name="date"
+                  disablePast
+                  className="material_input"
+                />
+              </DemoContainer>
+            </LocalizationProvider>
+          </section>
+        );
+      case "Update an Existing Digital Taonga":
+        return (
+          <section className="grid gap-4 p-10">
+            {updateAnExistingDigitalTaonga.map(Content)}
+          </section>
+        );
+      default:
+        break;
+    }
+  };
+
   const VisuallyHiddenInput = styled("input")({
     clip: "rect(0 0 0 0)",
     clipPath: "inset(50%)",
@@ -87,53 +164,25 @@ const DigitalTaongaProposalCreation = () => {
 
   return (
     <main>
-      <h4 className="uppercase p-6">{"Create a new Proposal"}</h4>
+      <section className="p-6">
+        <h4 className="uppercase">
+          {action === "Create or Upload a New Digital Taonga"
+            ? "Creates a 3D high-resolution Digital Taonga"
+            : action === "Update an Existing Digital Taonga"
+            ? action
+            : "What action should be proposed?"}
+        </h4>
+        <p>
+          {action === "Create or Upload a New Digital Taonga"
+            ? "Upload your 3D Artefact file and add description."
+            : action === "Update an Existing Digital Taonga"
+            ? ""
+            : "Choose the type of proposal for managing Digital Taonga."}
+        </p>
+      </section>
 
       {action ? (
-        <section className="grid gap-8 p-12">
-          <TextField
-            label="Name"
-            variant="outlined"
-            onChange={handleChange}
-            value={form.name}
-            name="name"
-            required
-            className="material_input"
-          />
-          <TextField
-            label="Description"
-            variant="outlined"
-            onChange={handleChange}
-            value={form.description}
-            name="description"
-            required
-            className="material_input"
-          />
-          <TextField
-            label="History"
-            variant="outlined"
-            onChange={handleChange}
-            value={form.history}
-            name="history"
-            required
-            className="material_input"
-          />
-
-          <MUIButton
-            component="label"
-            role={undefined}
-            tabIndex={-1}
-            endIcon={<UploadIcon />}
-            className="!rounded-[5px] !border !border-[#2C131A] !bg-[#F8F8F8] !shadow-[0px_4px_8px_0px_rgba(0,0,0,0.15),0px_1px_3px_0px_rgba(0,0,0,0.30)] !text-black"
-          >
-            Upload your file
-            <VisuallyHiddenInput
-              type="file"
-              onChange={(e) => setForm({ ...form, file: e.target.files[0] })}
-              multiple
-            />
-          </MUIButton>
-        </section>
+        SelectedProposal()
       ) : (
         <section className="grid gap-4 p-10">{digitalTaongaProposals.map(Content)}</section>
       )}
@@ -156,17 +205,20 @@ const DigitalTaongaProposalCreation = () => {
 
         <DialogContent className="grid gap-4">
           <p>
-            <span className="font-bold">Name:</span> {form.name}
+            <span className="font-bold">Digital Taonga Name:</span> {form.name}
           </p>
           <p>
-            <span className="font-bold">Description:</span> {form.description}
+            <span className="font-bold">Cultural description:</span> {form.description}
           </p>
           <p>
             <span className="font-bold">History:</span> {form.history}
           </p>
-          <div className="grid place-items-center">
-            <img src="" alt={form.name} />
-          </div>
+          <p>
+            <span className="font-bold">File name:</span> {form.file?.name}
+          </p>
+          <p>
+            <span className="font-bold">Deadline:</span> {dayjs(form.date).format("MM/DD/YYYY")}
+          </p>
         </DialogContent>
 
         <section className="w-full flex justify-center gap-4 p-4 pb-6">
@@ -218,7 +270,9 @@ const DigitalTaongaProposalCreation = () => {
           className="shadow-[0px_4px_8px_0px_#00000026,0px_1px_3px_0px_#0000004c] border-none"
           variant="kokowai"
           onClick={() =>
-            navigate(`/proposals/create/Digital Taonga proposal?action=${selectedValue}`)
+            action
+              ? toggleDialog()
+              : navigate(`/proposals/create/Digital Taonga proposal?action=${selectedValue}`)
           }
           disabled={
             action ? !form.name || !form.description || !form.history || !form.file : !selectedValue
