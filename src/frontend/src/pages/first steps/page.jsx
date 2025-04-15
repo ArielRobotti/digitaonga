@@ -16,15 +16,15 @@ const FirstSteps = () => {
         <img src="/images/png/pattern_kokowaif.png" alt="kokowaif pattern" />
       </div>
 
-      <section className="grid place-items-center gap-14 mt-6">
-        <h2 className="uppercase">Welcome user!</h2>
+      <section className="grid place-items-center gap-14 mt-14">
+        <h2 className="uppercase">Nau Mai Haere Mai!</h2>
 
-        <h4 className="uppercase">First steps</h4>
+        <h4 className="uppercase">Welcome to Digitaonga</h4>
 
         <p className="max-w-[300px]">
-          This platform empowers advocacy, preserves cultural artifacts, and enables member
-          participation through decentralized governance. We’re excited to have you on board—let’s
-          shape the future together!
+          A platform that connects communities, preserves taonga, and enables kaitiakitanga and
+          guardianship through decentralized governance. Ka mua ka muri - let’s shape the future
+          together!
         </p>
 
         <div className="grid place-items-center gap-4 mt-40 w-full">

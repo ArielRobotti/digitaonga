@@ -1,6 +1,10 @@
 import {
   ActionProposalIcon,
+  AddUserIcon,
+  ComputerIcon,
+  DebateIcon,
   DigitalTaongaProposalIcon,
+  DocumentIcon,
   DownloadIcon,
   GuardianProposalIcon,
   PencilIcon,
@@ -11,27 +15,31 @@ import {
 export const onBoardingSteps = [
   {
     step: 1,
-    title: "Invite members to your DAO",
+    title: "Digital Taonga Guardianship",
+    Icon: ComputerIcon,
     description:
-      "View the NFTs in the gallery. We use 3D scanning to create high resolution digital taonga. These scans preserve taonga for future generations",
+      "View and interact with your digital taonga at any time by visiting the archive where they are securely housed.",
   },
   {
     step: 2,
-    title: "NFT Management",
+    title: "Create a proposal",
+    Icon: DocumentIcon,
     description:
-      "You’ll have on-chain storage fpr 3D high-resolution scans of Māori taonga which you can interact with.",
+      "As a guardian, you are able to create proposals about how to care for, manage, view, and share your digital taonga",
   },
   {
     step: 3,
-    title: "Create a proposal",
+    title: "Vote proposals",
+    Icon: DebateIcon,
     description:
-      "Create proposals to transfer tokens, edit their description, and manage them, which will be reviewed and voted on by the other members of the DAO.",
+      "All proposals are then voted on and either approved or rejected by the other guardians in your community",
   },
   {
     step: 4,
-    title: "Vote proposals",
+    title: "Invite More Guardians",
+    Icon: AddUserIcon,
     description:
-      "Proposals are created to suggest changes or actions within the DAO and these are voted on and either approved or rejected by other members.",
+      "Expand your community by inviting others who should be involved in the decision-making and care of your digital taonga",
   },
 ];
 
