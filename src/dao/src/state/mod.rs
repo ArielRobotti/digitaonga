@@ -1,4 +1,4 @@
-use std::{collections::HashMap, str::FromStr};
+use std::{collections::HashMap, str::FromStr, vec};
 
 use candid::{CandidType, Principal};
 use member::{Member, MemberError, MemberResult, MemberRole};
@@ -110,6 +110,33 @@ impl State {
         }
     }
 
+    pub fn batch_update_member_role(
+        &mut self,
+        member_list: Vec<Principal>,
+        new_role: MemberRole,
+    ) -> Result<Vec<Principal>, MemberError> {
+        if self
+            .members
+            .values()
+            .filter(|m| m.role() != MemberRole::Viewer)
+            .collect::<Vec<&Member>>()
+            .len()
+            > 1
+        {
+            Err(MemberError::NotOnlyOneMember)
+        } else {
+            let mut updated_members = vec![];
+
+            for prin in member_list {
+                if let Some(m) = self.members.get_mut(&prin) {
+                    m.change_role(new_role.clone());
+                    updated_members.push(prin);
+                }
+            }
+
+            Ok(updated_members)
+        }
+    }
     // --- proposals ---
     // TODO (fran): quien puede crear propuestas??
     pub fn new_proposal(

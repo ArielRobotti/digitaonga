@@ -3,7 +3,7 @@ use std::{cell::RefCell, str::FromStr};
 use candid::Principal;
 use ic_cdk::{query, update};
 use state::{
-    member::{Member, MemberResult},
+    member::{Member, MemberError, MemberResult, MemberRole},
     nft::{LocalNft, Nft},
     proposal::{ActionType, MintNftParams, Proposal, ProposalResult, ProposalType, Vote},
     shared::LikeProposal,
@@ -48,6 +48,14 @@ fn accept_member_invitation() -> MemberResult {
 #[update]
 fn reject_member_invitation() -> MemberResult {
     borrow_mut(|state| state.reject_invitation())
+}
+
+#[update]
+fn batch_update_member_role(
+    member_list: Vec<Principal>,
+    new_role: MemberRole,
+) -> Result<Vec<Principal>, MemberError> {
+    borrow_mut(|s| s.batch_update_member_role(member_list, new_role))
 }
 
 #[query]

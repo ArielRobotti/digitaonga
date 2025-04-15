@@ -61,6 +61,10 @@ impl Member {
     //     self.role == MemberRole::Delegate
     // }
 
+    pub fn role(&self) -> MemberRole {
+        self.role.clone()
+    }
+
     pub fn is_admin(&self) -> bool {
         self.role == MemberRole::Admin
     }
@@ -138,6 +142,7 @@ pub enum MemberError {
     NotFound,
     MemberIsNotViewer,
     MemberIsNotPendingMember,
+    NotOnlyOneMember,
 }
 
 pub type MemberResult = Result<Member, MemberError>;

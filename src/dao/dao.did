@@ -27,6 +27,7 @@ type Member = record {
 };
 type MemberError = variant {
   NotFound;
+  NotOnlyOneMember;
   MemberIsNotViewer;
   MemberIsNotPendingMember;
 };
@@ -68,12 +69,14 @@ type ProposalError = variant { LastAdmin; Closed; NotFound; Unauthorized };
 type ProposalStatus = variant { Open; Review; Approved; Rejected; Voting };
 type ProposalType = variant { Action : ActionType; Motion : MotionType };
 type Result = variant { Ok : Member; Err : MemberError };
-type Result_1 = variant { Ok : Proposal; Err : ProposalError };
+type Result_1 = variant { Ok : vec principal; Err : MemberError };
+type Result_2 = variant { Ok : Proposal; Err : ProposalError };
 type Vote = variant { Approve; Abstain; Disapprove };
 service : () -> {
   accept_member_invitation : () -> (Result);
   add_owner : (principal) -> ();
-  check_proposal_status : (nat) -> (Result_1);
+  batch_update_member_role : (vec principal, MemberRole) -> (Result_1);
+  check_proposal_status : (nat) -> (Result_2);
   create_member : () -> (Member);
   create_proposal : (text, text, ProposalType, nat64) -> (Proposal);
   edit_member : (opt text, opt text) -> (Result);
@@ -95,5 +98,5 @@ service : () -> {
   set_last_activity_member : () -> ();
   test_mint_nft : (principal, nat, principal, text, text, text) -> (nat);
   transfer_ownership_nft : (principal, nat, principal) -> (nat);
-  vote_proposal : (nat, Vote) -> (Result_1);
+  vote_proposal : (nat, Vote) -> (Result_2);
 }
