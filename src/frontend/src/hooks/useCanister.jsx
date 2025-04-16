@@ -1,10 +1,11 @@
 import { Actor, HttpAgent } from "@dfinity/agent";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { canisters } from "../utils/canisters";
 import { useAgent } from "@nfid/identitykit/react";
 
-const ICP_API_HOST = "https://icp-api.io/";
+const ICP_API_HOST =
+  process.env.DFX_NETWORK === "local" ? "http://localhost:4943" : "https://icp-api.io/";
 
 const useCanister = (canisterName = "dao") => {
   const canister = canisters[canisterName];
@@ -19,7 +20,7 @@ const useCanister = (canisterName = "dao") => {
 
   // Use an authenticatedAgent when making authenticated calls.
   // A wallet approval pop-up will be displayed if necessary.
-  const authenticatedAgent = useAgent();
+  const authenticatedAgent = useAgent({ host: ICP_API_HOST });
 
   // Actor for methods the user DOES NOT need to be authenticated to call (i.e. icrc2_allowance).
   // These will never result in a wallet approval prompt.

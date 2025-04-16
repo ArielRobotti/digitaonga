@@ -26,8 +26,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <IdentityKitProvider
       authType={IdentityKitAuthType.DELEGATION}
-      signers={[OISY, InternetIdentity, NFIDW]}
-      featureSigner={OISY}
+      signers={[InternetIdentity, NFIDW]}
+      theme="light"
+      // featureSigner={}
       // signerClientOptions={{
       //   targets: [], // **IMPORTANT**: these are *your* canisters, not ledger canisters
       // }}
