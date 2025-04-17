@@ -1,13 +1,20 @@
+import { CircularProgress } from "@mui/material";
 import ProposalCard from "./ProposalCard";
+import { useNavigate } from "react-router";
+import useProposal from "../../hooks/useProposal";
 
 const ProposalContainer = ({ className = "" } = {}) => {
+  const navigate = useNavigate();
+  const { proposals, loading } = useProposal();
+
   return (
     <section className={className}>
       <div className="flex gap-4 overflow-x-auto py-2">
-        <ProposalCard />
-        <ProposalCard />
-        <ProposalCard />
-        <ProposalCard />
+        {loading ? (
+          <CircularProgress />
+        ) : (
+          proposals.map((proposal) => <ProposalCard key={proposal.id} {...proposal} />)
+        )}
       </div>
     </section>
   );

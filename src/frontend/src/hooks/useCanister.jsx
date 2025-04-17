@@ -7,6 +7,8 @@ import { useAgent } from "@nfid/identitykit/react";
 const ICP_API_HOST =
   process.env.DFX_NETWORK === "local" ? "http://localhost:4943" : "https://icp-api.io/";
 
+console.log({ ICP_API_HOST });
+
 const useCanister = (canisterName = "dao") => {
   const canister = canisters[canisterName];
 
@@ -24,12 +26,15 @@ const useCanister = (canisterName = "dao") => {
 
   // Actor for methods the user DOES NOT need to be authenticated to call (i.e. icrc2_allowance).
   // These will never result in a wallet approval prompt.
-  const nonTargetUnauthenticatedActor =
-    unauthenticatedAgent &&
-    Actor.createActor(canister.idl, {
-      agent: unauthenticatedAgent,
-      canisterId: canister.canisterId,
-    });
+  const nonTargetUnauthenticatedActor = useMemo(() => {
+    return (
+      unauthenticatedAgent &&
+      Actor.createActor(canister.idl, {
+        agent: unauthenticatedAgent,
+        canisterId: canister.canisterId,
+      })
+    );
+  }, [unauthenticatedAgent, canister, canisterName]);
 
   // Actor for methods the user DOES need to be authenticated to call (i.e. icrc2_approve).
   // These may result in a wallet approval prompt depending on how the user authenticated.

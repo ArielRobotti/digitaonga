@@ -74,7 +74,7 @@ fn get_active_members() -> Vec<Member> {
 }
 
 // ---- proposals ----
-#[update(guard = "only_admin")]
+#[update(/* guard = "only_admin" */)] // TODO (fran): descomentar esto!! testing
 fn create_proposal(
     title: String,
     description: String,

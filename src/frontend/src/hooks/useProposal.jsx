@@ -1,28 +1,32 @@
+import { proposalParser } from "../utils/parsers";
 import useCanister from "./useCanister";
 import { useEffect } from "react";
 import useProposalStore from "../store/useProposalStore";
 
 const useProposal = () => {
   const [_, dao] = useCanister();
-  const { setProposals, proposals } = useProposalStore();
+  const { setProposals, proposals, loading } = useProposalStore();
 
-  const getProposals = async () => {
+  const getAllProposals = async () => {
     try {
-      const res = await dao.get_proposals();
-      console.log("getProposals res:", res);
+      const res = await dao.get_all_proposals();
+      console.log("getAllProposals res:", res);
       // TODO (fran): parse proposals
+      const parsed = proposalParser(res);
 
-      setProposals(res);
+      setProposals(parsed);
     } catch (err) {
-      console.error("getProposals error:", err);
+      console.log("getAllProposals error:", err);
     }
   };
 
-  useEffect(() => {
-    getProposals();
-  }, []);
+  const getProposal = (id) => proposals.find((p) => p.id === id);
 
-  return { proposals };
+  useEffect(() => {
+    dao && !proposals.length && getAllProposals();
+  }, [dao, proposals]);
+
+  return { proposals, getProposal, loading };
 };
 
 export default useProposal;

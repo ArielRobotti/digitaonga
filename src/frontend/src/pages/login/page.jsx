@@ -1,5 +1,5 @@
 import { DigitaongaCompleteIcon, NFIDIcon } from "../../components/ui/icons";
-import { p2str, shortP } from "../../utils/parsers";
+import { p2str, shortP } from "../../utils/functions";
 
 import Button from "../../components/shared/Button";
 import { useAuth } from "@nfid/identitykit/react";

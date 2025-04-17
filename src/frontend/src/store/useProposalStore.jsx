@@ -1,18 +1,22 @@
 import { create } from "zustand";
 
-const proposals = [];
-
-const useProposalStore = create((set) => ({
-  proposals,
+const useProposalStore = create((set, get) => ({
+  loading: true,
+  proposals: [],
   setProposals: async (proposals) => {
-    set((state) => ({ proposals }));
+    set((state) => ({ ...state, proposals, loading: false }));
+  },
+  getProposal: (id) => {
+    return get().proposals.find((p) => p.id === id);
   },
   removeProposal: async (id) => {
     set((state) => ({
-      proposals: state.proposals.filter((n) => n.id !== id),
+      proposals: state.proposals.filter((p) => p.id !== id),
     }));
   },
   clearProposals: async () => set({ proposals: [] }),
+
+  setLoading: (loading) => set((state) => ({ ...state, loading })),
 }));
 
 export default useProposalStore;

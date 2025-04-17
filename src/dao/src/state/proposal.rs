@@ -187,6 +187,9 @@ pub struct ProposalComment {
     creator: Principal,
     created_at: u64,
     comment: String,
+    thread: Vec<ProposalComment>,
+    likes: u64,
+    dislikes: u64,
 }
 
 impl ProposalComment {
@@ -195,6 +198,29 @@ impl ProposalComment {
             creator: ic_cdk::caller(),
             created_at: ic_cdk::api::time(),
             comment,
+            thread: vec![],
+            likes: 0,
+            dislikes: 0,
         }
+    }
+
+    // TODO (fran): agregar a lib.rs este y los de abajo
+    pub fn comment_in_thread(&mut self, comment: String) {
+        self.thread.push(ProposalComment {
+            creator: ic_cdk::caller(),
+            created_at: ic_cdk::api::time(),
+            comment,
+            thread: vec![],
+            likes: 0,
+            dislikes: 0,
+        });
+    }
+
+    pub fn like(&mut self) {
+        self.likes += 1;
+    }
+
+    pub fn dislikes(&mut self) {
+        self.dislikes += 1;
     }
 }

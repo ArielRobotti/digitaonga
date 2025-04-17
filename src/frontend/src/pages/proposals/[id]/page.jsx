@@ -6,6 +6,7 @@ import {
   LikeIcon,
 } from "../../../components/ui/icons";
 import {
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -15,102 +16,109 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  TextField,
 } from "@mui/material";
 
 import Button from "../../../components/shared/Button";
 import ProposalComment from "../../../components/proposals/ProposalComment";
+import { useAuth } from "@nfid/identitykit/react";
 import { useParams } from "react-router";
+import useProposal from "../../../hooks/useProposal";
 import { useState } from "react";
-
-const proposalExample = {
-  id: "1",
-  title: "Proposal title",
-  description:
-    "Lorem ipsum dolor sit amet consectetur. Cras at elementum non nulla senectus. Curabitur aliquet egestas tortor elementum non cursus molestie. Faucibus erat ac mauris sociis egestas nibh augue tempus. Eget nec turpis sit sit elit.",
-  creator: "Alice",
-  status: "Open",
-  likes: 10,
-  dislikes: 2,
-  comments: [
-    {
-      from: "Bob",
-      text: "I like this proposal",
-      created_at: 908989899,
-      likes: 7,
-      dislikes: 1,
-      comments: [
-        {
-          from: "John",
-          text: "Lorem ipsum dolor sit amet consectetur. Cras at elementum non nulla senectus. Curabitur aliquet egestas tortor elementum non.",
-          created_at: 908989899,
-        },
-      ],
-    },
-    {
-      from: "Charlie",
-      text: "I don't like this proposal",
-      created_at: 908989900,
-      likes: 1,
-      dislikes: 3,
-      comments: [],
-    },
-  ],
-};
 
 const ProposalDetail = () => {
   const { id } = useParams();
   const [vote, setVote] = useState("");
   const [open, setOpen] = useState(false);
+  const [newComment, setNewComment] = useState({ want: false, text: "" });
+  const { user, connect } = useAuth();
 
-  // const proposal = useProposal(id);
+  const { getProposal, loading } = useProposal();
+
+  const proposal = getProposal(parseInt(id));
+
+  if (loading) return <CircularProgress className="absolute top-1/2 left-1/2 " />;
+
+  if (!proposal) {
+    return (
+      <main className="flex flex-col items-center justify-center h-screen">
+        <h1 className="text-2xl font-bold">Proposal not found</h1>
+        <p className="text-lg">Please check the proposal ID and try again.</p>
+      </main>
+    );
+  }
 
   const handleChange = (e) => setVote(e.target.value);
-
   const toggleOpen = () => setOpen(!open);
+  const handleComment = (e) => setNewComment({ ...newComment, text: e.target.value });
 
   return (
     <main>
       <section className="flex justify-between items-center p-6 overflow-hidden">
         <div>
           {/* TODO (fran): ver tema de si el nombre de la proposal es muy largo */}
-          <h3 className="uppercase text-clip">{proposalExample.title}</h3>
+          <h3 className="uppercase text-clip">{proposal.title}</h3>
           <h4 className="uppercase">REF {id}</h4> {/* FIXME (fran): cambiar por proposal.id */}
-          <p>Delegate: {proposalExample.creator}</p>
+          <p>Delegate: {proposal.creator}</p>
         </div>
 
         <div className="flex flex-col items-center gap-4">
-          <span>{proposalExample.status}</span>
+          <span>{proposal.status}</span>
           <section className="flex items-center gap-4">
             <h5 className="flex items-center">
-              {proposalExample.likes} <LikeIcon />
+              {proposal.likes.length} <LikeIcon />
             </h5>
             <h5 className="flex items-center">
-              {proposalExample.dislikes} <DislikeIcon />
+              {proposal.likes.length} <DislikeIcon />
             </h5>
             <h5
               className="flex items-center"
               onClick={() =>
+                setNewComment({ ...newComment, want: true }) ||
                 document.getElementById("comments").scrollIntoView({ behavior: "smooth" })
               }
             >
-              {proposalExample.comments.length} <CommentIcon />
+              {proposal.comments.length} <CommentIcon />
             </h5>
           </section>
         </div>
       </section>
-      <p className="px-6 py-2.5">{proposalExample.description}</p>
+      <p className="px-6 py-2.5">{proposal.description}</p>
       <section className="p-6">
         <h4 className="pb-2.5">IMPACT</h4>
         {/* TODO (fran): ver aca que seria impact */}
-        <p>{proposalExample.description}</p>
+        <p>{proposal.description}</p>
       </section>
       <section className="p-6" id="comments">
         <h4 className="pb-2.5">COMMENTS</h4>
         <div className="flex gap-4 overflow-x-auto">
-          {proposalExample.comments.map((c) => (
+          {proposal.comments.map((c) => (
             <ProposalComment key={c.created_at} {...c} />
           ))}
         </div>
+
+        {newComment.want && (
+          <>
+            <TextField
+              placeholder="Comment..."
+              multiline
+              onChange={handleComment}
+              value={newComment.text}
+            />
+
+            {newComment.text?.trim()?.length > 0 && (
+              <div className="flex justify-end mt-2">
+                <Button
+                  size="small"
+                  variant="kokowai"
+                  onClick={() => (user ? console.log("comment") : connect())}
+                >
+                  {user ? "Comment" : "Log in"}
+                </Button>
+              </div>
+            )}
+          </>
+        )}
       </section>
 
       <section className="grid place-items-center gap-4 p-6">
@@ -142,8 +150,8 @@ const ProposalDetail = () => {
           </Select>
         </FormControl>
 
-        <Button variant="kokowai" disabled={!vote} onClick={toggleOpen}>
-          Confirm my vote
+        <Button variant="kokowai" disabled={!vote} onClick={user ? toggleOpen : connect}>
+          {user ? "Confirm my vote" : "Log in"}
         </Button>
       </section>
 

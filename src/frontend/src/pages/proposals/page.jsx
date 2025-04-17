@@ -1,12 +1,7 @@
 import Button from "../../components/shared/Button";
 import ProposalContainer from "../../components/shared/ProposalContainer";
-import { useNavigate } from "react-router";
-import useProposal from "../../hooks/useProposal";
 
 const Proposals = () => {
-  const navigate = useNavigate();
-  const { proposals } = useProposal();
-
   return (
     <main className="p-4">
       <section className="mb-6">
