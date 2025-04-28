@@ -147,21 +147,38 @@ pub enum Vote {
 
 #[derive(CandidType, Clone, Deserialize, PartialEq)]
 pub enum ProposalType {
-    Motion(MotionType),
-    Action(ActionType),
+    DigitalTaonga(DigitalTaongaProposal),
+    Action(ActionProposal),
+    Guardian(GuardianProposal),
+    Motion(MotionProposal),
 }
 
 #[derive(CandidType, Clone, Deserialize, PartialEq)]
-pub enum ActionType {
-    InviteMember(Principal, MemberRole),
-    ChangeRole(Principal, MemberRole),
-    TransferNFT(Principal, u128, Principal), // collection, token_id, new_owner
-    MintNFT(MintNftParams),
-    UpdatePolicy(),
+pub enum DigitalTaongaProposal {
+    CreateDigitalTaonga(String, String, String, u64, String), // name, description, history, deadline, image id
+    UpdateDigitalTaonga(UpdateDiditalTaongaProposal),
+    DeleteDigitalTaonga(u64), // [?] CHECK si es u64 o u128 // id
+    RequestDownloadPermision, // TODO (fran): preguntar por este tipo de proposal
 }
 
+#[derive(CandidType, Clone, Deserialize, PartialEq)]
+pub struct ActionProposal(pub String, pub String, pub u64); // title, description, deadline
+
 #[derive(CandidType, Clone, Copy, Deserialize, PartialEq)]
-pub enum MotionType {}
+pub enum MotionProposal {}
+
+#[derive(CandidType, Clone, Deserialize, PartialEq)]
+pub enum GuardianProposal {
+    AssignAnObserver(Principal, u64), // principal, deadline
+    RemoveFromDao(Principal, u64),    // principal, deadline
+                                      // UpdateGuardianRole(Principal, MemberRole),
+}
+
+#[derive(CandidType, Clone, Deserialize, PartialEq)]
+pub enum UpdateDiditalTaongaProposal {
+    UpdateDescription(String),
+    UpdateImageId(String),
+}
 
 #[derive(CandidType, Clone, Deserialize, PartialEq)]
 pub struct MintNftParams {

@@ -1,21 +1,8 @@
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  Radio,
-} from "@mui/material";
 import { useNavigate, useSearchParams } from "react-router";
 
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import Button from "../../../components/shared/Button";
-import { CloseIcon } from "../../../components/ui/icons";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import ProgressBar from "../../../components/shared/ProgressBar";
-import TextField from "@mui/material/TextField";
+import { Radio } from "@mui/material";
 import dayjs from "dayjs";
 import { proposalTypes } from "../../../utils/data";
 import { useState } from "react";
@@ -43,6 +30,8 @@ const CreateProposal = () => {
   const handleRadioChange = (e) => setSelectedValue(e.target.value);
   //   const toggleDialog = () => setOpen(!open);
   //   const toggleOpenDialog = () => setOpenDialog(!openDialog);
+
+  console.log({ selectedValue });
 
   const Content = ({ title, subtitle, description, Icon }) => (
     <article

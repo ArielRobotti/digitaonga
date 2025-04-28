@@ -1,9 +1,12 @@
-type ActionType = variant {
-  ChangeRole : record { principal; MemberRole };
-  MintNFT : MintNftParams;
-  TransferNFT : record { principal; nat; principal };
-  UpdatePolicy : record {};
-  InviteMember : record { principal; MemberRole };
+type DigitalTaongaProposal = variant {
+  UpdateDigitalTaonga : UpdateDiditalTaongaProposal;
+  DeleteDigitalTaonga : nat64;
+  CreateDigitalTaonga : record { text; text; text; nat64; text };
+  RequestDownloadPermision;
+};
+type GuardianProposal = variant {
+  RemoveFromDao : record { principal; nat64 };
+  AssignAnObserver : record { principal; nat64 };
 };
 type LikeProposal = variant { Like; Dislike };
 type LocalNft = record {
@@ -38,14 +41,7 @@ type MemberRole = variant {
   Voter;
   NFTCreator;
 };
-type MintNftParams = record {
-  to : principal;
-  name : text;
-  collection_id : principal;
-  description : text;
-  image : text;
-};
-type MotionType = variant {};
+type MotionProposal = variant {};
 type Proposal = record {
   id : nat;
   status : ProposalStatus;
@@ -63,14 +59,34 @@ type Proposal = record {
 type ProposalComment = record {
   creator : principal;
   created_at : nat64;
+  likes : nat64;
   comment : text;
+  thread : Vec;
+  dislikes : nat64;
 };
 type ProposalError = variant { LastAdmin; Closed; NotFound; Unauthorized };
 type ProposalStatus = variant { Open; Review; Approved; Rejected; Voting };
-type ProposalType = variant { Action : ActionType; Motion : MotionType };
+type ProposalType = variant {
+  Action : record { text; text; nat64 };
+  Guardian : GuardianProposal;
+  DigitalTaonga : DigitalTaongaProposal;
+  Motion : MotionProposal;
+};
 type Result = variant { Ok : Member; Err : MemberError };
 type Result_1 = variant { Ok : vec principal; Err : MemberError };
 type Result_2 = variant { Ok : Proposal; Err : ProposalError };
+type UpdateDiditalTaongaProposal = variant {
+  UpdateDescription : text;
+  UpdateImageId : text;
+};
+type Vec = vec record {
+  creator : principal;
+  created_at : nat64;
+  likes : nat64;
+  comment : text;
+  thread : Vec;
+  dislikes : nat64;
+};
 type Vote = variant { Approve; Abstain; Disapprove };
 service : () -> {
   accept_member_invitation : () -> (Result);

@@ -10,6 +10,7 @@ import CreateNft from "./pages/nfts/create/page";
 import CreateProposal from "./pages/proposals/create/page";
 import DigitalTaongaProposalCreation from "./pages/proposals/create/digital taonga proposal/page";
 import FirstSteps from "./pages/first steps/page";
+import GuardianProposalCreation from "./pages/proposals/create/guardian proposal/page";
 import Header from "./components/shared/Header";
 import Home from "./pages/Home";
 import { IdentityKitProvider } from "@nfid/identitykit/react";
@@ -44,6 +45,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               <Route index element={<CreateProposal />} />
               <Route path="Action proposal" element={<ActionProposalCreation />} />
               <Route path="Digital Taonga proposal" element={<DigitalTaongaProposalCreation />} />
+              <Route path="Guardian proposal" element={<GuardianProposalCreation />} />
             </Route>
             <Route path=":id" element={<ProposalDetail />} />
           </Route>

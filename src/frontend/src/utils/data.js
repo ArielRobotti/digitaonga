@@ -6,6 +6,7 @@ import {
   DigitalTaongaProposalIcon,
   DocumentIcon,
   DownloadIcon,
+  EyeIcon,
   GuardianProposalIcon,
   PencilIcon,
   TrashIcon,
@@ -112,5 +113,21 @@ export const updateAnExistingDigitalTaonga = [
     description:
       "Suggest uploading an updated version of an existing file, such as a higher-quality scan, to maintain the asset's quality and relevance. New files require DAO community approval before implementation.",
     Icon: UploadIcon,
+  },
+];
+
+export const guardianProposalActions = [
+  {
+    title: "Assign as Observer",
+    subtitle: "Limit this user's role to observer.",
+    description:
+      "They will retain view-only access without the ability to vote or propose changes.",
+    Icon: EyeIcon,
+  },
+  {
+    title: "Remove from DAO",
+    subtitle: "Revoke this user's access entirely.",
+    description: "Remove the person from the DAO. They will no longer have any access.",
+    Icon: EyeIcon,
   },
 ];

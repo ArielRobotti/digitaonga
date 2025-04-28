@@ -11,6 +11,7 @@ import {
 import { digitalTaongaProposals, updateAnExistingDigitalTaonga } from "../../../../utils/data";
 import { useNavigate, useSearchParams } from "react-router";
 
+import ActionCard from "../../../../components/proposals/create/ActionCard";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import Button from "../../../../components/shared/Button";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -46,32 +47,6 @@ const DigitalTaongaProposalCreation = () => {
   const handleRadioChange = (e) => setSelectedValue(e.target.value);
   const toggleDialog = () => setOpen(!open);
   const toggleOpenDialog = () => setOpenDialog(!openDialog);
-
-  const Content = ({ title, subtitle, description, Icon }) => (
-    <article
-      key={title}
-      className="grid gap-2 p-4 cursor-pointer rounded-xl shadow-[0px_1px_2px_0px_rgba(0,0,0,0.30),0px_1px_3px_1px_rgba(0,0,0,0.15)]"
-      style={{ boxShadow: "0px 1px 2px 0px rgba(0,0,0,0.30), 0px 1px 3px 1px rgba(0,0,0,0.15)" }}
-      onClick={() => handleRadioChange({ target: { value: title } })}
-    >
-      <section className="flex items-center gap-1">
-        <Radio
-          checked={selectedValue === title}
-          onChange={handleRadioChange}
-          value={title}
-          name="radio-buttons"
-          inputProps={{ "aria-label": title }}
-          size="small"
-        />
-        <p className="font-bold">{title}</p>
-      </section>
-      <section className="flex items-center gap-2">
-        {<Icon />}
-        <p>{subtitle}</p>
-      </section>
-      <p>{description}</p>
-    </article>
-  );
 
   const SelectedProposal = () => {
     switch (action) {
@@ -138,7 +113,14 @@ const DigitalTaongaProposalCreation = () => {
       case "Update an Existing Digital Taonga":
         return (
           <section className="grid gap-4 p-10">
-            {updateAnExistingDigitalTaonga.map(Content)}
+            {updateAnExistingDigitalTaonga.map((p) => (
+              <ActionCard
+                key={p.title}
+                {...p}
+                selectedValue={selectedValue}
+                handleRadioChange={handleRadioChange}
+              />
+            ))}
           </section>
         );
       default:
@@ -184,7 +166,16 @@ const DigitalTaongaProposalCreation = () => {
       {action ? (
         SelectedProposal()
       ) : (
-        <section className="grid gap-4 p-10">{digitalTaongaProposals.map(Content)}</section>
+        <section className="grid gap-4 p-10">
+          {digitalTaongaProposals.map((p) => (
+            <ActionCard
+              key={p.title}
+              {...p}
+              selectedValue={selectedValue}
+              handleRadioChange={handleRadioChange}
+            />
+          ))}
+        </section>
       )}
 
       {/* TODO (fran): crear custom dialog */}

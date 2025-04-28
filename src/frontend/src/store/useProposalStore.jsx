@@ -9,6 +9,11 @@ const useProposalStore = create((set, get) => ({
   getProposal: (id) => {
     return get().proposals.find((p) => p.id === id);
   },
+  addProposal: async (proposal) => {
+    set((state) => ({
+      proposals: [...state.proposals, proposal],
+    }));
+  },
   removeProposal: async (id) => {
     set((state) => ({
       proposals: state.proposals.filter((p) => p.id !== id),

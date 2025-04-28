@@ -1,0 +1,162 @@
+import { Dialog, DialogContent, IconButton, TextField } from "@mui/material";
+
+import ActionCard from "../../../../components/proposals/create/ActionCard";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import Button from "../../../../components/shared/Button";
+import { CloseIcon } from "../../../../components/ui/icons";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import ProgressBar from "../../../../components/shared/ProgressBar";
+import dayjs from "dayjs";
+import { guardianProposalActions } from "../../../../utils/data";
+import { useState } from "react";
+
+const GuardianProposalCreation = () => {
+  const [form, setForm] = useState({
+    principal: "",
+    deadline: dayjs(new Date().toDateString()),
+  });
+  const [open, setOpen] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedValue, setSelectedValue] = useState(null);
+
+  // TODO (fran): validar datos de form antes de seguir
+
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleRadioChange = (e) => setSelectedValue(e.target.value);
+  const toggleDialog = () => setOpen(!open);
+  const toggleOpenDialog = () => setOpenDialog(!openDialog);
+
+  return (
+    <main>
+      <section className="p-6">
+        <h4 className="uppercase">Guardian proposal</h4>
+        <p>
+          Used to add, update, or remove a Guardian. Requires an approved vote before execution.
+        </p>
+      </section>
+
+      <section className="grid gap-8 p-12">
+        <TextField
+          label="Principal ID"
+          variant="outlined"
+          onChange={handleChange}
+          value={form.principal}
+          name="principal"
+          required
+          className="material_input"
+        />
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <DemoContainer components={["DatePicker"]}>
+            <DatePicker
+              label="Voting deadline"
+              onChange={(v) => setForm({ ...form, deadline: v })}
+              value={form.deadline}
+              name="deadline"
+              disablePast
+              className="material_input"
+            />
+          </DemoContainer>
+        </LocalizationProvider>
+      </section>
+
+      <section className="grid gap-4 p-10">
+        {guardianProposalActions.map((p) => (
+          <ActionCard
+            key={p.title}
+            {...p}
+            selectedValue={selectedValue}
+            handleRadioChange={handleRadioChange}
+          />
+        ))}
+      </section>
+
+      {/* TODO (fran): crear custom dialog */}
+      <Dialog onClose={toggleDialog} open={open} fullWidth>
+        <h3 className="text-[#525252] text-center p-4 pt-6">PROPOSAL SUMMARY</h3>
+        <IconButton
+          aria-label="close"
+          onClick={toggleDialog}
+          sx={(theme) => ({
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: theme.palette.grey[500],
+          })}
+        >
+          <CloseIcon />
+        </IconButton>
+
+        <DialogContent className="grid gap-4">
+          <p>
+            <span className="font-bold">Principal:</span> {form.principal}
+          </p>
+          <p>
+            <span className="font-bold">Action:</span> {selectedValue}
+          </p>
+          <p>
+            <span className="font-bold">Deadline:</span> {form.deadline.format("DD/MM/YYYY")}
+          </p>
+        </DialogContent>
+
+        <section className="w-full flex justify-center gap-4 p-4 pb-6">
+          <Button size="small" onClick={toggleDialog}>
+            Cancel
+          </Button>
+          <Button
+            size="small"
+            variant="kokowai"
+            onClick={() => {
+              toggleDialog();
+              toggleOpenDialog();
+              // navigate(`/proposals/create?type=${selectedValue}`);
+            }}
+          >
+            Submit
+          </Button>
+        </section>
+      </Dialog>
+
+      {/* TODO (fran): ver que cuando se cierre este dialog deberia mandarlo a la proposal o la lista de proposals */}
+      <Dialog onClose={toggleOpenDialog} open={openDialog} fullWidth>
+        <IconButton
+          aria-label="close"
+          onClick={toggleOpenDialog}
+          sx={(theme) => ({
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: theme.palette.grey[500],
+          })}
+        >
+          <CloseIcon />
+        </IconButton>
+
+        <DialogContent>
+          <h5 className="text-center">Proposal created successfully!</h5>
+        </DialogContent>
+
+        <section className="w-full flex justify-center gap-4 p-4 pb-6">
+          <Button size="small" variant="kokowai" onClick={toggleOpenDialog}>
+            Accept
+          </Button>
+        </section>
+      </Dialog>
+
+      <div className="absolute bottom-[72px] left-1/2 transform -translate-x-1/2 grid gap-8 z-0 place-items-center">
+        <Button
+          className="shadow-[0px_4px_8px_0px_#00000026,0px_1px_3px_0px_#0000004c] border-none"
+          variant="kokowai"
+          onClick={() => setOpen(true)}
+          disabled={!form.principal || !form.deadline || !selectedValue}
+        >
+          Create proposal
+        </Button>
+        <ProgressBar step={2} totalSteps={4} />
+      </div>
+    </main>
+  );
+};
+
+export default GuardianProposalCreation;

@@ -5,7 +5,7 @@ use ic_cdk::{query, update};
 use state::{
     member::{Member, MemberError, MemberResult, MemberRole},
     nft::{LocalNft, Nft},
-    proposal::{ActionType, MintNftParams, Proposal, ProposalResult, ProposalType, Vote},
+    proposal::{ActionProposal, MintNftParams, Proposal, ProposalResult, ProposalType, Vote},
     shared::LikeProposal,
     State,
 };
@@ -116,32 +116,33 @@ async fn check_proposal_status(id: u128) -> ProposalResult {
     // check to mint new nft
     if let Ok(proposal) = &res {
         if proposal.is_approve() {
-            if let ProposalType::Action(ActionType::MintNFT(MintNftParams {
-                collection_id,
-                to,
-                name,
-                description,
-                image,
-            })) = proposal.kind()
-            {
-                let nft = Nft::new(collection_id);
-                let token_id = borrow(|s| s.get_collection_id(collection_id).len() as u128);
-                let _mint_res = nft
-                    .icrcX_mint(
-                        token_id,
-                        // to,
-                        // FIXME (fran): aca iria el ledger canister id
-                        Principal::from_str("s").unwrap(),
-                        name.clone(),
-                        description.clone(),
-                        image.clone(),
-                    )
-                    .await;
+            /*          if let ProposalType::Action(ActionProposal::MintNFT(MintNftParams {
+                       collection_id,
+                       to,
+                       name,
+                       description,
+                       image,
+                   })) = proposal.kind()
+                   {
+                       let nft = Nft::new(collection_id);
+                       let token_id = borrow(|s| s.get_collection_id(collection_id).len() as u128);
+                       let _mint_res = nft
+                           .icrcX_mint(
+                               token_id,
+                               // to,
+                               // FIXME (fran): aca iria el ledger canister id
+                               Principal::from_str("s").unwrap(),
+                               name.clone(),
+                               description.clone(),
+                               image.clone(),
+                           )
+                           .await;
 
-                borrow_mut(|s| {
-                    s.mint_local_nft(collection_id, token_id, to, name, description, image)
-                });
-            }
+                       borrow_mut(|s| {
+                           s.mint_local_nft(collection_id, token_id, to, name, description, image)
+                       });
+                   }
+            */
         }
     }
 

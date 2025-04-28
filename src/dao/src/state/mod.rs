@@ -3,7 +3,7 @@ use std::{collections::HashMap, str::FromStr, vec};
 use candid::{CandidType, Principal};
 use member::{Member, MemberError, MemberResult, MemberRole};
 use nft::{LocalNft, Nft};
-use proposal::{ActionType, Proposal, ProposalError, ProposalResult, ProposalType, Vote};
+use proposal::{ActionProposal, Proposal, ProposalError, ProposalResult, ProposalType, Vote};
 use serde::Deserialize;
 use shared::LikeProposal;
 
@@ -234,12 +234,12 @@ impl State {
 
                     // TODO (fran): ver todos los kind posibles
                     match proposal.kind() {
-                        ProposalType::Action(ActionType::InviteMember(principal, role)) => {
+                        /*   ProposalType::Action(ActionProposal::InviteMember(principal, role)) => {
                             if let Some(m) = self.members.get_mut(&principal) {
                                 m.invite(role);
                             }
                         }
-                        ProposalType::Action(ActionType::ChangeRole(principal, role)) => {
+                        ProposalType::Action(ActionProposal::ChangeRole(principal, role)) => {
                             if let Some(m) = self.members.get_mut(&principal) {
                                 if m.is_admin() && total_admins <= 1 {
                                     return Err(ProposalError::LastAdmin);
@@ -248,7 +248,7 @@ impl State {
                                 };
                             }
                         }
-                        ProposalType::Action(ActionType::TransferNFT(
+                        ProposalType::Action(ActionProposal::TransferNFT(
                             collection_id,
                             nft_id,
                             to,
@@ -260,7 +260,7 @@ impl State {
                                 }
                             }
                         }
-                        ProposalType::Action(ActionType::MintNFT(params)) => {
+                        ProposalType::Action(ActionProposal::MintNFT(params)) => {
                             // FIXME (fran): ojo con esto. si se llama `check_proposal_status` en otra fn no se ejecuta lo que deberia ejecutarse en `lib.rs`
 
                             /*       let new_token_id = match self.nfts.get(&params.collection_id) {
@@ -297,13 +297,14 @@ impl State {
                                     self.nfts.insert(params.collection_id, new_coll);
                                 }
                             } */
-                        }
-                        ProposalType::Action(ActionType::UpdatePolicy()) => {
+                        } */
+                        ProposalType::Action(ActionProposal(_, _, _)) => {
                             // TODO (fran): ver esto
                         }
                         ProposalType::Motion(_) => {
                             // TODO (fran): - Motion Proposals are non-binding and typically require minimal data
                         }
+                        _ => {} // TODO (fran): completar kind
                     }
                 } else {
                     proposal.reject();
