@@ -33,7 +33,7 @@ const ProposalDetail = () => {
   const [newComment, setNewComment] = useState({ want: false, text: "" });
   const { user, connect } = useAuth();
 
-  const { getProposal, loading } = useProposal();
+  const { getProposal, loading, voteProposal } = useProposal();
 
   const proposal = getProposal(parseInt(id));
 
@@ -51,6 +51,15 @@ const ProposalDetail = () => {
   const handleChange = (e) => setVote(e.target.value);
   const toggleOpen = () => setOpen(!open);
   const handleComment = (e) => setNewComment({ ...newComment, text: e.target.value });
+
+  const handleVote = async () => {
+    try {
+      await voteProposal(parseInt(id), vote);
+      toggleOpen();
+    } catch (err) {
+      console.log("voteProposal error:", err);
+    }
+  };
 
   return (
     <main>
@@ -138,13 +147,13 @@ const ProposalDetail = () => {
             onChange={handleChange}
             className="material_select"
           >
-            <MenuItem value={"approve"} className="material_menu-item">
+            <MenuItem value={"Approve"} className="material_menu-item">
               Approve
             </MenuItem>
-            <MenuItem value={"disapprove"} className="material_menu-item">
+            <MenuItem value={"Disapprove"} className="material_menu-item">
               Disapprove
             </MenuItem>
-            <MenuItem value={"abstain"} className="material_menu-item">
+            <MenuItem value={"Abstain"} className="material_menu-item">
               Abstain
             </MenuItem>
           </Select>

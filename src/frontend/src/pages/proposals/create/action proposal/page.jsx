@@ -9,22 +9,42 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import ProgressBar from "../../../../components/shared/ProgressBar";
 import TextField from "@mui/material/TextField";
 import dayjs from "dayjs";
+import useProposal from "../../../../hooks/useProposal";
 import { useState } from "react";
 
 const ActionProposalCreation = () => {
   const [form, setForm] = useState({
     title: "",
     description: "",
-    date: dayjs(new Date().toDateString()),
+    deadline: dayjs(new Date().toDateString()),
   });
   const [open, setOpen] = useState(false);
-  const [openDialog, setOpenDialog] = useState(false);
+  const [responseDialog, setResponseDialog] = useState({ success: false, error: false });
+  const { createProposal, creating } = useProposal();
 
   // TODO (fran): validar datos de form antes de seguir
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleResponseError = () => setResponseDialog({ success: false, error: true });
+  const handleResponseSuccess = () => setResponseDialog({ success: true, error: false });
+  const handleCloseResponseDialog = () => setResponseDialog({ success: false, error: false });
   const toggleDialog = () => setOpen(!open);
-  const toggleOpenDialog = () => setOpenDialog(!openDialog);
+
+  const handleSubmit = async () => {
+    try {
+      await createProposal({
+        title: form.title,
+        description: form.description,
+        kind: { Action: [form.title, form.description, form.deadline?.unix()] },
+        deadline: form.deadline?.unix(),
+      });
+      toggleDialog();
+      handleResponseSuccess();
+    } catch (err) {
+      console.log("createProposal error:", err);
+      handleResponseError();
+    }
+  };
 
   return (
     <main>
@@ -53,9 +73,9 @@ const ActionProposalCreation = () => {
           <DemoContainer components={["DatePicker"]}>
             <DatePicker
               label="Voting deadline"
-              onChange={(v) => setForm({ ...form, date: v })}
-              value={form.date}
-              name="date"
+              onChange={(v) => setForm({ ...form, deadline: v })}
+              value={form.deadline}
+              name="deadline"
               disablePast
               className="material_input"
             />
@@ -87,7 +107,7 @@ const ActionProposalCreation = () => {
             <span className="font-bold">Description:</span> {form.description}
           </p>
           <p>
-            <span className="font-bold">Deadline:</span> {form.date.format("DD/MM/YYYY")}
+            <span className="font-bold">Deadline:</span> {form.deadline.format("DD/MM/YYYY")}
           </p>
         </DialogContent>
 
@@ -95,25 +115,21 @@ const ActionProposalCreation = () => {
           <Button size="small" onClick={toggleDialog}>
             Cancel
           </Button>
-          <Button
-            size="small"
-            variant="kokowai"
-            onClick={() => {
-              toggleDialog();
-              toggleOpenDialog();
-              // navigate(`/proposals/create?type=${selectedValue}`);
-            }}
-          >
+          <Button size="small" variant="kokowai" onClick={handleSubmit} disabled={creating}>
             Submit
           </Button>
         </section>
       </Dialog>
 
       {/* TODO (fran): ver que cuando se cierre este dialog deberia mandarlo a la proposal o la lista de proposals */}
-      <Dialog onClose={toggleOpenDialog} open={openDialog} fullWidth>
+      <Dialog
+        onClose={handleCloseResponseDialog}
+        open={responseDialog.success || responseDialog.error}
+        fullWidth
+      >
         <IconButton
           aria-label="close"
-          onClick={toggleOpenDialog}
+          onClick={handleCloseResponseDialog}
           sx={(theme) => ({
             position: "absolute",
             right: 8,
@@ -125,11 +141,13 @@ const ActionProposalCreation = () => {
         </IconButton>
 
         <DialogContent>
-          <h5 className="text-center">Proposal created successfully!</h5>
+          <h5 className="text-center">
+            {responseDialog.success ? "Proposal created successfully!" : "Error creating proposal"}
+          </h5>
         </DialogContent>
 
         <section className="w-full flex justify-center gap-4 p-4 pb-6">
-          <Button size="small" variant="kokowai" onClick={toggleOpenDialog}>
+          <Button size="small" variant="kokowai" onClick={handleCloseResponseDialog}>
             Accept
           </Button>
         </section>
@@ -140,7 +158,7 @@ const ActionProposalCreation = () => {
           className="shadow-[0px_4px_8px_0px_#00000026,0px_1px_3px_0px_#0000004c] border-none"
           variant="kokowai"
           onClick={() => setOpen(true)}
-          disabled={!form.title || !form.description || !form.date}
+          disabled={!form.title || !form.description || !form.deadline}
         >
           Create proposal
         </Button>

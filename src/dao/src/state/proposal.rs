@@ -156,7 +156,7 @@ pub enum ProposalType {
 #[derive(CandidType, Clone, Deserialize, PartialEq)]
 pub enum DigitalTaongaProposal {
     CreateDigitalTaonga(String, String, String, u64, String), // name, description, history, deadline, image id
-    UpdateDigitalTaonga(UpdateDiditalTaongaProposal),
+    UpdateDigitalTaonga(UpdateDigitalTaongaProposal),
     DeleteDigitalTaonga(u64), // [?] CHECK si es u64 o u128 // id
     RequestDownloadPermision, // TODO (fran): preguntar por este tipo de proposal
 }
@@ -169,15 +169,15 @@ pub enum MotionProposal {}
 
 #[derive(CandidType, Clone, Deserialize, PartialEq)]
 pub enum GuardianProposal {
-    AssignAnObserver(Principal, u64), // principal, deadline
+    AssignAsObserver(Principal, u64), // principal, deadline
     RemoveFromDao(Principal, u64),    // principal, deadline
                                       // UpdateGuardianRole(Principal, MemberRole),
 }
 
 #[derive(CandidType, Clone, Deserialize, PartialEq)]
-pub enum UpdateDiditalTaongaProposal {
+pub enum UpdateDigitalTaongaProposal {
     UpdateDescription(String),
-    UpdateImageId(String),
+    UpdateImageURL(String),
 }
 
 #[derive(CandidType, Clone, Deserialize, PartialEq)]

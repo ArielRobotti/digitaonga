@@ -1,7 +1,10 @@
 import Button from "../../components/shared/Button";
 import ProposalContainer from "../../components/shared/ProposalContainer";
+import { useNavigate } from "react-router";
 
 const Proposals = () => {
+  const navigate = useNavigate();
+
   return (
     <main className="p-4">
       <section className="mb-6">

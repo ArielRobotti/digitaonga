@@ -6,7 +6,7 @@ import Button from "./Button";
 import { useNavigate } from "react-router";
 
 const ProposalCard = ({
-  name = "Proposal name",
+  title = "Proposal name",
   status = "Pending",
   id = 1,
   creator = "akdfa...cai",
@@ -21,7 +21,7 @@ const ProposalCard = ({
     >
       <section className="py-4 px-6">
         <span className="text-kokowai font-medium">{status}</span>
-        <h5 className="font-bold text-black">{name}</h5>
+        <h5 className="font-bold text-black">{title}</h5>
       </section>
 
       <section className="py-4 px-6 text-gray-900">

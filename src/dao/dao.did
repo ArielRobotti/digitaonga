@@ -1,12 +1,12 @@
 type DigitalTaongaProposal = variant {
-  UpdateDigitalTaonga : UpdateDiditalTaongaProposal;
+  UpdateDigitalTaonga : UpdateDigitalTaongaProposal;
   DeleteDigitalTaonga : nat64;
   CreateDigitalTaonga : record { text; text; text; nat64; text };
   RequestDownloadPermision;
 };
 type GuardianProposal = variant {
   RemoveFromDao : record { principal; nat64 };
-  AssignAnObserver : record { principal; nat64 };
+  AssignAsObserver : record { principal; nat64 };
 };
 type LikeProposal = variant { Like; Dislike };
 type LocalNft = record {
@@ -75,9 +75,9 @@ type ProposalType = variant {
 type Result = variant { Ok : Member; Err : MemberError };
 type Result_1 = variant { Ok : vec principal; Err : MemberError };
 type Result_2 = variant { Ok : Proposal; Err : ProposalError };
-type UpdateDiditalTaongaProposal = variant {
+type UpdateDigitalTaongaProposal = variant {
+  UpdateImageURL : text;
   UpdateDescription : text;
-  UpdateImageId : text;
 };
 type Vec = vec record {
   creator : principal;

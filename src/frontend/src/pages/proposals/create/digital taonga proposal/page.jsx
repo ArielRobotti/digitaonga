@@ -21,6 +21,7 @@ import { Button as MUIButton } from "@mui/material";
 import ProgressBar from "../../../../components/shared/ProgressBar";
 import TextField from "@mui/material/TextField";
 import dayjs from "dayjs";
+import useProposal from "../../../../hooks/useProposal";
 import { useState } from "react";
 
 const DigitalTaongaProposalCreation = () => {
@@ -32,8 +33,10 @@ const DigitalTaongaProposalCreation = () => {
     date: dayjs(new Date().toDateString()),
   });
   const [open, setOpen] = useState(false);
-  const [openDialog, setOpenDialog] = useState(false);
+  const [responseDialog, setResponseDialog] = useState({ success: false, error: false });
   const [selectedValue, setSelectedValue] = useState(null);
+  const [updateType, setUpdateType] = useState(null);
+  const { createProposal, creating } = useProposal();
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -43,10 +46,59 @@ const DigitalTaongaProposalCreation = () => {
 
   // TODO (fran): validar datos de form antes de seguir
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
   const handleRadioChange = (e) => setSelectedValue(e.target.value);
+  const handleRadioUpdateChange = (e) => setUpdateType(e.target.value);
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleResponseError = () => setResponseDialog({ success: false, error: true });
+  const handleResponseSuccess = () => setResponseDialog({ success: true, error: false });
+  const handleCloseResponseDialog = () => setResponseDialog({ success: false, error: false });
   const toggleDialog = () => setOpen(!open);
-  const toggleOpenDialog = () => setOpenDialog(!openDialog);
+
+  const handleSubmit = async () => {
+    let digitalTaongaProposalAction;
+    let proposalData;
+    switch (selectedValue) {
+      case "":
+        digitalTaongaProposalAction = "CreateDigitalTaonga";
+        // TODO (fran): subir el archivo a canister y obtener el key
+        const key = "";
+        proposalData = [form.name, form.description, form.history, key];
+        break;
+      case "":
+        digitalTaongaProposalAction = "UpdateDigitalTaonga";
+        proposalData = { UpdateDigitalTaongaProposal: [] };
+        break;
+      case "":
+        digitalTaongaProposalAction = "DeleteDigitalTaonga";
+        proposalData = ""; // id
+        break;
+      case "":
+        digitalTaongaProposalAction = "RequestDownloadPermision";
+        break;
+      default:
+        break;
+    }
+
+    try {
+      await createProposal({
+        title: selectedValue,
+        description: `${selectedValue} ${form.principal}`,
+        kind: {
+          DigitalTaonga: {
+            DigitalTaongaProposal: { [digitalTaongaProposalAction]: proposalData },
+          },
+        },
+        deadline: form.deadline?.unix(),
+      });
+      toggleDialog();
+      handleResponseSuccess();
+    } catch (err) {
+      console.log("createProposal error:", err);
+      handleResponseError();
+    }
+  };
+
+  console.log({ selectedValue, updateType });
 
   const SelectedProposal = () => {
     switch (action) {
@@ -117,8 +169,8 @@ const DigitalTaongaProposalCreation = () => {
               <ActionCard
                 key={p.title}
                 {...p}
-                selectedValue={selectedValue}
-                handleRadioChange={handleRadioChange}
+                selectedValue={updateType}
+                handleRadioChange={handleRadioUpdateChange}
               />
             ))}
           </section>
@@ -216,25 +268,21 @@ const DigitalTaongaProposalCreation = () => {
           <Button size="small" onClick={toggleDialog}>
             Cancel
           </Button>
-          <Button
-            size="small"
-            variant="kokowai"
-            onClick={() => {
-              toggleDialog();
-              toggleOpenDialog();
-              // navigate(`/proposals/create?type=${selectedValue}`);
-            }}
-          >
+          <Button size="small" variant="kokowai" onClick={handleSubmit}>
             Submit
           </Button>
         </section>
       </Dialog>
 
       {/* TODO (fran): ver que cuando se cierre este dialog deberia mandarlo a la proposal o la lista de proposals */}
-      <Dialog onClose={toggleOpenDialog} open={openDialog} fullWidth>
+      <Dialog
+        onClose={handleCloseResponseDialog}
+        open={responseDialog.success || responseDialog.error}
+        fullWidth
+      >
         <IconButton
           aria-label="close"
-          onClick={toggleOpenDialog}
+          onClick={handleCloseResponseDialog}
           sx={(theme) => ({
             position: "absolute",
             right: 8,
@@ -246,11 +294,13 @@ const DigitalTaongaProposalCreation = () => {
         </IconButton>
 
         <DialogContent>
-          <h5 className="text-center">Proposal created successfully!</h5>
+          <h5 className="text-center">
+            {responseDialog.success ? "Proposal created successfully!" : "Error creating proposal"}
+          </h5>
         </DialogContent>
 
         <section className="w-full flex justify-center gap-4 p-4 pb-6">
-          <Button size="small" variant="kokowai" onClick={toggleOpenDialog}>
+          <Button size="small" variant="kokowai" onClick={handleCloseResponseDialog}>
             Accept
           </Button>
         </section>

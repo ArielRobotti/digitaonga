@@ -10,6 +10,8 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import ProgressBar from "../../../../components/shared/ProgressBar";
 import dayjs from "dayjs";
 import { guardianProposalActions } from "../../../../utils/data";
+import { str2p } from "../../../../utils/functions";
+import useProposal from "../../../../hooks/useProposal";
 import { useState } from "react";
 
 const GuardianProposalCreation = () => {
@@ -18,15 +20,40 @@ const GuardianProposalCreation = () => {
     deadline: dayjs(new Date().toDateString()),
   });
   const [open, setOpen] = useState(false);
-  const [openDialog, setOpenDialog] = useState(false);
+  const [responseDialog, setResponseDialog] = useState({ success: false, error: false });
   const [selectedValue, setSelectedValue] = useState(null);
+  const { createProposal, creating } = useProposal();
 
   // TODO (fran): validar datos de form antes de seguir
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
   const handleRadioChange = (e) => setSelectedValue(e.target.value);
+
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleResponseError = () => setResponseDialog({ success: false, error: true });
+  const handleResponseSuccess = () => setResponseDialog({ success: true, error: false });
+  const handleCloseResponseDialog = () => setResponseDialog({ success: false, error: false });
   const toggleDialog = () => setOpen(!open);
-  const toggleOpenDialog = () => setOpenDialog(!openDialog);
+
+  const handleSubmit = async () => {
+    try {
+      const guardianSelectedAction =
+        selectedValue === "Assign as Observer" ? "AssignAsObserver" : "RemoveFromDao";
+
+      await createProposal({
+        title: selectedValue,
+        description: `${selectedValue} ${form.principal}`,
+        kind: {
+          Guardian: { [guardianSelectedAction]: [str2p(form.principal), form.deadline?.unix()] },
+        },
+        deadline: form.deadline?.unix(),
+      });
+      toggleDialog();
+      handleResponseSuccess();
+    } catch (err) {
+      console.log("createProposal error:", err);
+      handleResponseError();
+    }
+  };
 
   return (
     <main>
@@ -107,11 +134,8 @@ const GuardianProposalCreation = () => {
           <Button
             size="small"
             variant="kokowai"
-            onClick={() => {
-              toggleDialog();
-              toggleOpenDialog();
-              // navigate(`/proposals/create?type=${selectedValue}`);
-            }}
+            onClick={handleSubmit}
+            disabled={!form.principal || !form.deadline || !selectedValue || creating}
           >
             Submit
           </Button>
@@ -119,10 +143,14 @@ const GuardianProposalCreation = () => {
       </Dialog>
 
       {/* TODO (fran): ver que cuando se cierre este dialog deberia mandarlo a la proposal o la lista de proposals */}
-      <Dialog onClose={toggleOpenDialog} open={openDialog} fullWidth>
+      <Dialog
+        onClose={handleCloseResponseDialog}
+        open={responseDialog.success || responseDialog.error}
+        fullWidth
+      >
         <IconButton
           aria-label="close"
-          onClick={toggleOpenDialog}
+          onClick={handleCloseResponseDialog}
           sx={(theme) => ({
             position: "absolute",
             right: 8,
@@ -134,11 +162,13 @@ const GuardianProposalCreation = () => {
         </IconButton>
 
         <DialogContent>
-          <h5 className="text-center">Proposal created successfully!</h5>
+          <h5 className="text-center">
+            {responseDialog.success ? "Proposal created successfully!" : "Error creating proposal"}
+          </h5>
         </DialogContent>
 
         <section className="w-full flex justify-center gap-4 p-4 pb-6">
-          <Button size="small" variant="kokowai" onClick={toggleOpenDialog}>
+          <Button size="small" variant="kokowai" onClick={handleCloseResponseDialog}>
             Accept
           </Button>
         </section>

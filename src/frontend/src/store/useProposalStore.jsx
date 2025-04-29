@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 const useProposalStore = create((set, get) => ({
   loading: true,
+  creating: false,
   proposals: [],
   setProposals: async (proposals) => {
     set((state) => ({ ...state, proposals, loading: false }));
@@ -14,6 +15,7 @@ const useProposalStore = create((set, get) => ({
       proposals: [...state.proposals, proposal],
     }));
   },
+  toggleCreating: () => set((state) => ({ creating: !state.creating })),
   removeProposal: async (id) => {
     set((state) => ({
       proposals: state.proposals.filter((p) => p.id !== id),
