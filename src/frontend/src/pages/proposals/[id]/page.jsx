@@ -10,7 +10,6 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
   FormControl,
   InputLabel,
@@ -21,6 +20,7 @@ import {
 
 import Button from "../../../components/shared/Button";
 import ProposalComment from "../../../components/proposals/ProposalComment";
+import { p2str } from "../../../utils/functions";
 import { useAuth } from "@nfid/identitykit/react";
 import { useParams } from "react-router";
 import useProposal from "../../../hooks/useProposal";
@@ -28,12 +28,12 @@ import { useState } from "react";
 
 const ProposalDetail = () => {
   const { id } = useParams();
-  const [vote, setVote] = useState("");
+  const [vote, setVote] = useState({ value: "", loading: false });
   const [open, setOpen] = useState(false);
   const [newComment, setNewComment] = useState({ want: false, text: "" });
   const { user, connect } = useAuth();
 
-  const { getProposal, loading, voteProposal } = useProposal();
+  const { getProposal, loading, voteProposal, likeProposal } = useProposal();
 
   const proposal = getProposal(parseInt(id));
 
@@ -48,18 +48,34 @@ const ProposalDetail = () => {
     );
   }
 
-  const handleChange = (e) => setVote(e.target.value);
+  const handleChange = (e) => setVote({ ...vote, value: e.target.value });
   const toggleOpen = () => setOpen(!open);
   const handleComment = (e) => setNewComment({ ...newComment, text: e.target.value });
 
   const handleVote = async () => {
+    if (!user) return connect();
+    setVote({ ...vote, loading: true });
+
     try {
-      await voteProposal(parseInt(id), vote);
+      const res = await voteProposal(parseInt(id), vote.value);
+      console.log({ res });
       toggleOpen();
     } catch (err) {
       console.log("voteProposal error:", err);
     }
+
+    setVote({ ...vote, loading: false });
   };
+
+  const handleLike = async (type) => {
+    if (!user) return connect();
+    console.log({ type });
+    if (proposal.likers.find((l) => l.principal === p2str(user.principal) && l.type === type))
+      return;
+    await likeProposal(parseInt(id), type);
+  };
+
+  console.log(proposal);
 
   return (
     <main>
@@ -74,11 +90,11 @@ const ProposalDetail = () => {
         <div className="flex flex-col items-center gap-4">
           <span>{proposal.status}</span>
           <section className="flex items-center gap-4">
-            <h5 className="flex items-center">
-              {proposal.likes.length} <LikeIcon />
+            <h5 className="flex items-center cursor-pointer" onClick={() => handleLike("Like")}>
+              {proposal.likes} <LikeIcon />
             </h5>
-            <h5 className="flex items-center">
-              {proposal.likes.length} <DislikeIcon />
+            <h5 className="flex items-center cursor-pointer" onClick={() => handleLike("Dislike")}>
+              {proposal.dislikes} <DislikeIcon />
             </h5>
             <h5
               className="flex items-center"
@@ -142,7 +158,7 @@ const ProposalDetail = () => {
           <Select
             labelId="vote-select-label"
             id="vote-select"
-            value={vote}
+            value={vote.value}
             label="Your vote"
             onChange={handleChange}
             className="material_select"
@@ -159,8 +175,8 @@ const ProposalDetail = () => {
           </Select>
         </FormControl>
 
-        <Button variant="kokowai" disabled={!vote} onClick={user ? toggleOpen : connect}>
-          {user ? "Confirm my vote" : "Log in"}
+        <Button variant="kokowai" disabled={!vote.value || vote.loading} onClick={handleVote}>
+          {!user ? "Log in" : vote.loading ? "Voting..." : "Confirm my vote"}
         </Button>
       </section>
 

@@ -130,7 +130,7 @@ impl Proposal {
 
 #[derive(CandidType, Clone, PartialEq, Deserialize)]
 pub enum ProposalStatus {
-    Review,
+    Review, // TODO (fran): checkear Review status
     Open,
     Voting,
     // Closed,

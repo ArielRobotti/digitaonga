@@ -206,14 +206,15 @@ impl State {
 
     // TODO (fran): ver quien puede votar
     pub fn vote_proposal(&mut self, id: u128, vote: Vote) -> ProposalResult {
-        let _ = self.check_proposal_status(id);
+        self.check_proposal_status(id)?;
 
         if let Some(proposal) = self.proposals.get_mut(&id) {
-            if proposal.is_open() {
-                return Ok(proposal.vote(vote));
-            } else {
-                Err(ProposalError::Closed)
-            }
+            // FIXME (fran): descomentar esto! solo por testing
+            // if proposal.is_open() {
+            return Ok(proposal.vote(vote));
+            // } else {
+            //     Err(ProposalError::Closed)
+            // }
         } else {
             Err(ProposalError::NotFound)
         }

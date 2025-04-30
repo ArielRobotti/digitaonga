@@ -36,6 +36,7 @@ const DigitalTaongaProposalCreation = () => {
   const [responseDialog, setResponseDialog] = useState({ success: false, error: false });
   const [selectedValue, setSelectedValue] = useState(null);
   const [updateType, setUpdateType] = useState(null);
+  const [updatedValue, setUpdatedValue] = useState(null);
   const { createProposal, creating } = useProposal();
 
   const navigate = useNavigate();
@@ -66,7 +67,11 @@ const DigitalTaongaProposalCreation = () => {
         break;
       case "":
         digitalTaongaProposalAction = "UpdateDigitalTaonga";
-        proposalData = { UpdateDigitalTaongaProposal: [] };
+        proposalData = {
+          UpdateDigitalTaongaProposal: {
+            [updateType]: [updatedValue],
+          },
+        };
         break;
       case "":
         digitalTaongaProposalAction = "DeleteDigitalTaonga";

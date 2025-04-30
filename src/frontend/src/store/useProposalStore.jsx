@@ -15,6 +15,34 @@ const useProposalStore = create((set, get) => ({
       proposals: [...state.proposals, proposal],
     }));
   },
+  likeProposal: (id, principal) => {
+    set((state) => ({
+      proposals: state.proposals.map((p) =>
+        p.id === id
+          ? {
+              ...p,
+              likes: p.likes + 1,
+              likers: p.likers.map((l) => (l.principal === principal ? { ...l, type: "Like" } : l)),
+            }
+          : p
+      ),
+    }));
+  },
+  dislikeProposal: (id, principal) => {
+    set((state) => ({
+      proposals: state.proposals.map((p) =>
+        p.id === id
+          ? {
+              ...p,
+              dislikes: p.dislikes + 1,
+              likers: p.likers.map((l) =>
+                l.principal === principal ? { ...l, type: "Dislike" } : l
+              ),
+            }
+          : p
+      ),
+    }));
+  },
   toggleCreating: () => set((state) => ({ creating: !state.creating })),
   removeProposal: async (id) => {
     set((state) => ({

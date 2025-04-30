@@ -12,7 +12,12 @@ export const proposalParser = (proposal) => ({
   creator: p2str(proposal.creator),
   status: Object.keys(proposal.status)[0],
   // thread: Vec<ProposalComment>,
-  // likes: HashMap<Principal, LikeProposal>,
+  likers: proposal.likes.map((like) => ({
+    principal: p2str(like[0]),
+    type: Object.keys(like[1])[0],
+  })),
+  likes: proposal.likes.filter((like) => Object.keys(like[1])[0] === "Like").length,
+  dislikes: proposal.likes.filter((like) => Object.keys(like[1])[0] === "Dislike").length,
   // votes: HashMap<Principal, Vote>,
   deadline: Number(proposal.deadline),
   active_members: Number(proposal.active_members),

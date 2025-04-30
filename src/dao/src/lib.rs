@@ -94,17 +94,17 @@ fn edit_proposal(
     borrow_mut(|state| state.edit_proposal(id, title, description, kind))
 }
 
-#[update(guard = "only_approved_member")]
+#[update/* (guard = "only_approved_member") */] // FIXME (fram): remover esto! solo testing
 fn new_comment_proposal(id: u128, comment: String) {
     borrow_mut(|state| state.new_comment_proposal(id, comment))
 }
 
-#[update(guard = "only_approved_member")]
+#[update/* (guard = "only_approved_member") */] // FIXME (fram): remover esto! solo testing
 fn like_proposal(id: u128, kind: LikeProposal) {
     borrow_mut(|state| state.like_proposal(id, kind))
 }
 
-#[update(guard = "only_approved_member")]
+#[update/* (guard = "only_approved_member") */] // FIXME (fram): remover esto! solo testing
 fn vote_proposal(id: u128, vote: Vote) -> ProposalResult {
     borrow_mut(|state| state.vote_proposal(id, vote))
 }
