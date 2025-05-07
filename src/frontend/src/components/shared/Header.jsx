@@ -3,24 +3,27 @@ import { NavLink, useNavigate } from "react-router";
 
 import Badge from "@mui/material/Badge";
 import { motion } from "framer-motion";
+import useMember from "../../hooks/useMember";
 import useNotification from "../../store/useNotifications";
 import { useState } from "react";
 
 const links = [
-  { title: "NFT’s", link: "/nfts" },
+  { title: "Digital Taonga", link: "/digital-taonga" },
   { title: "Proposals", link: "/proposals" },
   { title: "Community", link: "/community" },
   { title: "Profile", link: "/profile" },
   { title: "About Digitaonga", link: "/about" },
-  { title: "Log In", link: "/login" },
+  // { title: "Log In", link: "/login" },
 ];
 
 const Header = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const { notifications } = useNotification();
+  const { connect, disconnect, user } = useMember();
 
   const toggleMenu = () => setOpen(!open);
+  const handleLogin = () => (user ? disconnect() : connect());
 
   return (
     <header className="h-[60px] w-screen bg-kokowai text-white flex items-center fixed top-0">
@@ -55,8 +58,8 @@ const Header = () => {
             ))}
             {/* TODO (fran): hacer logica de login/logout aca */}
             <li>
-              <h2 className="cursor-pointer" onClick={toggleMenu}>
-                Log In / Log Out
+              <h2 className="cursor-pointer" onClick={handleLogin}>
+                {user ? "Log out" : "Log in"}
               </h2>
             </li>
           </ul>

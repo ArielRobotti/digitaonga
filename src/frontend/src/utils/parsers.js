@@ -22,3 +22,15 @@ export const proposalParser = (proposal) => ({
   deadline: Number(proposal.deadline),
   active_members: Number(proposal.active_members),
 });
+
+export const memberParser = (m) => ({
+  ...m,
+  principal: p2str(m.principal),
+  role: Object.keys(m.role)[0],
+  created_at: Number(m.created_at),
+  liked_proposals: m.liked_proposals.map((p) => ({
+    id: Number(p[0]),
+    type: Object.keys(p[1])[0],
+  })),
+  last_activity: Number(m.last_activity),
+});

@@ -12,9 +12,8 @@ pub struct Member {
     created_at: u64,
     profile_pic: String,
     cover_img: String,
-    // liked_proposals: Vec<u128>, // TODO (fran): ver si hay algo mejor que vec. y hacer methods
     liked_proposals: HashMap<u128, LikeProposal>,
-    last_activity: u64, // TODO (fran): ver si la ultima actividad es solo login o ke
+    last_activity: u64,
 }
 
 impl Member {

@@ -2,42 +2,10 @@ import { DigitaongaCompleteIcon, NFIDIcon } from "../../components/ui/icons";
 import { p2str, shortP } from "../../utils/functions";
 
 import Button from "../../components/shared/Button";
-import { useAuth } from "@nfid/identitykit/react";
-import useCanister from "../../hooks/useCanister";
-import { useEffect } from "react";
-import { useNavigate } from "react-router";
+import useMember from "../../hooks/useMember";
 
 const Login = () => {
-  const { connect, user, isConnecting } = useAuth();
-  const [dao] = useCanister();
-  const navigate = useNavigate();
-
-  // get or create user
-  useEffect(() => {
-    if (user && dao) {
-      (async () => {
-        console.log({ dao });
-        try {
-          const member = await dao.get_member(user.principal);
-          console.log({ member });
-          // TODO (fran): save member in store
-          if (member?.Err) {
-            const new_member = await dao.create_member();
-            console.log({ new_member });
-            if (new_member?.Ok) {
-              // save here
-              navigate("/on_boarding");
-            }
-          } else {
-            // save here
-            navigate("/");
-          }
-        } catch (err) {
-          console.log("getting or creating member error:", err);
-        }
-      })();
-    }
-  }, [user, dao]);
+  const { user } = useMember();
 
   return (
     <main>

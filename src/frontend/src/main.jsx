@@ -6,7 +6,7 @@ import { IdentityKitAuthType, InternetIdentity, NFIDW, OISY } from "@nfid/identi
 
 import ActionProposalCreation from "./pages/proposals/create/action proposal/page";
 import Community from "./pages/community/page";
-import CreateNft from "./pages/nfts/create/page";
+import CreateNft from "./pages/digital taonga/create/page";
 import CreateProposal from "./pages/proposals/create/page";
 import DigitalTaongaProposalCreation from "./pages/proposals/create/digital taonga proposal/page";
 import FirstSteps from "./pages/first steps/page";
@@ -15,7 +15,8 @@ import Header from "./components/shared/Header";
 import Home from "./pages/Home";
 import { IdentityKitProvider } from "@nfid/identitykit/react";
 import Login from "./pages/login/page";
-import Nfts from "./pages/nfts/page";
+import NftDetail from "./pages/digital taonga/[id]/page";
+import Nfts from "./pages/digital taonga/page";
 import Notifications from "./pages/notifications/page";
 import OnBoarding from "./pages/on boarding/page";
 import ProposalDetail from "./pages/proposals/[id]/page";
@@ -51,9 +52,10 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           </Route>
           <Route path="on_boarding" element={<OnBoarding />} />
           <Route path="first_steps" element={<FirstSteps />} />
-          <Route path="nfts">
+          <Route path="digital-taonga">
             <Route index element={<Nfts />} />
             <Route path="create" element={<CreateNft />} />
+            <Route path=":id" element={<NftDetail />} />
           </Route>
           <Route path="notifications" element={<Notifications />} />
           <Route path="community" element={<Community />} />

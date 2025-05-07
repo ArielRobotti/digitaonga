@@ -1,30 +1,21 @@
 import Button from "./Button";
+import { useNavigate } from "react-router";
 
-const NftCard = ({
-  name = "NFT NAME",
-  tokenId = "1",
-  label = "idk",
-  dateCreated = "12/02/25",
-  imageUrl = "/images/jpg/stars.jpg",
-}) => {
+const NftCard = ({ id = 0, name = "DIGITAL TAONGA", imageUrl = "/images/jpg/stars.jpg" }) => {
+  const navigate = useNavigate();
+
   return (
-    <article className="max-w-[343px] max-h-[506px] w-full h-full bg-kokowai rounded-[5px] p-4 text-white">
-      <div className="overflow-hidden w-[315px] h-[288px]">
+    <article className="flex flex-col justify-between min-w-[262px] min-h-[355px] w-full h-full bg-kokowai rounded-[5px] p-6 text-white">
+      <div className="overflow-hidden w-full">
         <img src={imageUrl} alt={name} className="object-cover" priority="true" />
       </div>
 
-      <section>
-        <h2>{name}</h2>
+      <h4 className="py-6">{name}</h4>
 
-        <div>
-          <p className="text-white">Token ID: {tokenId}</p>
-          <p className="text-white">Label: {label}</p>
-          <p className="text-white">Date created {dateCreated}</p>
-        </div>
-      </section>
-
-      <div className="flex justify-end mt-4">
-        <Button className="max-w-[166px] uppercase">Manage</Button>
+      <div className="flex justify-end">
+        <Button className="w-fit" onClick={() => navigate(`/digital-taonga/${id}`)}>
+          View details
+        </Button>
       </div>
     </article>
   );

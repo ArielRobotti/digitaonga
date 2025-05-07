@@ -1,10 +1,8 @@
 import { CircularProgress } from "@mui/material";
 import ProposalCard from "./ProposalCard";
-import { useNavigate } from "react-router";
 import useProposal from "../../hooks/useProposal";
 
 const ProposalContainer = ({ className = "" } = {}) => {
-  const navigate = useNavigate();
   const { proposals, loading } = useProposal();
 
   return (
