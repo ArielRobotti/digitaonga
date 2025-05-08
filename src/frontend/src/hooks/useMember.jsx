@@ -3,12 +3,13 @@ import { useAuth } from "@nfid/identitykit/react";
 import useCanister from "./useCanister";
 import { useEffect } from "react";
 import useMemberStore from "../store/useMemberStore";
+import { useNavigate } from "react-router";
 
 const useMember = () => {
   const { connect, user, isConnecting, disconnect } = useAuth();
   const [dao] = useCanister();
   const { member, setMember } = useMemberStore();
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
 
   // get or create user
   useEffect(() => {
@@ -20,7 +21,8 @@ const useMember = () => {
 
           if (resMember?.Err) {
             const newMember = await dao.create_member();
-            if (newMember?.Ok) setMember(memberParser(newMember.Ok));
+            setMember(memberParser(newMember));
+            navigate("/on_boarding");
           } else {
             setMember(memberParser(resMember.Ok));
             await dao.set_last_activity_member();

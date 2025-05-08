@@ -11,7 +11,7 @@ const Container = ({ title, description, Icon, onNext, onBack, step, totalSteps 
         <Icon />
       </div>
 
-      <p className="text-gray-900 max-w-[300px]">{description}</p>
+      <p className="text-gray-900 max-w-[300px] md:max-w-[664px]">{description}</p>
 
       <div className="grid gap-4">
         <Button className="w-[316px] border" onClick={onBack}>
