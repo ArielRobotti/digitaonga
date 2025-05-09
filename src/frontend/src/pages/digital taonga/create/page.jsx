@@ -68,7 +68,7 @@ const CreateNft = () => {
         {/* <input type="file" /> */}
       </section>
 
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 grid gap-4 place-items-center">
+      <div className="absolute bottom-4 inset-x-0 z-10 grid gap-4 place-items-center">
         <Button
           className="w-[340px]"
           disabled={!nftData.name || !nftData.description || !nftData.history || !nftData.file}

@@ -1,7 +1,9 @@
-import { BellIcon, BurgerMenu } from "../ui/icons";
+import { BellIcon, BurgerMenu, UserIcon } from "../ui/icons";
 import { NavLink, useNavigate } from "react-router";
+import { p2str, shortP } from "../../utils/functions";
 
 import Badge from "@mui/material/Badge";
+import Button from "./Button";
 import { motion } from "framer-motion";
 import useMember from "../../hooks/useMember";
 import useNotification from "../../store/useNotifications";
@@ -16,6 +18,14 @@ const links = [
   // { title: "Log In", link: "/login" },
 ];
 
+const desktopLinks = [
+  { title: "Community", link: "/community" },
+  { title: "Calendar", link: "/calendar" },
+  { title: "Proposals", link: "/proposals" },
+  { title: "Profile", link: "/profile" },
+  { title: "About Amnesty", link: "/about" },
+];
+
 const Header = () => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
@@ -26,17 +36,17 @@ const Header = () => {
   const handleLogin = () => (user ? disconnect() : connect());
 
   return (
-    <header className="h-[60px] w-screen bg-kokowai text-white flex items-center fixed top-0">
-      <div className="basis-1/3 pl-4">
+    <header className="h-[60px] xl:h-[70px] w-screen bg-kokowai text-white flex xl:justify-between items-center fixed top-0 xl:px-4">
+      <div className="basis-1/3 pl-4 xl:hidden">
         <BurgerMenu className="cursor-pointer" onClick={toggleMenu} />
       </div>
 
-      <h2 className="basis-1/3 text-center">HEADLINE</h2>
+      <h2 className="basis-1/3 text-center xl:hidden">HEADLINE</h2>
 
       <Badge
         badgeContent={notifications?.length || 0}
         color="primary"
-        className="basis-1/3 flex justify-end mr-4"
+        className="basis-1/3 flex justify-end mr-4 xl:hidden!"
       >
         <BellIcon className="cursor-pointer" onClick={() => navigate("/notifications")} />
       </Badge>
@@ -45,7 +55,7 @@ const Header = () => {
         initial={{ x: "-100%" }}
         animate={{ x: open ? 0 : "-100%" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="fixed top-[60px] left-0 bg-kokowai text-white pt-[60px] h-[calc(100vh-60px)] w-full bg-primary text-primary-foreground !z-50 max-w-[556px]"
+        className="fixed top-[60px] left-0 bg-kokowai text-white pt-[60px] h-[calc(100vh-60px)] w-full bg-primary text-primary-foreground !z-50 max-w-[556px] xl:hidden"
       >
         <nav className="p-4">
           <ul className="space-y-4 grid place-items-center gap-[60px]">
@@ -56,7 +66,7 @@ const Header = () => {
                 </h2>
               </li>
             ))}
-            {/* TODO (fran): hacer logica de login/logout aca */}
+
             <li>
               <h2 className="cursor-pointer" onClick={handleLogin}>
                 {user ? "Log out" : "Log in"}
@@ -65,6 +75,39 @@ const Header = () => {
           </ul>
         </nav>
       </motion.aside>
+
+      {/* start desktop header */}
+      <img
+        src="/images/png/digitaonga logo header.png"
+        alt="digitaonga"
+        className="hidden xl:block"
+      />
+
+      <nav className="hidden xl:block w-full">
+        <ul className="flex gap-4 justify-center items-center w-full">
+          {desktopLinks.map(({ title, link }) => (
+            <li key={title}>
+              <NavLink to={link} className="text-lg">
+                {title}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <Button
+        className="hidden xl:flex w-[173px]! justify-center items-center gap-2"
+        onClick={handleLogin}
+      >
+        {user ? (
+          <>
+            {shortP(p2str(user.principal))}
+            <UserIcon />
+          </>
+        ) : (
+          "Log in"
+        )}
+      </Button>
     </header>
   );
 };

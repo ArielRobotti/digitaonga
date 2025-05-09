@@ -26,13 +26,15 @@ const Proposals = () => {
         <ProposalContainer className="mt-4" />
       </section>
 
-      <Button
-        variant="kokowai"
-        className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-10"
-        onClick={() => navigate("/proposals/create")}
-      >
-        New proposal
-      </Button>
+      <div className="fixed inset-x-0 bottom-4 flex justify-center">
+        <Button
+          variant="kokowai"
+          className="inline-block"
+          onClick={() => navigate("/proposals/create")}
+        >
+          New proposal
+        </Button>
+      </div>
     </main>
   );
 };

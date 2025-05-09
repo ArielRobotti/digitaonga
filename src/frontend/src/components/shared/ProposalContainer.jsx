@@ -7,7 +7,12 @@ const ProposalContainer = ({ className = "" } = {}) => {
 
   return (
     <section className={className}>
-      <div className="flex gap-4 overflow-x-auto py-2">
+      <div className="flex gap-4 overflow-x-auto py-2 xl:flex-wrap">
+        {loading ? (
+          <CircularProgress />
+        ) : (
+          proposals.map((proposal) => <ProposalCard key={proposal.id} {...proposal} />)
+        )}
         {loading ? (
           <CircularProgress />
         ) : (

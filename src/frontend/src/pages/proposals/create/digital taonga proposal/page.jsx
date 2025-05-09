@@ -311,7 +311,7 @@ const DigitalTaongaProposalCreation = () => {
         </section>
       </Dialog>
 
-      <div className="absolute bottom-[72px] left-1/2 transform -translate-x-1/2 grid gap-8 z-0 place-items-center">
+      <div className="absolute bottom-[72px] inset-x-0 grid gap-8 z-0 place-items-center">
         <Button
           className="shadow-[0px_4px_8px_0px_#00000026,0px_1px_3px_0px_#0000004c] border-none"
           variant="kokowai"

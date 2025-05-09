@@ -1,9 +1,4 @@
-import {
-  DigitaongaCompleteBlackIcon,
-  DigitaongaCompleteIcon,
-  KokowaiPatterIcon,
-  NFIDIcon,
-} from "../../components/ui/icons";
+import { DigitaongaCompleteIcon, NFIDIcon } from "../../components/ui/icons";
 import { p2str, shortP } from "../../utils/functions";
 
 import Button from "../../components/shared/Button";
