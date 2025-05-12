@@ -64,7 +64,7 @@ const GuardianProposalCreation = () => {
         </p>
       </section>
 
-      <section className="grid gap-8 p-12">
+      <section className="grid md:place-items-center gap-8 p-12">
         <TextField
           label="Principal ID"
           variant="outlined"
@@ -72,7 +72,7 @@ const GuardianProposalCreation = () => {
           value={form.principal}
           name="principal"
           required
-          className="material_input"
+          className="material_input md:max-w-[500px] md:w-full"
         />
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DemoContainer components={["DatePicker"]}>
@@ -82,25 +82,30 @@ const GuardianProposalCreation = () => {
               value={form.deadline}
               name="deadline"
               disablePast
-              className="material_input"
+              className="material_input md:w-[500px]"
             />
           </DemoContainer>
         </LocalizationProvider>
       </section>
 
       <section className="grid gap-4 p-10">
-        {guardianProposalActions.map((p) => (
-          <ActionCard
-            key={p.title}
-            {...p}
-            selectedValue={selectedValue}
-            handleRadioChange={handleRadioChange}
-          />
-        ))}
+        <h4 className="uppercase">What action should be proposed?</h4>
+        <p>Choose the type of role change you want to propose.</p>
+
+        <div className="flex flex-col md:flex-row md:flex-wrap justify-center gap-4">
+          {guardianProposalActions.map((p) => (
+            <ActionCard
+              key={p.title}
+              {...p}
+              selectedValue={selectedValue}
+              handleRadioChange={handleRadioChange}
+            />
+          ))}
+        </div>
       </section>
 
       {/* TODO (fran): crear custom dialog */}
-      <Dialog onClose={toggleDialog} open={open} fullWidth>
+      <Dialog onClose={toggleDialog} open={open} fullWidth maxWidth="xs">
         <h3 className="text-[#525252] text-center p-4 pt-6">PROPOSAL SUMMARY</h3>
         <IconButton
           aria-label="close"
@@ -147,6 +152,7 @@ const GuardianProposalCreation = () => {
         onClose={handleCloseResponseDialog}
         open={responseDialog.success || responseDialog.error}
         fullWidth
+        maxWidth="xs"
       >
         <IconButton
           aria-label="close"

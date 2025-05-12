@@ -50,6 +50,11 @@ main {
 }
 
 /* material ui */
+
+.material_input {
+  z-index: 1;
+}
+
 .material_input label.Mui-focused,
 .Mui-focused fieldset {
   color: var(--color-digitaonga-orange) !important;

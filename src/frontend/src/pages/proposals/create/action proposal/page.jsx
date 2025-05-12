@@ -49,8 +49,11 @@ const ActionProposalCreation = () => {
   return (
     <main>
       <h4 className="uppercase p-6">Action proposal</h4>
+      <p className="px-8">
+        This proposals are used for non-binding decisions (e.g. electing a DAO Sheriff)
+      </p>
 
-      <section className="grid gap-8 p-12">
+      <section className="grid md:place-items-center gap-8 p-12 w-full">
         <TextField
           label="Title"
           variant="outlined"
@@ -58,7 +61,7 @@ const ActionProposalCreation = () => {
           value={form.title}
           name="title"
           required
-          className="material_input"
+          className="material_input md:max-w-[500px] md:w-full"
         />
         <TextField
           label="Description"
@@ -67,7 +70,7 @@ const ActionProposalCreation = () => {
           value={form.description}
           name="description"
           required
-          className="material_input"
+          className="material_input md:max-w-[500px] md:w-full"
         />
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DemoContainer components={["DatePicker"]}>
@@ -77,14 +80,14 @@ const ActionProposalCreation = () => {
               value={form.deadline}
               name="deadline"
               disablePast
-              className="material_input"
+              className="material_input md:w-[500px]"
             />
           </DemoContainer>
         </LocalizationProvider>
       </section>
 
       {/* TODO (fran): crear custom dialog */}
-      <Dialog onClose={toggleDialog} open={open} fullWidth>
+      <Dialog onClose={toggleDialog} open={open} fullWidth maxWidth="xs">
         <h3 className="text-[#525252] text-center p-4 pt-6">PROPOSAL SUMMARY</h3>
         <IconButton
           aria-label="close"
@@ -126,6 +129,7 @@ const ActionProposalCreation = () => {
         onClose={handleCloseResponseDialog}
         open={responseDialog.success || responseDialog.error}
         fullWidth
+        maxWidth="xs"
       >
         <IconButton
           aria-label="close"

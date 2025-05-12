@@ -9,6 +9,7 @@ import {
   EyeIcon,
   GuardianProposalIcon,
   PencilIcon,
+  RemoveIcon,
   TrashIcon,
   UploadIcon,
 } from "../components/ui/icons";
@@ -128,6 +129,6 @@ export const guardianProposalActions = [
     title: "Remove from DAO",
     subtitle: "Revoke this user's access entirely.",
     description: "Remove the person from the DAO. They will no longer have any access.",
-    Icon: EyeIcon,
+    Icon: RemoveIcon,
   },
 ];

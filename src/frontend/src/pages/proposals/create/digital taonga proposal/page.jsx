@@ -1,13 +1,5 @@
-import { CloseIcon, UploadIcon } from "../../../../components/ui/icons";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  Radio,
-  styled,
-} from "@mui/material";
+import { CloseIcon, SimpleCheckIcon, UploadIcon } from "../../../../components/ui/icons";
+import { Dialog, DialogContent, IconButton, styled } from "@mui/material";
 import { digitalTaongaProposals, updateAnExistingDigitalTaonga } from "../../../../utils/data";
 import { useNavigate, useSearchParams } from "react-router";
 
@@ -109,7 +101,7 @@ const DigitalTaongaProposalCreation = () => {
     switch (action) {
       case "Create or Upload a New Digital Taonga":
         return (
-          <section className="grid gap-8 p-12">
+          <section className="flex flex-col md:items-center gap-8 p-12">
             <TextField
               label="Name"
               variant="outlined"
@@ -117,7 +109,7 @@ const DigitalTaongaProposalCreation = () => {
               value={form.name}
               name="name"
               required
-              className="material_input"
+              className="material_input md:max-w-[500px] md:w-full"
             />
             <TextField
               label="Cultural Description"
@@ -126,7 +118,7 @@ const DigitalTaongaProposalCreation = () => {
               value={form.description}
               name="description"
               required
-              className="material_input"
+              className="material_input md:max-w-[500px] md:w-full"
             />
             <TextField
               label="History"
@@ -135,17 +127,17 @@ const DigitalTaongaProposalCreation = () => {
               value={form.history}
               name="history"
               required
-              className="material_input"
+              className="material_input md:max-w-[500px] md:w-full"
             />
 
             <MUIButton
               component="label"
               role={undefined}
               tabIndex={-1}
-              endIcon={<UploadIcon />}
-              className="!rounded-[5px] !border !border-[#2C131A] !bg-[#F8F8F8] !shadow-[0px_4px_8px_0px_rgba(0,0,0,0.15),0px_1px_3px_0px_rgba(0,0,0,0.30)] !text-black"
+              endIcon={form.file ? <SimpleCheckIcon /> : <UploadIcon />}
+              className="!rounded-[5px] !border !border-[#2C131A] !bg-[#F8F8F8] !shadow-[0px_4px_8px_0px_rgba(0,0,0,0.15),0px_1px_3px_0px_rgba(0,0,0,0.30)] !text-black md:max-w-[500px] md:w-full"
             >
-              Upload your file
+              {form.file ? form.file.name : "Upload your file"}
               <VisuallyHiddenInput
                 type="file"
                 onChange={(e) => setForm({ ...form, file: e.target.files[0] })}
@@ -161,7 +153,7 @@ const DigitalTaongaProposalCreation = () => {
                   value={form.date}
                   name="date"
                   disablePast
-                  className="material_input"
+                  className="material_input md:w-[500px]"
                 />
               </DemoContainer>
             </LocalizationProvider>
@@ -169,7 +161,7 @@ const DigitalTaongaProposalCreation = () => {
         );
       case "Update an Existing Digital Taonga":
         return (
-          <section className="grid gap-4 p-10">
+          <section className="flex flex-col md:flex-row md:justify-center gap-4 p-10">
             {updateAnExistingDigitalTaonga.map((p) => (
               <ActionCard
                 key={p.title}
@@ -223,7 +215,7 @@ const DigitalTaongaProposalCreation = () => {
       {action ? (
         SelectedProposal()
       ) : (
-        <section className="grid gap-4 p-10">
+        <section className="flex flex-col md:flex-row md:flex-wrap md:justify-center gap-4 p-10 md:p-0 md:max-w-[800px] md:mx-auto">
           {digitalTaongaProposals.map((p) => (
             <ActionCard
               key={p.title}
@@ -236,7 +228,7 @@ const DigitalTaongaProposalCreation = () => {
       )}
 
       {/* TODO (fran): crear custom dialog */}
-      <Dialog onClose={toggleDialog} open={open} fullWidth>
+      <Dialog onClose={toggleDialog} open={open} fullWidth maxWidth="xs">
         <h3 className="text-[#525252] text-center p-4 pt-6">PROPOSAL SUMMARY</h3>
         <IconButton
           aria-label="close"
@@ -284,6 +276,7 @@ const DigitalTaongaProposalCreation = () => {
         onClose={handleCloseResponseDialog}
         open={responseDialog.success || responseDialog.error}
         fullWidth
+        maxWidth="xs"
       >
         <IconButton
           aria-label="close"

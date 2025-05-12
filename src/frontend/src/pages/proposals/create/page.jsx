@@ -15,9 +15,9 @@ const CreateProposal = () => {
 
   return (
     <main>
-      <h4 className="uppercase p-6">{"Create a new Proposal"}</h4>
+      <h4 className="uppercase p-6">Create a new Proposal</h4>
 
-      <section className="grid gap-4 p-10">
+      <section className="flex flex-col md:flex-row md:flex-wrap justify-center gap-4 p-10">
         {proposalTypes.map((p) => (
           <ActionCard
             key={p.title}
