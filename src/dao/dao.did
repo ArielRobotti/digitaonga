@@ -9,16 +9,6 @@ type GuardianProposal = variant {
   AssignAsObserver : record { principal; nat64 };
 };
 type LikeProposal = variant { Like; Dislike };
-type LocalNft = record {
-  token_id : nat;
-  owner : principal;
-  name : text;
-  collection_id : principal;
-  description : text;
-  created_at : nat64;
-  image : text;
-  last_update : nat64;
-};
 type Member = record {
   "principal" : principal;
   liked_proposals : vec record { nat; LikeProposal };
@@ -98,13 +88,9 @@ service : () -> {
   edit_member : (opt text, opt text) -> (Result);
   edit_proposal : (nat, text, text, ProposalType) -> (opt Proposal);
   get_active_members : () -> (vec Member) query;
-  get_all_collection_ids : () -> (vec principal) query;
   get_all_members : () -> (vec Member) query;
-  get_all_nfts : () -> (vec record { principal; vec LocalNft }) query;
   get_all_proposals : () -> (vec Proposal) query;
-  get_collection_id : (principal) -> (vec LocalNft) query;
   get_member : (principal) -> (Result) query;
-  get_nfts_of : (principal) -> (vec record { principal; vec LocalNft }) query;
   get_proposal : (nat) -> (opt Proposal) query;
   has_voted : (nat) -> (opt Vote) query;
   like_proposal : (nat, LikeProposal) -> ();
@@ -112,7 +98,6 @@ service : () -> {
   reject_member_invitation : () -> (Result);
   remove_owner : (principal) -> ();
   set_last_activity_member : () -> ();
-  test_mint_nft : (principal, nat, principal, text, text, text) -> (nat);
-  transfer_ownership_nft : (principal, nat, principal) -> (nat);
+  test_mint_asset_digital : (principal, principal, text) -> ();
   vote_proposal : (nat, Vote) -> (Result_2);
 }

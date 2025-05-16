@@ -5,9 +5,9 @@
       "package": "dao",
       "type": "rust"
     },
-    "ledger": {
-      "candid": "src/ledger/ledger.did",
-      "package": "ledger",
+    "digital_asset": {
+      "candid": "src/digital_asset/digital_asset.did",
+      "package": "digital_asset",
       "type": "rust"
     },
     "frontend": {

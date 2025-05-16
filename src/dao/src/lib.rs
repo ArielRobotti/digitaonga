@@ -2,12 +2,16 @@ use std::cell::RefCell;
 
 use candid::Principal;
 use ic_cdk::{query, update};
+
+use instructions::DigitalAsset;
 use state::{
     member::{Member, MemberError, MemberResult, MemberRole},
     proposal::{Proposal, ProposalResult, ProposalType, Vote},
     shared::LikeProposal,
     State,
 };
+
+mod instructions;
 mod state;
 
 thread_local! {
@@ -191,23 +195,11 @@ fn has_voted(id: u128) -> Option<Vote> {
 
 // FIXME (fran): borrar en produccion
 // ---- TEST ----
-// #[update]
-// pub async fn test_mint_nft(
-//     collection_id: Principal,
-//     token_id: u128,
-//     owner: Principal,
-//     name: String,
-//     description: String,
-//     image: String,
-// ) -> u128 {
-//     let nft = Nft::new(collection_id);
-
-//     let mint_res = nft
-//         .icrcX_mint(token_id, owner, name, description, image)
-//         .await;
-
-//     mint_res
-// }
+#[update]
+pub async fn test_mint_asset_digital(collection_id: Principal, to: Principal, uri: String) {
+    let asset = DigitalAsset::new(collection_id);
+    asset.mint(to, uri).await;
+}
 // ---- end TEST ----
 
 // ---- only owner methods ----

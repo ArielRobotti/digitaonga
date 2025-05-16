@@ -1,0 +1,12 @@
+service : (text, text, text, text, text) -> {
+  approve : (nat, principal) -> (bool);
+  balance_of : (principal) -> (nat) query;
+  get_approves : (nat) -> (opt vec principal) query;
+  mint : (principal, text) -> (nat);
+  owner_of : (nat) -> (opt principal) query;
+  remove_authority : (principal) -> ();
+  set_authority : (principal) -> ();
+  token_uri : (nat) -> (opt text) query;
+  transfer : (principal, nat) -> ();
+  transfer_from : (principal, principal, nat) -> ();
+}

@@ -10,7 +10,7 @@
     "pretest": "npm run prebuild --workspaces --if-present",
     "dev": "cd src/frontend && npm run dev",
     "test": "npm test --workspaces --if-present",
-    "cargo": "cargo build --release --target wasm32-unknown-unknown --package dao && candid-extractor target/wasm32-unknown-unknown/release/dao.wasm > src/dao/dao.did && cargo build --release --target wasm32-unknown-unknown --package ledger && candid-extractor target/wasm32-unknown-unknown/release/ledger.wasm > src/ledger/ledger.did"
+    "cargo": "cargo build --release --target wasm32-unknown-unknown --package dao && candid-extractor target/wasm32-unknown-unknown/release/dao.wasm > src/dao/dao.did && cargo build --release --target wasm32-unknown-unknown --package ledger && candid-extractor target/wasm32-unknown-unknown/release/ledger.wasm > src/ledger/ledger.did && cargo build --release --target wasm32-unknown-unknown --package digital_asset && candid-extractor target/wasm32-unknown-unknown/release/digital_asset.wasm > src/digital_asset/digital_asset.did"
   },
   "type": "module",
   "workspaces": [
