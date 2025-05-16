@@ -1,14 +1,13 @@
-use std::{collections::HashMap, str::FromStr, vec};
+use std::{collections::HashMap, vec};
 
 use candid::{CandidType, Principal};
 use member::{Member, MemberError, MemberResult, MemberRole};
-use nft::{LocalNft, Nft};
+
 use proposal::{ActionProposal, Proposal, ProposalError, ProposalResult, ProposalType, Vote};
 use serde::Deserialize;
 use shared::LikeProposal;
 
 pub mod member;
-pub mod nft;
 pub mod proposal;
 pub mod shared;
 
@@ -17,8 +16,8 @@ pub struct State {
     members: HashMap<Principal, Member>,
     proposals: HashMap<u128, Proposal>,
     petitions: HashMap<u128, ()>, // TODO (fran): petitions != proposals ?
-    nfts: HashMap<Principal, HashMap<u128, LocalNft>>, // (canister_id => (token_id => nft)). hecho asi para poder controlar el ownership en caso de que sea necesario
-    owners: HashMap<Principal, bool>,                  // TODO (fran): creo que no va
+    // nfts: HashMap<Principal, HashMap<u128, LocalNft>>, // (canister_id => (token_id => nft)). hecho asi para poder controlar el ownership en caso de que sea necesario
+    owners: HashMap<Principal, bool>, // TODO (fran): creo que no va
 }
 
 impl State {
@@ -334,97 +333,97 @@ impl State {
         }
     }
 
-    // --- nft ---
-    pub fn mint_local_nft(
-        &mut self,
-        collection_id: Principal,
-        token_id: u128,
-        owner: Principal,
-        name: String,
-        description: String,
-        image: String,
-    ) -> u128 {
-        let new_nft = LocalNft::new(collection_id, token_id, owner, name, description, image);
+    // // --- nft ---
+    // pub fn mint_local_nft(
+    //     &mut self,
+    //     collection_id: Principal,
+    //     token_id: u128,
+    //     owner: Principal,
+    //     name: String,
+    //     description: String,
+    //     image: String,
+    // ) -> u128 {
+    //     let new_nft = LocalNft::new(collection_id, token_id, owner, name, description, image);
 
-        match self.nfts.get_mut(&collection_id) {
-            Some(coll) => {
-                coll.insert(token_id, new_nft);
+    //     match self.nfts.get_mut(&collection_id) {
+    //         Some(coll) => {
+    //             coll.insert(token_id, new_nft);
 
-                token_id
-            }
-            None => {
-                let mut new_coll = HashMap::new();
-                new_coll.insert(token_id, new_nft);
+    //             token_id
+    //         }
+    //         None => {
+    //             let mut new_coll = HashMap::new();
+    //             new_coll.insert(token_id, new_nft);
 
-                self.nfts.insert(collection_id, new_coll);
-                token_id
-            }
-        }
-    }
+    //             self.nfts.insert(collection_id, new_coll);
+    //             token_id
+    //         }
+    //     }
+    // }
 
-    pub fn transfer_ownership_nft(
-        &mut self,
-        collection_id: Principal,
-        token_id: u128,
-        to: Principal,
-    ) -> u128 {
-        if let Some(nft_coll) = self.nfts.get_mut(&collection_id) {
-            if let Some(nft) = nft_coll.get_mut(&token_id) {
-                if nft.owner() == ic_cdk::caller() {
-                    nft.transfer(to);
-                    token_id
-                } else {
-                    // Err(NftError::InvalidOwner)
-                    panic!("Invalid owner");
-                }
-            } else {
-                // Err(NftError::NftNotFound)
-                panic!("Nft not found");
-            }
-        } else {
-            // Err(NftError::CollectionNotFound)
-            panic!("Collection not found");
-        }
-    }
+    // pub fn transfer_ownership_nft(
+    //     &mut self,
+    //     collection_id: Principal,
+    //     token_id: u128,
+    //     to: Principal,
+    // ) -> u128 {
+    //     if let Some(nft_coll) = self.nfts.get_mut(&collection_id) {
+    //         if let Some(nft) = nft_coll.get_mut(&token_id) {
+    //             if nft.owner() == ic_cdk::caller() {
+    //                 nft.transfer(to);
+    //                 token_id
+    //             } else {
+    //                 // Err(NftError::InvalidOwner)
+    //                 panic!("Invalid owner");
+    //             }
+    //         } else {
+    //             // Err(NftError::NftNotFound)
+    //             panic!("Nft not found");
+    //         }
+    //     } else {
+    //         // Err(NftError::CollectionNotFound)
+    //         panic!("Collection not found");
+    //     }
+    // }
 
-    pub fn get_nfts_of(&self, principal: Principal) -> Vec<(Principal, Vec<LocalNft>)> {
-        self.nfts
-            .iter()
-            .map(|(k, v)| {
-                let nfts = v
-                    .iter()
-                    .filter_map(|(_, v)| {
-                        if v.owner() == principal {
-                            Some(v)
-                        } else {
-                            None
-                        }
-                    })
-                    .cloned()
-                    .collect();
-                (k.clone(), nfts)
-            })
-            .collect()
-    }
+    // pub fn get_nfts_of(&self, principal: Principal) -> Vec<(Principal, Vec<LocalNft>)> {
+    //     self.nfts
+    //         .iter()
+    //         .map(|(k, v)| {
+    //             let nfts = v
+    //                 .iter()
+    //                 .filter_map(|(_, v)| {
+    //                     if v.owner() == principal {
+    //                         Some(v)
+    //                     } else {
+    //                         None
+    //                     }
+    //                 })
+    //                 .cloned()
+    //                 .collect();
+    //             (k.clone(), nfts)
+    //         })
+    //         .collect()
+    // }
 
-    pub fn get_all_nfts(&self) -> Vec<(Principal, Vec<LocalNft>)> {
-        self.nfts
-            .iter()
-            .map(|(k, v)| (k.clone(), v.values().cloned().collect()))
-            .collect()
-    }
+    // pub fn get_all_nfts(&self) -> Vec<(Principal, Vec<LocalNft>)> {
+    //     self.nfts
+    //         .iter()
+    //         .map(|(k, v)| (k.clone(), v.values().cloned().collect()))
+    //         .collect()
+    // }
 
-    pub fn get_all_collection_ids(&self) -> Vec<Principal> {
-        self.nfts.keys().cloned().collect()
-    }
+    // pub fn get_all_collection_ids(&self) -> Vec<Principal> {
+    //     self.nfts.keys().cloned().collect()
+    // }
 
-    pub fn get_collection_id(&self, collection_id: Principal) -> Vec<LocalNft> {
-        if let Some(coll) = self.nfts.get(&collection_id) {
-            coll.values().cloned().collect()
-        } else {
-            vec![]
-        }
-    }
+    // pub fn get_collection_id(&self, collection_id: Principal) -> Vec<LocalNft> {
+    //     if let Some(coll) = self.nfts.get(&collection_id) {
+    //         coll.values().cloned().collect()
+    //     } else {
+    //         vec![]
+    //     }
+    // }
 
     // --- ownership ---
     pub fn is_owner(&self, principal: Principal) -> bool {

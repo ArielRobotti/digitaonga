@@ -4,7 +4,6 @@ use candid::{CandidType, Principal};
 use serde::Deserialize;
 
 pub mod dao;
-pub mod nft;
 
 #[derive(CandidType, Clone, Deserialize, Default)]
 pub struct State {

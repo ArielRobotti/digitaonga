@@ -1,11 +1,10 @@
-use std::{cell::RefCell, str::FromStr};
+use std::cell::RefCell;
 
 use candid::Principal;
 use ic_cdk::{query, update};
 use state::{
     member::{Member, MemberError, MemberResult, MemberRole},
-    nft::{LocalNft, Nft},
-    proposal::{ActionProposal, MintNftParams, Proposal, ProposalResult, ProposalType, Vote},
+    proposal::{Proposal, ProposalResult, ProposalType, Vote},
     shared::LikeProposal,
     State,
 };
@@ -165,50 +164,50 @@ fn has_voted(id: u128) -> Option<Vote> {
 }
 
 // ---- nft ----
-#[update]
-fn transfer_ownership_nft(collection_id: Principal, token_id: u128, to: Principal) -> u128 {
-    borrow_mut(|s| s.transfer_ownership_nft(collection_id, token_id, to))
-}
+// #[update]
+// fn transfer_ownership_nft(collection_id: Principal, token_id: u128, to: Principal) -> u128 {
+//     borrow_mut(|s| s.transfer_ownership_nft(collection_id, token_id, to))
+// }
 
-#[query]
-pub fn get_all_nfts() -> Vec<(Principal, Vec<LocalNft>)> {
-    borrow(|s| s.get_all_nfts())
-}
+// #[query]
+// pub fn get_all_nfts() -> Vec<(Principal, Vec<LocalNft>)> {
+//     borrow(|s| s.get_all_nfts())
+// }
 
-#[query]
-pub fn get_all_collection_ids() -> Vec<Principal> {
-    borrow(|s| s.get_all_collection_ids())
-}
+// #[query]
+// pub fn get_all_collection_ids() -> Vec<Principal> {
+//     borrow(|s| s.get_all_collection_ids())
+// }
 
-#[query]
-pub fn get_collection_id(collection_id: Principal) -> Vec<LocalNft> {
-    borrow(|s| s.get_collection_id(collection_id))
-}
+// #[query]
+// pub fn get_collection_id(collection_id: Principal) -> Vec<LocalNft> {
+//     borrow(|s| s.get_collection_id(collection_id))
+// }
 
-#[query]
-pub fn get_nfts_of(principal: Principal) -> Vec<(Principal, Vec<LocalNft>)> {
-    borrow(|s| s.get_nfts_of(principal))
-}
+// #[query]
+// pub fn get_nfts_of(principal: Principal) -> Vec<(Principal, Vec<LocalNft>)> {
+//     borrow(|s| s.get_nfts_of(principal))
+// }
 
 // FIXME (fran): borrar en produccion
 // ---- TEST ----
-#[update]
-pub async fn test_mint_nft(
-    collection_id: Principal,
-    token_id: u128,
-    owner: Principal,
-    name: String,
-    description: String,
-    image: String,
-) -> u128 {
-    let nft = Nft::new(collection_id);
+// #[update]
+// pub async fn test_mint_nft(
+//     collection_id: Principal,
+//     token_id: u128,
+//     owner: Principal,
+//     name: String,
+//     description: String,
+//     image: String,
+// ) -> u128 {
+//     let nft = Nft::new(collection_id);
 
-    let mint_res = nft
-        .icrcX_mint(token_id, owner, name, description, image)
-        .await;
+//     let mint_res = nft
+//         .icrcX_mint(token_id, owner, name, description, image)
+//         .await;
 
-    mint_res
-}
+//     mint_res
+// }
 // ---- end TEST ----
 
 // ---- only owner methods ----

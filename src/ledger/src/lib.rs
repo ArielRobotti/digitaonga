@@ -2,13 +2,12 @@ use std::cell::{Cell, RefCell};
 
 use candid::Principal;
 use ic_cdk::update;
-use state::{dao::Dao, nft::Nft, State};
+use state::{dao::Dao, State};
 
 mod state;
 
 thread_local! {
     static STATE: RefCell<State> = RefCell::default();
-    static NFT: Cell<Nft> = Cell::new(Nft::init(Principal::from_text("text").unwrap()));
     static DAO: Cell<Dao> = Cell::new(Dao::init(Principal::from_text("text").unwrap()));
 }
 
