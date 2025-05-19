@@ -59,6 +59,10 @@ impl State {
         self.asset_uris.get(&asset_id).cloned()
     }
 
+    pub fn current_supply(&self) -> u128 {
+        self.owners.len() as u128
+    }
+
     pub fn approve(&mut self, asset_id: u128, approved: Principal) -> bool {
         assert_eq!(
             self.owners.get(&asset_id),

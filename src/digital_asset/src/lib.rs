@@ -50,6 +50,11 @@ fn token_uri(asset_id: u128) -> Option<String> {
     borrow(|s| s.token_uri(asset_id))
 }
 
+#[query]
+fn current_supply() -> u128 {
+    borrow(|s| s.current_supply())
+}
+
 #[update]
 fn approve(asset_id: u128, approved: Principal) -> bool {
     borrow_mut(|s| s.approve(asset_id, approved))

@@ -16,6 +16,7 @@
     "@dfinity/candid": "^2.4.1",
     "@dfinity/identity": "^2.4.1",
     "@dfinity/ledger-icp": "^2.6.12",
+    "@dfinity/assets": "^2.4.1",
     "@dfinity/principal": "^2.4.1",
     "@dfinity/utils": "^2.12.0",
     "@emotion/react": "^11.14.0",
