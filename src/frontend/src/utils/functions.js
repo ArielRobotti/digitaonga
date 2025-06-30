@@ -24,3 +24,13 @@ export const p2str = (p) => p.toString();
  * @returns {Principal} The converted Principal object.
  */
 export const str2p = (p) => Principal.fromText(p);
+
+/**
+ * Copies the given text to the clipboard.
+ *
+ * @param {string} text - The text to copy.
+ * @returns {Promise<void>} A promise that resolves when the text is copied.
+ */
+export const copyToClipboard = async (text) => {
+  if (navigator?.clipboard) await navigator.clipboard.writeText(text);
+};

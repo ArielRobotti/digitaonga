@@ -35,6 +35,9 @@ const useProposal = () => {
 
   const getProposal = (id) => proposals.find((p) => p.id === id);
 
+  const getProposalsByMember = (principal) =>
+    proposals.filter((p) => p.creator === p2str(principal));
+
   const createProposal = async ({ title, description, kind, deadline }) => {
     toggleCreating();
     try {
@@ -78,7 +81,16 @@ const useProposal = () => {
     dao && loading && getAllProposals();
   }, [dao, loading]);
 
-  return { proposals, getProposal, loading, createProposal, creating, voteProposal, likeProposal };
+  return {
+    proposals,
+    getProposal,
+    loading,
+    createProposal,
+    creating,
+    voteProposal,
+    likeProposal,
+    getProposalsByMember,
+  };
 };
 
 export default useProposal;

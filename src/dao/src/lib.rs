@@ -34,8 +34,12 @@ fn create_member() -> Member {
 }
 
 #[update]
-fn edit_member(profile_pic: Option<String>, cover_img: Option<String>) -> MemberResult {
-    borrow_mut(|state| state.edit_member(profile_pic, cover_img))
+fn edit_member(
+    profile_pic: Option<String>,
+    cover_img: Option<String>,
+    name: Option<String>,
+) -> MemberResult {
+    borrow_mut(|state| state.edit_member(profile_pic, cover_img, name))
 }
 
 #[update]
@@ -160,6 +164,11 @@ fn get_proposal(id: u128) -> Option<Proposal> {
 #[query]
 fn get_all_proposals() -> Vec<Proposal> {
     borrow(|state| state.get_all_proposals())
+}
+
+#[query]
+fn get_proposals_by_member(principal: Principal) -> Vec<Proposal> {
+    borrow(|state| state.get_proposals_by_member(principal))
 }
 
 #[query]

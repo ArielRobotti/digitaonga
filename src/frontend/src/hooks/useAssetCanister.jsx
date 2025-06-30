@@ -13,6 +13,12 @@ const useAssetCanister = () => {
     agent, // Identity in agent must be authorized by the assets canister to make any changes
   });
 
+  const getAsset = async (key) => {
+    const asset = await assetManager.get(key);
+    const blob = await asset.toBlob();
+    const url = URL.createObjectURL(blob);
+  };
+
   // TODO (fran): ver path (/ASSET_DIGITAL_NAME/.../.../file.name)
   const uploadFile = async (file) => {
     const uploadedFilePath = `images/${file.name}`;
@@ -38,6 +44,7 @@ const useAssetCanister = () => {
   return {
     uploadFile,
     batchUpload,
+    getAsset,
   };
 };
 

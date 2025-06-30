@@ -72,9 +72,10 @@ impl State {
         &mut self,
         profile_pic: Option<String>,
         cover_img: Option<String>,
+        name: Option<String>,
     ) -> MemberResult {
         match self.members.get_mut(&ic_cdk::caller()) {
-            Some(member) => Ok(member.edit(profile_pic, cover_img)),
+            Some(member) => Ok(member.edit(profile_pic, cover_img, name)),
             None => Err(MemberError::NotFound),
         }
     }
@@ -323,6 +324,14 @@ impl State {
 
     pub fn get_all_proposals(&self) -> Vec<Proposal> {
         self.proposals.values().cloned().collect()
+    }
+
+    pub fn get_proposals_by_member(&self, principal: Principal) -> Vec<Proposal> {
+        self.proposals
+            .values()
+            .filter(|p| p.creator() == principal)
+            .cloned()
+            .collect()
     }
 
     pub fn has_voted(&self, id: u128) -> Option<Vote> {

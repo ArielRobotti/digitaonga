@@ -15,5 +15,8 @@
   "type": "module",
   "workspaces": [
     "src/frontend"
-  ]
+  ],
+  "dependencies": {
+    "@mui/icons-material": "^7.2.0"
+  }
 }

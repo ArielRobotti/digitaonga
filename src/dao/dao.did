@@ -12,6 +12,7 @@ type LikeProposal = variant { Like; Dislike };
 type Member = record {
   "principal" : principal;
   liked_proposals : vec record { nat; LikeProposal };
+  name : opt text;
   role : MemberRole;
   created_at : nat64;
   last_activity : nat64;
@@ -85,13 +86,14 @@ service : () -> {
   check_proposal_status : (nat) -> (Result_2);
   create_member : () -> (Member);
   create_proposal : (text, text, ProposalType, nat64) -> (Proposal);
-  edit_member : (opt text, opt text) -> (Result);
+  edit_member : (opt text, opt text, opt text) -> (Result);
   edit_proposal : (nat, text, text, ProposalType) -> (opt Proposal);
   get_active_members : () -> (vec Member) query;
   get_all_members : () -> (vec Member) query;
   get_all_proposals : () -> (vec Proposal) query;
   get_member : (principal) -> (Result) query;
   get_proposal : (nat) -> (opt Proposal) query;
+  get_proposals_by_member : (principal) -> (vec Proposal) query;
   has_voted : (nat) -> (opt Vote) query;
   like_proposal : (nat, LikeProposal) -> ();
   new_comment_proposal : (nat, text) -> ();

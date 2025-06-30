@@ -9,6 +9,7 @@ import Community from "./pages/community/page";
 import CreateNft from "./pages/digital taonga/create/page";
 import CreateProposal from "./pages/proposals/create/page";
 import DigitalTaongaProposalCreation from "./pages/proposals/create/digital taonga proposal/page";
+import FAQ from "./pages/faq/page";
 import FirstSteps from "./pages/first steps/page";
 import GuardianProposalCreation from "./pages/proposals/create/guardian proposal/page";
 import Header from "./components/shared/Header";
@@ -19,6 +20,11 @@ import NftDetail from "./pages/digital taonga/[id]/page";
 import Nfts from "./pages/digital taonga/page";
 import Notifications from "./pages/notifications/page";
 import OnBoarding from "./pages/on boarding/page";
+import Profile from "./pages/profile/page";
+import ProfileDigitalAccess from "./pages/profile/digital access/page";
+import ProfileHelp from "./pages/profile/help/page";
+import ProfileProposals from "./pages/profile/proposals/page";
+import ProfileSettings from "./pages/profile/settings/page";
 import ProposalDetail from "./pages/proposals/[id]/page";
 import Proposals from "./pages/proposals/page";
 import React from "react";
@@ -59,6 +65,14 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           </Route>
           <Route path="notifications" element={<Notifications />} />
           <Route path="community" element={<Community />} />
+          <Route path="profile">
+            <Route index element={<Profile />} />
+            <Route path="settings" element={<ProfileSettings />} />
+            <Route path="proposals" element={<ProfileProposals />} />
+            <Route path="help" element={<ProfileHelp />} />
+            <Route path="digital-access" element={<ProfileDigitalAccess />} />
+          </Route>
+          <Route path="faqs" element={<FAQ />} />
         </Routes>
       </BrowserRouter>
     </IdentityKitProvider>

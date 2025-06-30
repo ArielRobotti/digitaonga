@@ -9,6 +9,7 @@ use super::shared::LikeProposal;
 pub struct Member {
     principal: Principal,
     role: MemberRole,
+    name: Option<String>,
     created_at: u64,
     profile_pic: String,
     cover_img: String,
@@ -23,6 +24,7 @@ impl Member {
         Self {
             principal: ic_cdk::caller(),
             role: role.unwrap_or(MemberRole::Viewer),
+            name: None,
             created_at: now,
             profile_pic: "".to_string(),
             cover_img: "".to_string(),
@@ -31,9 +33,15 @@ impl Member {
         }
     }
 
-    pub fn edit(&mut self, profile_pic: Option<String>, cover_img: Option<String>) -> Self {
+    pub fn edit(
+        &mut self,
+        profile_pic: Option<String>,
+        cover_img: Option<String>,
+        name: Option<String>,
+    ) -> Self {
         self.profile_pic = profile_pic.unwrap_or(self.profile_pic.clone());
         self.cover_img = cover_img.unwrap_or(self.cover_img.clone());
+        self.name = name;
         self.clone()
     }
 
