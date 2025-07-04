@@ -16,9 +16,11 @@ const useMember = () => {
     if (user && dao) {
       (async () => {
         console.log({ dao });
+        console.log({ user });
         try {
           const resMember = await dao.get_member(user.principal);
 
+          console.log({ resMember });
           if (resMember?.Err) {
             const newMember = await dao.create_member();
             setMember(memberParser(newMember));

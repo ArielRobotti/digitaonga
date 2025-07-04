@@ -29,6 +29,7 @@ import ProposalDetail from "./pages/proposals/[id]/page";
 import Proposals from "./pages/proposals/page";
 import React from "react";
 import ReactDOM from "react-dom/client";
+import Support from "./pages/profile/help/support/page";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -69,7 +70,10 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             <Route index element={<Profile />} />
             <Route path="settings" element={<ProfileSettings />} />
             <Route path="proposals" element={<ProfileProposals />} />
-            <Route path="help" element={<ProfileHelp />} />
+            <Route path="help">
+              <Route index element={<ProfileHelp />} />
+              <Route path="support" element={<Support />} />
+            </Route>
             <Route path="digital-access" element={<ProfileDigitalAccess />} />
           </Route>
           <Route path="faqs" element={<FAQ />} />

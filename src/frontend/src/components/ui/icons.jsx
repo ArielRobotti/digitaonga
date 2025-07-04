@@ -272,7 +272,7 @@ export const SimpleCheckIcon = (props) => (
     <path
       d="M1.94141 6.31227L6.31364 10.6845L15.0581 1.31543"
       stroke="#2C131A"
-      stroke-width="2"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
     />

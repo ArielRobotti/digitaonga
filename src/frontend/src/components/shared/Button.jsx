@@ -1,4 +1,4 @@
-const Button = ({ children, className, onClick, variant, size, loading, disabled }) => {
+const Button = ({ children, className, onClick, variant, size, loading, disabled, type }) => {
   const styles =
     variant === "kokowai"
       ? "bg-kokowai text-white shadow-digitaonga"
@@ -11,6 +11,7 @@ const Button = ({ children, className, onClick, variant, size, loading, disabled
       className={`rounded-[5px] font-medium text-[16px] leading-4 p-4 cursor-pointer ${styles} ${width} disabled:bg-gray-100 disabled:border-none disabled:text-gray-500 disabled:cursor-default ${className} custom__button`}
       onClick={onClick}
       disabled={loading || disabled}
+      type={type || "button"}
     >
       {children}
     </button>
