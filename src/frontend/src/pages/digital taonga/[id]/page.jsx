@@ -7,7 +7,7 @@ const NftDetail = () => {
         <img src="/images/jpg/stars.jpg" alt="digital taonga" className="w-[288px] h-[288px]" />
       </div>
 
-      <section className="p-6">
+      <section className="p-6 flex flex-col gap-2">
         <p>Token ID:</p>
         <p>Label:</p>
         <p>Date created:</p>

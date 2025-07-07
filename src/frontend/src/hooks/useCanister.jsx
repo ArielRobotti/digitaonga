@@ -8,20 +8,28 @@ import { useAgent } from "@nfid/identitykit/react";
 const useCanister = (canisterName = "dao") => {
   const canister = canisters[canisterName];
 
-  // Use an unauthenticatedAgent (aka anonymous agent)
-  // when the user doesn't need to execute the call themselves.
-  const [unauthenticatedAgent, setUnauthenticatedAgent] = useState();
+  const isLocal = env.ICP_API_HOST.includes("localhost");
 
-  useEffect(() => {
-    HttpAgent.create({ host: env.ICP_API_HOST }).then(setUnauthenticatedAgent);
-  }, []);
+  const unauthenticatedAgent = HttpAgent.createSync({
+    host: env.ICP_API_HOST,
+    shouldFetchRootKey: isLocal,
+  });
 
-  // Use an authenticatedAgent when making authenticated calls.
-  // A wallet approval pop-up will be displayed if necessary.
-  const authenticatedAgent = useAgent({ host: env.ICP_API_HOST });
+  const authenticatedAgent = useAgent({
+    host: env.ICP_API_HOST,
+    shouldFetchRootKey: isLocal,
+  });
 
-  // Actor for methods the user DOES NOT need to be authenticated to call (i.e. icrc2_allowance).
-  // These will never result in a wallet approval prompt.
+  if (isLocal) {
+    unauthenticatedAgent.fetchRootKey().catch((err) => {
+      console.error("Failed to fetch root key:", err);
+    });
+    console.log({ authenticatedAgent });
+    authenticatedAgent?.fetchRootKey().catch((err) => {
+      console.error("Failed to fetch root key auth:", err);
+    });
+  }
+
   const nonTargetUnauthenticatedActor = useMemo(() => {
     return (
       unauthenticatedAgent &&
@@ -32,19 +40,17 @@ const useCanister = (canisterName = "dao") => {
     );
   }, [unauthenticatedAgent, canister, canisterName]);
 
-  // Actor for methods the user DOES need to be authenticated to call (i.e. icrc2_approve).
-  // These may result in a wallet approval prompt depending on how the user authenticated.
-  // Will be undefined until user is not connected or IdentityKitAgent is being created.
   const authenticatedActor = useMemo(() => {
     return (
       authenticatedAgent &&
-      // or nonTargetIdlFactory
       Actor.createActor(canister.idl, {
         agent: authenticatedAgent,
-        canisterId: canister.canisterId, // or NON_TARGET_CANISTER_ID_TO_CALL
+        canisterId: canister.canisterId,
       })
     );
   }, [authenticatedAgent, canister, canisterName]);
+
+  console.log({ authenticatedActor });
 
   return [authenticatedActor, nonTargetUnauthenticatedActor];
 };

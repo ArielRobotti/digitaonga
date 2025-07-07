@@ -4,7 +4,13 @@ import NftsContainer from "../../components/shared/NftsContainer";
 const Nfts = () => {
   return (
     <main>
-      <h4 className="uppercase p-6 pt-12">Digital Taonga Gallery</h4>
+      <section className="p-6">
+        <h4 className="uppercase">Digital Taonga Archive</h4>
+        <p>
+          Like a whare taonga, this is the place where your digital artworks are safely housed.
+          Visit them here at any time.
+        </p>
+      </section>
 
       <NftsContainer className="px-4" />
 
