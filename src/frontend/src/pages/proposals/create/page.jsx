@@ -17,7 +17,7 @@ const CreateProposal = () => {
     <main>
       <h4 className="uppercase p-6">Create a new Proposal</h4>
 
-      <section className="flex flex-col md:flex-row md:flex-wrap justify-center gap-4 p-10">
+      <section className="flex flex-col md:flex-row md:flex-wrap justify-center gap-4 p-10 mb-40">
         {proposalTypes.map((p) => (
           <ActionCard
             key={p.title}
@@ -28,7 +28,7 @@ const CreateProposal = () => {
         ))}
       </section>
 
-      <div className="absolute bottom-[72px] inset-x-0 grid gap-8 z-0 place-items-center">
+      <div className="fixed bottom-[72px] inset-x-0 grid gap-8 z-0 place-items-center">
         <Button
           className="shadow-[0px_4px_8px_0px_#00000026,0px_1px_3px_0px_#0000004c] border-none"
           variant="kokowai"

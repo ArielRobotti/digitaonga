@@ -274,6 +274,19 @@ fn only_approved_member() -> Result<(), String> {
 //     })
 // }
 
+// --- ONLY TEST ---
+// FIXME: REMOVE in production
+
+#[update]
+fn test_approve_proposal(id: u128) -> ProposalResult {
+    borrow_mut(|state| state.approve_proposal(id))
+}
+
+#[update]
+fn test_reject_proposal(id: u128) -> ProposalResult {
+    borrow_mut(|state| state.reject_proposal(id))
+}
+
 // ---- state methods ----
 fn borrow<T>(f: impl FnOnce(&State) -> T) -> T {
     STATE.with_borrow(f)

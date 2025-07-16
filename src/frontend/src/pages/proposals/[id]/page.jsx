@@ -20,6 +20,7 @@ import {
 
 import Button from "../../../components/shared/Button";
 import ProposalComment from "../../../components/proposals/ProposalComment";
+import StatusBallProposal from "../../../components/shared/StatusBallProposal";
 import { p2str } from "../../../utils/functions";
 import { useAuth } from "@nfid/identitykit/react";
 import { useParams } from "react-router";
@@ -50,9 +51,11 @@ const ProposalDetail = () => {
 
   const handleChange = (e) => setVote({ ...vote, value: e.target.value });
   const toggleOpen = () => setOpen(!open);
-  const handleComment = (e) => setNewComment({ ...newComment, text: e.target.value });
+  const handleComment = (e) =>
+    proposal.status === "Open" && setNewComment({ ...newComment, text: e.target.value });
 
   const handleVote = async () => {
+    if (proposal.status !== "Open") return;
     if (!user) return connect();
     setVote({ ...vote, loading: true });
 
@@ -68,14 +71,13 @@ const ProposalDetail = () => {
   };
 
   const handleLike = async (type) => {
+    if (proposal.status !== "Open") return;
     if (!user) return connect();
     console.log({ type });
     if (proposal.likers.find((l) => l.principal === p2str(user.principal) && l.type === type))
       return;
     await likeProposal(parseInt(id), type);
   };
-
-  console.log(proposal);
 
   return (
     <main>
@@ -88,7 +90,10 @@ const ProposalDetail = () => {
         </div>
 
         <div className="flex flex-col items-center gap-4">
-          <span>{proposal.status}</span>
+          <span className="flex items-center gap-1">
+            <StatusBallProposal status={proposal.status} />
+            {proposal.status}
+          </span>
           <section className="flex items-center gap-4">
             <h5 className="flex items-center cursor-pointer" onClick={() => handleLike("Like")}>
               {proposal.likes} <LikeIcon />
@@ -98,10 +103,12 @@ const ProposalDetail = () => {
             </h5>
             <h5
               className="flex items-center"
-              onClick={() =>
+              onClick={() => {
+                if (proposal.status !== "Open") return;
+
                 setNewComment({ ...newComment, want: true }) ||
-                document.getElementById("comments").scrollIntoView({ behavior: "smooth" })
-              }
+                  document.getElementById("comments").scrollIntoView({ behavior: "smooth" });
+              }}
             >
               {proposal.comments.length} <CommentIcon />
             </h5>
@@ -146,40 +153,41 @@ const ProposalDetail = () => {
         )}
       </section>
 
-      <section className="grid place-items-center gap-4 p-6">
-        <div className="bg-kokowai p-2 max-w-[302px] rounded-[5px]">
-          <p className="text-white">
-            10 votes required to have a quorum and 6 positive votes for passage
-          </p>
-        </div>
+      {proposal.status === "Open" && (
+        <section className="grid place-items-center gap-4 p-6">
+          <div className="bg-kokowai p-2 max-w-[302px] rounded-[5px]">
+            <p className="text-white">
+              10 votes required to have a quorum and 6 positive votes for passage
+            </p>
+          </div>
 
-        <FormControl className="max-w-[302px] w-full !mb-12">
-          <InputLabel id="vote-select-label">Your vote</InputLabel>
-          <Select
-            labelId="vote-select-label"
-            id="vote-select"
-            value={vote.value}
-            label="Your vote"
-            onChange={handleChange}
-            className="material_select"
-          >
-            <MenuItem value={"Approve"} className="material_menu-item">
-              Approve
-            </MenuItem>
-            <MenuItem value={"Disapprove"} className="material_menu-item">
-              Disapprove
-            </MenuItem>
-            <MenuItem value={"Abstain"} className="material_menu-item">
-              Abstain
-            </MenuItem>
-          </Select>
-        </FormControl>
+          <FormControl className="max-w-[302px] w-full !mb-12">
+            <InputLabel id="vote-select-label">Your vote</InputLabel>
+            <Select
+              labelId="vote-select-label"
+              id="vote-select"
+              value={vote.value}
+              label="Your vote"
+              onChange={handleChange}
+              className="material_select"
+            >
+              <MenuItem value={"Approve"} className="material_menu-item">
+                Approve
+              </MenuItem>
+              <MenuItem value={"Disapprove"} className="material_menu-item">
+                Disapprove
+              </MenuItem>
+              <MenuItem value={"Abstain"} className="material_menu-item">
+                Abstain
+              </MenuItem>
+            </Select>
+          </FormControl>
 
-        <Button variant="kokowai" disabled={!vote.value || vote.loading} onClick={handleVote}>
-          {!user ? "Log in" : vote.loading ? "Voting..." : "Confirm my vote"}
-        </Button>
-      </section>
-
+          <Button variant="kokowai" disabled={!vote.value || vote.loading} onClick={handleVote}>
+            {!user ? "Log in" : vote.loading ? "Voting..." : "Confirm my vote"}
+          </Button>
+        </section>
+      )}
       <Dialog
         open={open}
         onClose={toggleOpen}

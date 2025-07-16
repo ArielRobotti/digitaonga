@@ -88,7 +88,7 @@ const GuardianProposalCreation = () => {
         </LocalizationProvider>
       </section>
 
-      <section className="grid gap-4 p-10">
+      <section className="grid gap-4 p-10 mb-40">
         <h4 className="uppercase">What action should be proposed?</h4>
         <p>Choose the type of role change you want to propose.</p>
 
@@ -180,7 +180,7 @@ const GuardianProposalCreation = () => {
         </section>
       </Dialog>
 
-      <div className="absolute bottom-[72px] inset-x-0 grid gap-8 z-0 place-items-center">
+      <div className="fixed bottom-[72px] inset-x-0 grid gap-8 z-0 place-items-center">
         <Button
           className="shadow-[0px_4px_8px_0px_#00000026,0px_1px_3px_0px_#0000004c] border-none"
           variant="kokowai"

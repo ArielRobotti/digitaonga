@@ -4,9 +4,13 @@ const useProposalStore = create((set, get) => ({
   loading: true,
   creating: false,
   proposals: [],
-  setProposals: async (proposals) => {
-    set((state) => ({ ...state, proposals, loading: false }));
-  },
+  pending: { loading: true, data: [] },
+  approved: { loading: true, data: [] },
+  rejected: { loading: true, data: [] },
+  setProposals: async (proposals) => set(() => ({ proposals, loading: false })),
+  setPending: (pending) => set(() => ({ pending, loading: false })),
+  setApproved: (approved) => set(() => ({ approved, loading: false })),
+  setRejected: (rejected) => set(() => ({ rejected, loading: false })),
   getProposal: (id) => {
     return get().proposals.find((p) => p.id === id);
   },

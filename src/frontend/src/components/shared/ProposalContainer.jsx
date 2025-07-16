@@ -2,7 +2,7 @@ import { CircularProgress } from "@mui/material";
 import ProposalCard from "./ProposalCard";
 import useProposal from "../../hooks/useProposal";
 
-const ProposalContainer = ({ className = "" } = {}) => {
+const ProposalContainer = ({ className = "", status = "Open" } = {}) => {
   const { proposals, loading } = useProposal();
 
   return (
@@ -11,12 +11,9 @@ const ProposalContainer = ({ className = "" } = {}) => {
         {loading ? (
           <CircularProgress />
         ) : (
-          proposals.map((proposal) => <ProposalCard key={proposal.id} {...proposal} />)
-        )}
-        {loading ? (
-          <CircularProgress />
-        ) : (
-          proposals.map((proposal) => <ProposalCard key={proposal.id} {...proposal} />)
+          proposals
+            .filter((p) => p.status === status)
+            .map((proposal) => <ProposalCard key={proposal.id} {...proposal} />)
         )}
       </div>
     </section>

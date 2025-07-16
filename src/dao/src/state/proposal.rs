@@ -38,7 +38,7 @@ impl Proposal {
             kind,
             created_at: ic_cdk::api::time(),
             creator: ic_cdk::caller(),
-            status: ProposalStatus::Review,
+            status: ProposalStatus::Open,
             comments: Vec::new(),
             likes: HashMap::new(),
             votes: HashMap::new(),

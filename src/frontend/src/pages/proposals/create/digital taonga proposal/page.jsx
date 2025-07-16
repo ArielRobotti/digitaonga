@@ -215,7 +215,7 @@ const DigitalTaongaProposalCreation = () => {
       {action ? (
         SelectedProposal()
       ) : (
-        <section className="flex flex-col md:flex-row md:flex-wrap md:justify-center gap-4 p-10 md:p-0 md:max-w-[800px] md:mx-auto">
+        <section className="flex flex-col md:flex-row md:flex-wrap md:justify-center gap-4 p-10 md:p-0 md:max-w-[800px] md:mx-auto mb-40">
           {digitalTaongaProposals.map((p) => (
             <ActionCard
               key={p.title}
@@ -304,7 +304,7 @@ const DigitalTaongaProposalCreation = () => {
         </section>
       </Dialog>
 
-      <div className="absolute bottom-[72px] inset-x-0 grid gap-8 z-0 place-items-center">
+      <div className="fixed bottom-[72px] inset-x-0 grid gap-8 z-0 place-items-center">
         <Button
           className="shadow-[0px_4px_8px_0px_#00000026,0px_1px_3px_0px_#0000004c] border-none"
           variant="kokowai"

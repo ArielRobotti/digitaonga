@@ -342,6 +342,29 @@ impl State {
         }
     }
 
+    // only for testing
+    pub fn approve_proposal(&mut self, id: u128) -> ProposalResult {
+        // let _ = self.check_proposal_status(id);
+
+        if let Some(proposal) = self.proposals.get_mut(&id) {
+            proposal.approve();
+            Ok(proposal.clone())
+        } else {
+            Err(ProposalError::NotFound)
+        }
+    }
+
+    // only for testing
+    pub fn reject_proposal(&mut self, id: u128) -> ProposalResult {
+        // let _ = self.check_proposal_status(id);
+        if let Some(proposal) = self.proposals.get_mut(&id) {
+            proposal.reject();
+            Ok(proposal.clone())
+        } else {
+            Err(ProposalError::NotFound)
+        }
+    }
+
     // // --- nft ---
     // pub fn mint_local_nft(
     //     &mut self,
