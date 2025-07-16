@@ -29,13 +29,24 @@ const DigitalTaongaProposalCreation = () => {
   const [selectedValue, setSelectedValue] = useState(null);
   const [updateType, setUpdateType] = useState(null);
   const [updatedValue, setUpdatedValue] = useState(null);
+  const [readyToUpdate, setReadyToUpdate] = useState(false);
+  const [readyToCreate, setReadyToCreate] = useState(false);
   const { createProposal, creating } = useProposal();
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const action = searchParams.get("action");
-  const step = !action ? 0 : !form.name || !form.description || !form.history || !form.file ? 1 : 2;
+  const step =
+    action === "Update an Existing Digital Taonga" && updateType
+      ? 3
+      : !action
+      ? 0
+      : !form.name || !form.description || !form.history || !form.file
+      ? 1
+      : 2;
+
+  console.log({ step });
 
   // TODO (fran): validar datos de form antes de seguir
 
@@ -45,6 +56,7 @@ const DigitalTaongaProposalCreation = () => {
   const handleResponseError = () => setResponseDialog({ success: false, error: true });
   const handleResponseSuccess = () => setResponseDialog({ success: true, error: false });
   const handleCloseResponseDialog = () => setResponseDialog({ success: false, error: false });
+  const handleFileChange = (e) => setForm({ ...form, file: e.target.files[0] });
   const toggleDialog = () => setOpen(!open);
 
   const handleSubmit = async () => {
@@ -85,7 +97,7 @@ const DigitalTaongaProposalCreation = () => {
             DigitalTaongaProposal: { [digitalTaongaProposalAction]: proposalData },
           },
         },
-        deadline: form.deadline?.unix(),
+        deadline: form.date?.unix(),
       });
       toggleDialog();
       handleResponseSuccess();
@@ -94,8 +106,6 @@ const DigitalTaongaProposalCreation = () => {
       handleResponseError();
     }
   };
-
-  console.log({ selectedValue, updateType });
 
   const SelectedProposal = () => {
     switch (action) {
@@ -177,6 +187,40 @@ const DigitalTaongaProposalCreation = () => {
     }
   };
 
+  const EditProposal = () => {
+    switch (updateType) {
+      case "Update Digital Taonga Description":
+        return (
+          <section className="flex flex-col md:items-center gap-8 p-12">
+            <TextField label="Name" variant="outlined" onChange={handleChange} value={form.name} />
+          </section>
+        );
+      case "Update Digital Taonga File":
+        return (
+          <section className="flex flex-col md:items-center gap-8 p-12">
+            <MUIButton
+              component="label"
+              role={undefined}
+              tabIndex={-1}
+              endIcon={form.file ? <SimpleCheckIcon /> : <UploadIcon />}
+              className="!rounded-[5px] !border !border-[#2C131A] !bg-[#F8F8F8] !shadow-[0px_4px_8px_0px_rgba(0,0,0,0.15),0px_1px_3px_0px_rgba(0,0,0,0.30)] !text-black md:max-w-[500px] w-full !py-3"
+              onChange={handleFileChange}
+            >
+              {form.file ? form.file.name : "Attachments (Optional)"}
+              <VisuallyHiddenInput
+                type="file"
+                onChange={(e) => setForm({ ...form, file: e.target.files[0] })}
+                multiple
+              />
+            </MUIButton>
+          </section>
+        );
+      default:
+        <></>;
+        break;
+    }
+  };
+
   const VisuallyHiddenInput = styled("input")({
     clip: "rect(0 0 0 0)",
     clipPath: "inset(50%)",
@@ -212,7 +256,9 @@ const DigitalTaongaProposalCreation = () => {
         </p>
       </section>
 
-      {action ? (
+      {readyToUpdate ? (
+        EditProposal()
+      ) : action ? (
         SelectedProposal()
       ) : (
         <section className="flex flex-col md:flex-row md:flex-wrap md:justify-center gap-4 p-10 md:p-0 md:max-w-[800px] md:mx-auto mb-40">
@@ -309,17 +355,47 @@ const DigitalTaongaProposalCreation = () => {
           className="shadow-[0px_4px_8px_0px_#00000026,0px_1px_3px_0px_#0000004c] border-none"
           variant="kokowai"
           onClick={() =>
-            action
+            readyToUpdate && readyToCreate
+              ? createProposal({
+                  title: updateType,
+                  description: updateType,
+                  kind: {
+                    DigitalTaonga: {
+                      DigitalTaongaProposal: {
+                        UpdateDigitalTaonga: {
+                          UpdateDigitalTaongaProposal: {
+                            UpdateDescription: form.description,
+                            UpdateImageURL: form.file, // TODO parsear a buffer
+                          },
+                        },
+                      },
+                    },
+                  },
+                  deadline: form.date?.unix(),
+                })
+              : action === "Update an Existing Digital Taonga" && updateType
+              ? setReadyToUpdate(true)
+              : action
               ? toggleDialog()
               : navigate(`/proposals/create/Digital Taonga proposal?action=${selectedValue}`)
           }
           disabled={
-            action ? !form.name || !form.description || !form.history || !form.file : !selectedValue
+            action === "Update an Existing Digital Taonga"
+              ? !updateType
+              : action
+              ? !form.name || !form.description || !form.history || !form.file
+              : !selectedValue
           }
         >
-          {action ? "Create proposal" : "Next"}
+          {readyToUpdate
+            ? "Create Proposal"
+            : action === "Update an Existing Digital Taonga"
+            ? "Next"
+            : action
+            ? "Create proposal"
+            : "Next"}
         </Button>
-        <ProgressBar step={step} totalSteps={4} />
+        <ProgressBar step={step} totalSteps={5} />
       </div>
     </main>
   );

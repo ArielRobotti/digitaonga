@@ -50,6 +50,15 @@ const useProposal = () => {
     toggleCreating();
   };
 
+  const createEditProposal = async ({ image, description }) => {
+    try {
+      const res = await daoAuth.create_edit_proposal(description, image);
+      console.log({ res });
+    } catch (err) {
+      console.warn("create edit proposal error:", err);
+    }
+  };
+
   const voteProposal = async (id, vote) => {
     try {
       const res = await daoAuth.vote_proposal(id, { [vote]: null });
