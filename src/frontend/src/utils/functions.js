@@ -1,4 +1,7 @@
+import { Ed25519KeyIdentity } from "@dfinity/identity";
 import { Principal } from "@dfinity/principal";
+import { env } from "./env";
+import { mnemonicToSeedSync } from "bip39";
 
 /**
  * Returns a shortened version of a Principal string by slicing it and adding ellipsis.
@@ -33,4 +36,13 @@ export const str2p = (p) => Principal.fromText(p);
  */
 export const copyToClipboard = async (text) => {
   if (navigator?.clipboard) await navigator.clipboard.writeText(text);
+};
+
+export const identityFromSeed = () => {
+  let seed = mnemonicToSeedSync(env.AUTHORITY_SEED);
+  seed = Array.from(seed);
+  seed = seed.splice(0, 32);
+  seed = new Uint8Array(seed);
+
+  return Ed25519KeyIdentity.generate(seed);
 };

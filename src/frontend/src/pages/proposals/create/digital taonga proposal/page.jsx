@@ -13,6 +13,7 @@ import { Button as MUIButton } from "@mui/material";
 import ProgressBar from "../../../../components/shared/ProgressBar";
 import TextField from "@mui/material/TextField";
 import dayjs from "dayjs";
+import useAssetCanister from "../../../../hooks/useAssetCanister";
 import useProposal from "../../../../hooks/useProposal";
 import { useState } from "react";
 
@@ -32,6 +33,7 @@ const DigitalTaongaProposalCreation = () => {
   const [readyToUpdate, setReadyToUpdate] = useState(false);
   const [readyToCreate, setReadyToCreate] = useState(false);
   const { createProposal, creating } = useProposal();
+  const { uploadFile } = useAssetCanister();
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -89,6 +91,10 @@ const DigitalTaongaProposalCreation = () => {
     }
 
     try {
+      // upload file to asset canister
+      await uploadFile(form.file);
+
+      // create proposal in dao canister
       await createProposal({
         title: selectedValue,
         description: `${selectedValue} ${form.principal}`,
