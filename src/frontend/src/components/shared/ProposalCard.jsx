@@ -18,7 +18,7 @@ const ProposalCard = ({
 
   return (
     <article
-      className={`flex flex-col justify-between min-w-[251px] min-h-[246px] xl:min-h-[298px] rounded-[5px] shadow-digitaonga cursor-pointer ${className} shadow__digitaonga ${
+      className={`flex flex-col justify-between min-w-[251px] w-min sm:w-fit min-h-[246px] xl:min-h-[298px] rounded-[5px] shadow-digitaonga cursor-pointer ${className} shadow__digitaonga ${
         status === "Approved"
           ? "!bg-light-green"
           : status === "Rejected"
