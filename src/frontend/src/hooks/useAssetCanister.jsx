@@ -16,7 +16,7 @@ const useAssetCanister = () => {
   });
 
   const assetManager = new AssetManager({
-    canisterId: env.ASSET_CANISTER_ID,
+    canisterId: env.ASSETS_CANISTER_ID,
     agent, // Identity in agent must be authorized by the assets canister to make any changes
   });
 

@@ -7,6 +7,7 @@ import { useAgent } from "@nfid/identitykit/react";
 
 const useCanister = (canisterName = "dao") => {
   const canister = canisters[canisterName];
+  console.log(env);
 
   const isLocal = env.ICP_API_HOST.includes("localhost");
 

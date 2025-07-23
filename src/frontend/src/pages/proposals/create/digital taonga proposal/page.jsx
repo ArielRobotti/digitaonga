@@ -386,14 +386,16 @@ const DigitalTaongaProposalCreation = () => {
               : navigate(`/proposals/create/Digital Taonga proposal?action=${selectedValue}`)
           }
           disabled={
-            action === "Update an Existing Digital Taonga"
+            readyToUpdate && !readyToCreate
+              ? true
+              : action === "Update an Existing Digital Taonga"
               ? !updateType
               : action
               ? !form.name || !form.description || !form.history || !form.file
               : !selectedValue
           }
         >
-          {readyToUpdate
+          {readyToUpdate && readyToCreate
             ? "Create Proposal"
             : action === "Update an Existing Digital Taonga"
             ? "Next"

@@ -5,6 +5,7 @@ import { BrowserRouter, Route, Routes } from "react-router";
 import { IdentityKitAuthType, InternetIdentity, NFIDW, OISY } from "@nfid/identitykit";
 
 import ActionProposalCreation from "./pages/proposals/create/action proposal/page";
+import { Buffer } from "buffer";
 import Community from "./pages/community/page";
 import CreateNft from "./pages/digital taonga/create/page";
 import CreateProposal from "./pages/proposals/create/page";
@@ -30,6 +31,8 @@ import Proposals from "./pages/proposals/page";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import Support from "./pages/profile/help/support/page";
+
+global.Buffer = Buffer;
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
