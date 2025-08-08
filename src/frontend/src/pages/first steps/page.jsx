@@ -1,6 +1,9 @@
 import Button from "../../components/shared/Button";
+import useMemberStore from "../../store/useMemberStore";
 
 const FirstSteps = () => {
+  const { member } = useMemberStore();
+
   return (
     <main className="xl:flex xl:flex-col-reverse">
       <div className="grid place-items-center xl:mt-6">

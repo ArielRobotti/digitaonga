@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use candid::{CandidType, Principal};
 use serde::Deserialize;
 
-use super::{member::MemberRole, shared::LikeProposal};
+use super::shared::LikeProposal;
 
 #[derive(CandidType, Clone, Deserialize)]
 pub struct Proposal {

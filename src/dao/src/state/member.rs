@@ -140,6 +140,8 @@ pub enum MemberRole {
     // Delegate,
     // Partner,
     Admin,
+    Guardian,
+    Observer,
     Voter,
     NFTCreator,
 }

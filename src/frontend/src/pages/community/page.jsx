@@ -7,26 +7,108 @@ import {
   Radio,
   RadioGroup,
 } from "@mui/material";
+import { useEffect, useState } from "react";
 
 import Button from "../../components/shared/Button";
 import { CloseIcon } from "../../components/ui/icons";
 import MemberCommunityCard from "../../components/community/MemberCommunityCard";
-import { useState } from "react";
+import { memberParser } from "../../utils/parsers";
+import { str2p } from "../../utils/functions";
+import useCanister from "../../hooks/useCanister";
+import useMemberStore from "../../store/useMemberStore";
 
 const Community = () => {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [value, setValue] = useState(null);
+  const [members, setMembers] = useState({ loading: true, data: [] });
+  const [selectedMembers, setSelectedMembers] = useState([]);
+  const [daoAuth, dao] = useCanister();
+  const { member } = useMemberStore();
+
+  console.log({ member });
+
+  // if (!member.data || member.data?.role === "Admin")
+  //   return (
+  //     <main className="p-8">
+  //       <h1 className="text-center text-2xl mt-10">404 - Page Not Found</h1>
+  //       <p className="text-center mt-4">Sorry, the page you are looking for does not exist.</p>
+  //     </main>
+  //   );
 
   const toggleDialog = () => setOpen(!open);
   const toggleOpenDialog = () => setOpenDialog(!openDialog);
   const handleChange = (e) => setValue(e.target.value);
+  const handleSelectMember = (member) => {
+    setSelectedMembers((prev) => {
+      if (prev.includes(member)) return prev.filter((m) => m !== member);
+      return [...prev, member];
+    });
+  };
+
+  const batchUpdateMemberRole = async () => {
+    if (!dao) return;
+    try {
+      await dao.batch_update_member_role(
+        selectedMembers.map((p) => str2p(p)),
+        value
+      );
+      setSelectedMembers([]);
+      toggleDialog();
+      toggleOpenDialog();
+    } catch (err) {
+      console.error("Error updating member roles:", err);
+    }
+  };
+
+  useEffect(() => {
+    const getAllMembers = async () => {
+      if (!dao) return;
+      try {
+        const members = await dao.get_all_members();
+        const data = members.map(memberParser);
+        console.log({ data });
+        setMembers({ loading: false, data });
+      } catch (err) {
+        console.error("Error fetching members:", err);
+        setMembers({ loading: false, data: [] });
+      }
+    };
+    getAllMembers();
+  }, [dao]);
 
   return (
     <main>
-      <MemberCommunityCard />
-      <MemberCommunityCard />
-      <MemberCommunityCard />
+      <section className="lg:max-w-[800px] lg:m-auto p-4">
+        {members.loading ? (
+          <p>Loading...</p>
+        ) : members.data.length > 0 ? (
+          members.data.map((member) => (
+            <MemberCommunityCard
+              key={member.id}
+              {...member}
+              handleSelectMember={handleSelectMember}
+            />
+          ))
+        ) : (
+          <p>No members found.</p>
+        )}
+      </section>
+
+      {members.data.length > 0 && !members.loading && (
+        <div className="absolute bottom-4 inset-x-0 z-10 grid gap-4 place-items-center">
+          <Button
+            className="w-[340px]"
+            variant="kokowai"
+            // disabled={}
+            // onClick={() => navigate(`/proposals/create?type=motion`)}
+          >
+            Update roles
+          </Button>
+
+          {/* <ProgressBar step={1} totalSteps={4} /> */}
+        </div>
+      )}
 
       <Dialog onClose={toggleDialog} open={open} fullWidth>
         <h3 className="text-[#525252] text-center p-4 pt-6">ASSIGN ROLE</h3>

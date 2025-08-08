@@ -2,6 +2,9 @@
   "dao": {
     "ic": "ztccp-4aaaa-aaaal-qm6vq-cai"
   },
+  "digital_asset": {
+    "ic": "3og7u-miaaa-aaaal-qsrzq-cai"
+  },
   "frontend": {
     "ic": "ep6bk-xaaaa-aaaal-qsmxq-cai"
   }
