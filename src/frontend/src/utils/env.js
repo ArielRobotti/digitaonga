@@ -3,7 +3,7 @@ const ICP_API_HOST =
 const DAO_CANISTER_ID = process.env.CANISTER_ID_DAO;
 const DIGITAL_ASSET_CANISTER_ID = process.env.CANISTER_ID_DIGITAL_ASSET;
 const ASSETS_CANISTER_ID = process.env.CANISTER_ID_ASSETS;
-const AUTHORITY_SEED = process.env.AUTHORITY_SEED;
+const AUTHORITY_SEED = import.meta.env.VITE_AUTHORITY_SEED;
 
 export const env = {
   ICP_API_HOST,

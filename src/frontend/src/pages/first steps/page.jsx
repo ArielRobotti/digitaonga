@@ -3,6 +3,7 @@ import useMemberStore from "../../store/useMemberStore";
 
 const FirstSteps = () => {
   const { member } = useMemberStore();
+  // TODO (fran): continuar verificando el miembro
 
   return (
     <main className="xl:flex xl:flex-col-reverse">

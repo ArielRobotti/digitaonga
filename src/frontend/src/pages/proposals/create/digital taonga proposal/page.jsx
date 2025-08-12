@@ -64,35 +64,39 @@ const DigitalTaongaProposalCreation = () => {
   const handleSubmit = async () => {
     let digitalTaongaProposalAction;
     let proposalData;
-    switch (selectedValue) {
-      case "":
-        digitalTaongaProposalAction = "CreateDigitalTaonga";
-        // TODO (fran): subir el archivo a canister y obtener el key
-        const key = "";
-        proposalData = [form.name, form.description, form.history, key];
-        break;
-      case "":
-        digitalTaongaProposalAction = "UpdateDigitalTaonga";
-        proposalData = {
-          UpdateDigitalTaongaProposal: {
-            [updateType]: [updatedValue],
-          },
-        };
-        break;
-      case "":
-        digitalTaongaProposalAction = "DeleteDigitalTaonga";
-        proposalData = ""; // id
-        break;
-      case "":
-        digitalTaongaProposalAction = "RequestDownloadPermision";
-        break;
-      default:
-        break;
-    }
+    console.log({ selectedValue });
 
     try {
       // upload file to asset canister
-      await uploadFile(form.file);
+
+      switch (selectedValue) {
+        case "Create or Upload a New Digital Taonga":
+          const key = await uploadFile(form.file);
+          if (!key) return alert("Please upload a file");
+          digitalTaongaProposalAction = "CreateDigitalTaonga";
+          // TODO (fran): subir el archivo a canister y obtener el key
+          // const key = "";
+          console.log({ form });
+          proposalData = [form.name, form.description, form.history, form.date.unix(), key]; // TODO (fran): check unix
+          break;
+        case "":
+          digitalTaongaProposalAction = "UpdateDigitalTaonga";
+          proposalData = {
+            UpdateDigitalTaongaProposal: {
+              [updateType]: [updatedValue],
+            },
+          };
+          break;
+        case "":
+          digitalTaongaProposalAction = "DeleteDigitalTaonga";
+          proposalData = ""; // id
+          break;
+        case "":
+          digitalTaongaProposalAction = "RequestDownloadPermision";
+          break;
+        default:
+          break;
+      }
 
       // create proposal in dao canister
       await createProposal({
@@ -100,7 +104,7 @@ const DigitalTaongaProposalCreation = () => {
         description: `${selectedValue} ${form.principal}`,
         kind: {
           DigitalTaonga: {
-            DigitalTaongaProposal: { [digitalTaongaProposalAction]: proposalData },
+            [digitalTaongaProposalAction]: proposalData,
           },
         },
         deadline: form.date?.unix(),
@@ -109,6 +113,8 @@ const DigitalTaongaProposalCreation = () => {
       handleResponseSuccess();
     } catch (err) {
       console.log("createProposal error:", err);
+      const e = err;
+      console.log({ e });
       handleResponseError();
     }
   };

@@ -39,14 +39,15 @@ const useProposal = () => {
     proposals.filter((p) => p.creator === p2str(principal));
 
   const createProposal = async ({ title, description, kind, deadline }) => {
+    console.log({ title, description, kind, deadline });
+    console.log(kind);
+
     toggleCreating();
-    try {
-      const res = await daoAuth.create_proposal(title, description, kind, deadline);
-      console.log({ res });
-      addProposal(proposalParser(res));
-    } catch (err) {
-      console.log("createProposal error:", err);
-    }
+
+    const res = await daoAuth.create_proposal(title, description, kind, deadline);
+    console.log({ res });
+    addProposal(proposalParser(res));
+
     toggleCreating();
   };
 

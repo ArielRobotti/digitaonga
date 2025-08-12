@@ -4,6 +4,7 @@ import { env } from "../utils/env";
 import { identityFromSeed } from "../utils/functions";
 
 const useAssetCanister = () => {
+  console.log({ env });
   const isLocal = env.ICP_API_HOST.includes("localhost");
 
   const identity = identityFromSeed();
@@ -34,6 +35,7 @@ const useAssetCanister = () => {
     const key = await assetManager.store(file, { fileName: uploadedFilePath });
 
     console.log("File uploaded to: ", key);
+    return key;
   };
 
   // TODO (fran): ver path (/ASSET_DIGITAL_NAME/.../.../file.name)
