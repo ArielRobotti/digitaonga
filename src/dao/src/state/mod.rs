@@ -7,6 +7,11 @@ use proposal::{ActionProposal, Proposal, ProposalError, ProposalResult, Proposal
 use serde::Deserialize;
 use shared::LikeProposal;
 
+use crate::{
+    instructions::DigitalAsset,
+    state::proposal::{DigitalTaongaProposal, MintNftParams},
+};
+
 pub mod member;
 pub mod proposal;
 pub mod shared;
@@ -175,7 +180,7 @@ impl State {
         description: String,
         kind: ProposalType,
     ) -> Option<Proposal> {
-        let _ = self.check_proposal_status(id);
+        // let _ = self.check_proposal_status(id);
 
         if let Some(proposal) = self.proposals.get_mut(&id) {
             if proposal.creator() == ic_cdk::caller() && proposal.is_open() {
@@ -186,7 +191,7 @@ impl State {
     }
 
     pub fn new_comment_proposal(&mut self, id: u128, comment: String) {
-        let _ = self.check_proposal_status(id);
+        // let _ = self.check_proposal_status(id);
 
         if let Some(proposal) = self.proposals.get_mut(&id) {
             proposal.new_comment(comment);
@@ -194,7 +199,7 @@ impl State {
     }
 
     pub fn like_proposal(&mut self, id: u128, kind: LikeProposal) {
-        let _ = self.check_proposal_status(id);
+        // let _ = self.check_proposal_status(id);
 
         if let Some(proposal) = self.proposals.get_mut(&id) {
             if let Some(member) = self.members.get_mut(&ic_cdk::caller()) {
@@ -206,15 +211,15 @@ impl State {
 
     // TODO (fran): ver quien puede votar
     pub fn vote_proposal(&mut self, id: u128, vote: Vote) -> ProposalResult {
-        self.check_proposal_status(id)?;
+        // self.check_proposal_status(id)?;
 
         if let Some(proposal) = self.proposals.get_mut(&id) {
             // FIXME (fran): descomentar esto! solo por testing
-            // if proposal.is_open() {
-            return Ok(proposal.vote(vote));
-            // } else {
-            //     Err(ProposalError::Closed)
-            // }
+            if proposal.is_open() {
+                return Ok(proposal.vote(vote));
+            } else {
+                Err(ProposalError::Closed)
+            }
         } else {
             Err(ProposalError::NotFound)
         }
@@ -228,85 +233,10 @@ impl State {
         let total_admins = self.get_total_admins() as u128;
 
         if let Some(proposal) = self.proposals.get_mut(&id) {
-            if (now - proposal.created_at() > proposal.deadline()) && proposal.is_open() {
+            if (now > proposal.deadline()) && proposal.is_open() {
                 if proposal.approved_votes() > proposal.disapproved_votes() {
                     proposal.approve();
                     proposal.set_active_members(active_members);
-
-                    // TODO (fran): ver todos los kind posibles
-                    match proposal.kind() {
-                        /*   ProposalType::Action(ActionProposal::InviteMember(principal, role)) => {
-                            if let Some(m) = self.members.get_mut(&principal) {
-                                m.invite(role);
-                            }
-                        }
-                        ProposalType::Action(ActionProposal::ChangeRole(principal, role)) => {
-                            if let Some(m) = self.members.get_mut(&principal) {
-                                if m.is_admin() && total_admins <= 1 {
-                                    return Err(ProposalError::LastAdmin);
-                                } else {
-                                    m.change_role(role);
-                                };
-                            }
-                        }
-                        ProposalType::Action(ActionProposal::TransferNFT(
-                            collection_id,
-                            nft_id,
-                            to,
-                        )) => {
-                            // transfer nft
-                            if let Some(nft_coll) = self.nfts.get_mut(&collection_id) {
-                                if let Some(nft) = nft_coll.get_mut(&nft_id) {
-                                    nft.transfer(to);
-                                }
-                            }
-                        }
-                        ProposalType::Action(ActionProposal::MintNFT(params)) => {
-                            // FIXME (fran): ojo con esto. si se llama `check_proposal_status` en otra fn no se ejecuta lo que deberia ejecutarse en `lib.rs`
-
-                            /*       let new_token_id = match self.nfts.get(&params.collection_id) {
-                                Some(coll) => coll.len(),
-                                None => 0,
-                            } as u128;
-                            let new_local_nft = LocalNft::new(
-                                params.collection_id,
-                                new_token_id,
-                                params.to,
-                                params.name,
-                                params.description,
-                                params.image,
-                            );
-
-                            // let mint = nft_coll
-                            //     .icrcX_mint(
-                            //         new_token_id,
-                            //         Principal::from_str("s").unwrap(),
-                            //         params.name,
-                            //         params.description,
-                            //         params.image,
-                            //     )
-                            //     .await;
-                            // esto aca no se puede => retornar id
-
-                            match self.nfts.get_mut(&params.collection_id) {
-                                Some(coll) => {
-                                    coll.insert(new_token_id, new_local_nft);
-                                }
-                                None => {
-                                    let mut new_coll = HashMap::new();
-                                    new_coll.insert(new_token_id, new_local_nft);
-                                    self.nfts.insert(params.collection_id, new_coll);
-                                }
-                            } */
-                        } */
-                        ProposalType::Action(ActionProposal(_, _, _)) => {
-                            // TODO (fran): ver esto
-                        }
-                        ProposalType::Motion(_) => {
-                            // TODO (fran): - Motion Proposals are non-binding and typically require minimal data
-                        }
-                        _ => {} // TODO (fran): completar kind
-                    }
                 } else {
                     proposal.reject();
                 }
@@ -320,6 +250,10 @@ impl State {
 
     pub fn get_proposal(&self, id: u128) -> Option<Proposal> {
         self.proposals.get(&id).cloned()
+    }
+
+    pub fn get_proposal_mut(&mut self, id: u128) -> Option<&mut Proposal> {
+        self.proposals.get_mut(&id)
     }
 
     pub fn get_all_proposals(&self) -> Vec<Proposal> {

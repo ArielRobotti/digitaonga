@@ -28,9 +28,11 @@ type MemberError = variant {
 type MemberRole = variant {
   Viewer;
   PendingMember : MemberRole;
+  Guardian;
   Admin;
   Voter;
   NFTCreator;
+  Observer;
 };
 type MotionProposal = variant {};
 type Proposal = record {
@@ -100,6 +102,8 @@ service : () -> {
   reject_member_invitation : () -> (Result);
   remove_owner : (principal) -> ();
   set_last_activity_member : () -> ();
+  test_approve_proposal : (nat) -> ();
   test_mint_asset_digital : (principal, principal, text) -> ();
+  test_reject_proposal : (nat) -> (Result_2);
   vote_proposal : (nat, Vote) -> (Result_2);
 }

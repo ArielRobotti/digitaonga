@@ -77,7 +77,13 @@ const DigitalTaongaProposalCreation = () => {
           // TODO (fran): subir el archivo a canister y obtener el key
           // const key = "";
           console.log({ form });
-          proposalData = [form.name, form.description, form.history, form.date.unix(), key]; // TODO (fran): check unix
+          proposalData = [
+            form.name,
+            form.description,
+            form.history,
+            form.date.unix() * 1_000_000_000,
+            key,
+          ]; // TODO (fran): check unix
           break;
         case "":
           digitalTaongaProposalAction = "UpdateDigitalTaonga";
@@ -107,7 +113,7 @@ const DigitalTaongaProposalCreation = () => {
             [digitalTaongaProposalAction]: proposalData,
           },
         },
-        deadline: form.date?.unix(),
+        deadline: form.date?.unix() * 1_000_000_000,
       });
       toggleDialog();
       handleResponseSuccess();
@@ -383,7 +389,7 @@ const DigitalTaongaProposalCreation = () => {
                       },
                     },
                   },
-                  deadline: form.date?.unix(),
+                  deadline: form.date?.unix() * 1_000_000_000,
                 })
               : action === "Update an Existing Digital Taonga" && updateType
               ? setReadyToUpdate(true)

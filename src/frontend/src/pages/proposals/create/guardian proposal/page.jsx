@@ -43,9 +43,14 @@ const GuardianProposalCreation = () => {
         title: selectedValue,
         description: `${selectedValue} ${form.principal}`,
         kind: {
-          Guardian: { [guardianSelectedAction]: [str2p(form.principal), form.deadline?.unix()] },
+          Guardian: {
+            [guardianSelectedAction]: [
+              str2p(form.principal),
+              form.deadline?.unix() * 1_000_000_000,
+            ],
+          },
         },
-        deadline: form.deadline?.unix(),
+        deadline: form.deadline?.unix() * 1_000_000_000,
       });
       toggleDialog();
       handleResponseSuccess();

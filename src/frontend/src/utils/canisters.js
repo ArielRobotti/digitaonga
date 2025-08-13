@@ -1,7 +1,6 @@
 import { idlFactory as daoIdl } from "../../../declarations/dao/dao.did.js";
 import { idlFactory as digitalAssetIdl } from "../../../declarations/digital_asset/digital_asset.did.js";
 import { env } from "./env.js";
-import { idlFactory as ledgerIdl } from "../../../declarations/ledger/ledger.did.js";
 
 export const canisters = {
   dao: { canisterId: env.DAO_CANISTER_ID, idl: daoIdl }, // mainnet

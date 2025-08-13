@@ -5,19 +5,29 @@ use serde::Deserialize;
 
 #[derive(Default, CandidType, Deserialize)]
 pub struct State {
-    name: String,
-    symbol: String,
-    description: String,
-    image: String,
-    history: String,
+    pub name: String,
+    pub symbol: String,
+    pub description: String,
+    pub image: String,
+    pub history: String,
     // total_supply: u128,
-    next_asset_id: u128,
+    pub next_asset_id: u128,
 
-    owners: HashMap<u128, Principal>,   // (asset_id, owner)
-    balances: HashMap<Principal, u128>, // (owner, amount)
-    approvals: HashMap<u128, HashSet<Principal>>, // (asset_id, [approved])
-    asset_uris: HashMap<u128, String>,  // (asset_id, uri)
-    authorities: HashSet<Principal>,    // [authority]
+    pub owners: HashMap<u128, Principal>,   // (asset_id, owner)
+    pub balances: HashMap<Principal, u128>, // (owner, amount)
+    pub approvals: HashMap<u128, HashSet<Principal>>, // (asset_id, [approved])
+    pub asset_uris: HashMap<u128, String>,  // (asset_id, uri)
+    pub authorities: HashSet<Principal>,    // [authority]
+}
+
+#[derive(Default, CandidType, Deserialize)]
+pub struct Asset {
+    pub name: String,
+    pub symbol: String,
+    pub description: String,
+    pub image: String,
+    pub history: String,
+    pub uri: String,
 }
 
 impl State {
@@ -61,6 +71,27 @@ impl State {
 
     pub fn current_supply(&self) -> u128 {
         self.owners.len() as u128
+    }
+
+    pub fn get_all_assets(&self) -> Vec<Asset> {
+        let name = self.name.clone();
+        let symbol = self.symbol.clone();
+        let description = self.description.clone();
+        let image = self.image.clone();
+        let history = self.history.clone();
+
+        let mut assets = Vec::with_capacity(self.next_asset_id as usize);
+        for i in 0..self.next_asset_id + 1 {
+            assets.push(Asset {
+                name: name.clone(),
+                symbol: symbol.clone(),
+                description: description.clone(),
+                image: image.clone(),
+                history: history.clone(),
+                uri: self.asset_uris.get(&i).cloned().unwrap_or_default(),
+            });
+        }
+        assets
     }
 
     pub fn approve(&mut self, asset_id: u128, approved: Principal) -> bool {

@@ -1,7 +1,16 @@
+type Asset = record {
+  uri : text;
+  name : text;
+  description : text;
+  history : text;
+  image : text;
+  symbol : text;
+};
 service : (text, text, text, text, text) -> {
   approve : (nat, principal) -> (bool);
   balance_of : (principal) -> (nat) query;
   current_supply : () -> (nat) query;
+  get_all_assets : () -> (vec Asset) query;
   get_approves : (nat) -> (opt vec principal) query;
   mint : (principal, text) -> (nat);
   owner_of : (nat) -> (opt principal) query;

@@ -11,6 +11,8 @@ use state::{
     State,
 };
 
+use crate::state::proposal::{ActionProposal, DigitalTaongaProposal};
+
 mod instructions;
 mod state;
 
@@ -92,27 +94,31 @@ fn create_proposal(
 }
 
 #[update]
-fn edit_proposal(
+async fn edit_proposal(
     id: u128,
     title: String,
     description: String,
     kind: ProposalType,
 ) -> Option<Proposal> {
+    let _ = check_proposal_status(id).await;
     borrow_mut(|state| state.edit_proposal(id, title, description, kind))
 }
 
 #[update/* (guard = "only_approved_member") */] // FIXME (fram): remover esto! solo testing
-fn new_comment_proposal(id: u128, comment: String) {
+async fn new_comment_proposal(id: u128, comment: String) {
+    let _ = check_proposal_status(id).await;
     borrow_mut(|state| state.new_comment_proposal(id, comment))
 }
 
 #[update/* (guard = "only_approved_member") */] // FIXME (fram): remover esto! solo testing
-fn like_proposal(id: u128, kind: LikeProposal) {
+async fn like_proposal(id: u128, kind: LikeProposal) {
+    let _ = check_proposal_status(id).await;
     borrow_mut(|state| state.like_proposal(id, kind))
 }
 
 #[update/* (guard = "only_approved_member") */] // FIXME (fram): remover esto! solo testing
-fn vote_proposal(id: u128, vote: Vote) -> ProposalResult {
+async fn vote_proposal(id: u128, vote: Vote) -> ProposalResult {
+    check_proposal_status(id).await?;
     borrow_mut(|state| state.vote_proposal(id, vote))
 }
 
@@ -123,33 +129,30 @@ async fn check_proposal_status(id: u128) -> ProposalResult {
     // check to mint new nft
     if let Ok(proposal) = &res {
         if proposal.is_approve() {
-            /*          if let ProposalType::Action(ActionProposal::MintNFT(MintNftParams {
-                       collection_id,
-                       to,
-                       name,
-                       description,
-                       image,
-                   })) = proposal.kind()
-                   {
-                       let nft = Nft::new(collection_id);
-                       let token_id = borrow(|s| s.get_collection_id(collection_id).len() as u128);
-                       let _mint_res = nft
-                           .icrcX_mint(
-                               token_id,
-                               // to,
-                               // FIXME (fran): aca iria el ledger canister id
-                               Principal::from_str("s").unwrap(),
-                               name.clone(),
-                               description.clone(),
-                               image.clone(),
-                           )
-                           .await;
+            match proposal.kind() {
+                ProposalType::Action(ActionProposal(_, _, _)) => {
+                    // TODO (fran): ver esto
+                }
+                ProposalType::Motion(_) => {
+                    // TODO (fran): - Motion Proposals are non-binding and typically require minimal data
+                }
+                ProposalType::DigitalTaonga(DigitalTaongaProposal::CreateDigitalTaonga(
+                    name,
+                    description,
+                    history,
+                    deadline,
+                    image,
+                )) => {
+                    // TODO (fran): completar kind
+                    let digital_asset = DigitalAsset::new(
+                        Principal::from_text("3og7u-miaaa-aaaal-qsrzq-cai").unwrap(), // mainnet
+                                                                                      // Principal::from_text("").unwrap(), // local
+                    );
 
-                       borrow_mut(|s| {
-                           s.mint_local_nft(collection_id, token_id, to, name, description, image)
-                       });
-                   }
-            */
+                    digital_asset.mint(ic_cdk::id(), image).await;
+                }
+                _ => {}
+            }
         }
     }
 
@@ -278,8 +281,10 @@ fn only_approved_member() -> Result<(), String> {
 // FIXME: REMOVE in production
 
 #[update]
-fn test_approve_proposal(id: u128) -> ProposalResult {
-    borrow_mut(|state| state.approve_proposal(id))
+async fn test_approve_proposal(id: u128) -> () {
+    let _ = borrow_mut(|state| state.approve_proposal(id));
+
+    let _ = check_proposal_status(id).await;
 }
 
 #[update]

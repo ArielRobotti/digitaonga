@@ -6,6 +6,8 @@ use candid::Principal;
 use ic_cdk::{query, update};
 use state::State;
 
+use crate::state::Asset;
+
 thread_local! {
     static STATE: RefCell<State>  = RefCell::default();
 }
@@ -53,6 +55,11 @@ fn token_uri(asset_id: u128) -> Option<String> {
 #[query]
 fn current_supply() -> u128 {
     borrow(|s| s.current_supply())
+}
+
+#[query]
+fn get_all_assets() -> Vec<Asset> {
+    borrow(|s| s.get_all_assets())
 }
 
 #[update]
