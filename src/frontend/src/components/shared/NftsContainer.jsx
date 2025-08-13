@@ -12,8 +12,17 @@ const NftsContainer = ({ className }) => {
     const fetchData = async () => {
       try {
         console.log({ digital });
-        const result = await digital.get_all_assets();
-        setAssets({ loading: false, data: result.filter((asset) => asset?.uri) });
+        const result = await digital.list_assets();
+        const data = result.map((asset) => ({
+          id: Number(asset.id),
+          name: asset.metadata.name,
+          description: asset.metadata.description,
+          image: asset.metadata.image,
+          history: asset.metadata.history,
+          symbol: asset.metadata.symbol,
+        }));
+        console.log({ data });
+        setAssets({ loading: false, data });
       } catch (err) {
         console.error("Error fetching assets:", err);
         setAssets({ loading: false, data: [] });

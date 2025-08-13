@@ -1,7 +1,7 @@
 import Button from "./Button";
 import { useNavigate } from "react-router";
 
-const NftCard = ({ id = 0, name = "DIGITAL TAONGA", uri }) => {
+const NftCard = ({ id = 0, name = "DIGITAL TAONGA", image }) => {
   const navigate = useNavigate();
 
   return (
@@ -9,7 +9,9 @@ const NftCard = ({ id = 0, name = "DIGITAL TAONGA", uri }) => {
       <div className="overflow-hidden w-full">
         <img
           src={
-            uri ? `https://2ynh7-zyaaa-aaaal-qsr4q-cai.icp0.io${uri}` : '"/images/jpg/stars.jpg"'
+            image
+              ? `https://2ynh7-zyaaa-aaaal-qsr4q-cai.icp0.io${image}`
+              : '"/images/jpg/stars.jpg"'
           }
           alt={name}
           className="object-cover"

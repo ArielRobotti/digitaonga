@@ -1,5 +1,17 @@
-type Asset = record {
-  uri : text;
+type AssetMetadata = record {
+  name : text;
+  description : text;
+  history : text;
+  token_uri : opt text;
+  image : text;
+  symbol : text;
+};
+type AssetView = record {
+  id : nat;
+  owner : principal;
+  metadata : AssetMetadata;
+};
+type CollectionMetadata = record {
   name : text;
   description : text;
   history : text;
@@ -10,9 +22,12 @@ service : (text, text, text, text, text) -> {
   approve : (nat, principal) -> (bool);
   balance_of : (principal) -> (nat) query;
   current_supply : () -> (nat) query;
-  get_all_assets : () -> (vec Asset) query;
   get_approves : (nat) -> (opt vec principal) query;
-  mint : (principal, text) -> (nat);
+  get_asset : (nat) -> (opt AssetView) query;
+  get_asset_metadata : (nat) -> (opt AssetMetadata) query;
+  get_collection : () -> (CollectionMetadata) query;
+  list_assets : () -> (vec AssetView) query;
+  mint : (principal, text, text, text, text, text, opt text) -> (nat);
   owner_of : (nat) -> (opt principal) query;
   remove_authority : (principal) -> ();
   set_authority : (principal) -> ();

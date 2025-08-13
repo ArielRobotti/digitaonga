@@ -1,5 +1,6 @@
-use candid::Principal;
+use candid::{CandidType, Principal};
 use ic_cdk::api::call::CallResult;
+use serde::Deserialize;
 
 pub struct DigitalAsset(Principal);
 
@@ -8,8 +9,22 @@ impl DigitalAsset {
         Self(principal)
     }
 
-    pub async fn mint(&self, to: Principal, token_uri: String) {
-        let tx: CallResult<(u128,)> = ic_cdk::call(self.0, "mint", (to, token_uri)).await;
+    pub async fn mint(
+        &self,
+        to: Principal,
+        name: String,
+        symbol: String,
+        description: String,
+        history: String,
+        image: String,
+        token_uri: Option<String>,
+    ) {
+        let tx: CallResult<(u128,)> = ic_cdk::call(
+            self.0,
+            "mint",
+            (to, name, symbol, description, history, image, token_uri),
+        )
+        .await;
 
         match tx {
             Ok((asset_id,)) => {

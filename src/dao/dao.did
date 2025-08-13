@@ -103,7 +103,16 @@ service : () -> {
   remove_owner : (principal) -> ();
   set_last_activity_member : () -> ();
   test_approve_proposal : (nat) -> ();
-  test_mint_asset_digital : (principal, principal, text) -> ();
+  test_mint_asset_digital : (
+      principal,
+      principal,
+      text,
+      text,
+      text,
+      text,
+      text,
+      opt text,
+    ) -> ();
   test_reject_proposal : (nat) -> (Result_2);
   vote_proposal : (nat, Vote) -> (Result_2);
 }

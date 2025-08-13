@@ -146,10 +146,20 @@ async fn check_proposal_status(id: u128) -> ProposalResult {
                     // TODO (fran): completar kind
                     let digital_asset = DigitalAsset::new(
                         Principal::from_text("3og7u-miaaa-aaaal-qsrzq-cai").unwrap(), // mainnet
-                                                                                      // Principal::from_text("").unwrap(), // local
+                                                                                      // Principal::from_text("u6s2n-gx777-77774-qaaba-cai").unwrap(), // local
                     );
 
-                    digital_asset.mint(ic_cdk::id(), image).await;
+                    digital_asset
+                        .mint(
+                            ic_cdk::id(),
+                            name.clone(),
+                            name,
+                            description,
+                            history,
+                            image,
+                            None,
+                        )
+                        .await;
                 }
                 _ => {}
             }
@@ -208,9 +218,20 @@ fn has_voted(id: u128) -> Option<Vote> {
 // FIXME (fran): borrar en produccion
 // ---- TEST ----
 #[update]
-pub async fn test_mint_asset_digital(collection_id: Principal, to: Principal, uri: String) {
+pub async fn test_mint_asset_digital(
+    collection_id: Principal,
+    to: Principal,
+    name: String,
+    symbol: String,
+    description: String,
+    history: String,
+    image: String,
+    token_uri: Option<String>,
+) {
     let asset = DigitalAsset::new(collection_id);
-    asset.mint(to, uri).await;
+    asset
+        .mint(to, name, symbol, description, history, image, token_uri)
+        .await;
 }
 // ---- end TEST ----
 

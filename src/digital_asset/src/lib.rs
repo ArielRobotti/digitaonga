@@ -4,9 +4,7 @@ use std::{cell::RefCell, collections::HashSet};
 
 use candid::Principal;
 use ic_cdk::{query, update};
-use state::State;
-
-use crate::state::Asset;
+use state::{AssetMetadata, CollectionMetadata, State};
 
 thread_local! {
     static STATE: RefCell<State>  = RefCell::default();
@@ -26,8 +24,8 @@ fn init(
             name,
             symbol,
             description,
-            image,
-            history, /* total_supply */
+            history,
+            image, /* total_supply */
         )
     });
 }
@@ -57,11 +55,6 @@ fn current_supply() -> u128 {
     borrow(|s| s.current_supply())
 }
 
-#[query]
-fn get_all_assets() -> Vec<Asset> {
-    borrow(|s| s.get_all_assets())
-}
-
 #[update]
 fn approve(asset_id: u128, approved: Principal) -> bool {
     borrow_mut(|s| s.approve(asset_id, approved))
@@ -78,8 +71,24 @@ fn transfer_from(from: Principal, to: Principal, asset_id: u128) {
 }
 
 #[update(guard = "only_authority")]
-fn mint(to: Principal, token_uri: String) -> u128 {
-    borrow_mut(|s| s.mint(to, token_uri))
+fn mint(
+    to: Principal,
+    name: String,
+    symbol: String,
+    description: String,
+    history: String,
+    image: String,
+    token_uri: Option<String>,
+) -> u128 {
+    let metadata = AssetMetadata {
+        name,
+        symbol,
+        description,
+        history,
+        image,
+        token_uri,
+    };
+    borrow_mut(|s| s.mint(to, metadata))
 }
 
 #[update(guard = "only_authority")]
@@ -90,6 +99,27 @@ fn set_authority(new_authority: Principal) {
 #[update(guard = "only_authority")]
 fn remove_authority(authority: Principal) {
     borrow_mut(|s| s.remove_authority(authority));
+}
+
+// ---- nuevas queries de colección y assets ----
+#[query]
+fn get_collection() -> CollectionMetadata {
+    borrow(|s| s.get_collection())
+}
+
+#[query]
+fn get_asset_metadata(asset_id: u128) -> Option<state::AssetMetadata> {
+    borrow(|s| s.get_asset_metadata(asset_id))
+}
+
+#[query]
+fn get_asset(asset_id: u128) -> Option<state::AssetView> {
+    borrow(|s| s.get_asset(asset_id))
+}
+
+#[query]
+fn list_assets() -> Vec<state::AssetView> {
+    borrow(|s| s.list_assets())
 }
 
 // ---- gaurds / modifiers ----
