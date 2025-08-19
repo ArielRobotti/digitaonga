@@ -5,10 +5,12 @@ import Button from "../../components/shared/Button";
 import useMember from "../../hooks/useMember";
 
 const Login = () => {
+  // Store
   const { user, connect, isConnecting } = useMember();
 
   return (
     <main>
+      {/* Icon responsive */}
       <section className="min-h-44 w-full bg-kokowai grid place-items-center">
         {window.innerWidth >= 1280 ? (
           <img

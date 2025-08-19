@@ -6,9 +6,13 @@ import { TextField } from "@mui/material";
 import { useNavigate } from "react-router";
 
 const CreateNft = () => {
+  // State
   const [nftData, setNftData] = useState({ name: "", description: "", history: "", file: null });
+
+  // Navigation
   const navigate = useNavigate();
 
+  // Handle
   const handleChange = (e) => setNftData({ ...nftData, [e.target.name]: e.target.value });
   const handleFileChange = (e) => setNftData({ ...nftData, file: e.target.files[0] });
 

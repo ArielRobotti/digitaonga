@@ -2,6 +2,7 @@ import NotificationCard from "../../components/notifications/NotificationCard";
 import useNotification from "../../store/useNotifications";
 
 const Notifications = () => {
+  // Store
   const { notifications } = useNotification();
 
   return (

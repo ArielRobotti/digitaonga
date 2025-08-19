@@ -2,6 +2,7 @@ import { Accordion, AccordionDetails, AccordionSummary, Typography } from "@mui/
 
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
+// FAQ data
 const faqs = [
   {
     title: "What is this project about?",
