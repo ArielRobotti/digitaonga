@@ -40,7 +40,7 @@ const Header = () => {
   const handleLogin = () => (user ? disconnect() : connect());
 
   return (
-    <header className="h-[60px] xl:h-[70px] w-screen bg-kokowai text-white flex xl:justify-between items-center fixed top-0 xl:px-4">
+    <header className="h-[60px] xl:h-[70px] w-screen bg-kokowai text-white flex xl:justify-between items-center fixed top-0 xl:px-4 z-10">
       {/* Burger menu for mobile view */}
       <div className="basis-1/3 pl-4 xl:hidden">
         <BurgerMenu className="cursor-pointer" onClick={toggleMenu} />

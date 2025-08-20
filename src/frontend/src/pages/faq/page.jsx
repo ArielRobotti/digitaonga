@@ -1,6 +1,5 @@
-import { Accordion, AccordionDetails, AccordionSummary, Typography } from "@mui/material";
-
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import Accordion from "../../components/shared/Accordion";
 
 // FAQ data
 const faqs = [
@@ -55,21 +54,24 @@ const faqs = [
 
 const FAQ = () => {
   return (
-    <main>
-      {faqs.map(({ title, description }, index) => (
-        <Accordion key={index}>
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
-            aria-controls={`panel${index}-content`}
-            id={`panel${index}-header`}
-          >
-            <Typography component="span">{title}</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Typography component="span">{description}</Typography>
-          </AccordionDetails>
-        </Accordion>
-      ))}
+    <main className="flex flex-col p-5 lg:flex-row lg:p-28">
+
+      {/* Title FAQ*/}
+      <div className="w-full h-full pb-8 lg:pb-0 lg:w-1/3">
+        <h2>
+          FREQUENTLY 
+          <br />
+          ASKED
+          <br />
+          QUESTIONS
+        </h2>
+      </div>
+
+      {/* Content FAQ */}
+      <div className="w-full h-full lg:w-2/3">
+        <Accordion data={faqs} />
+      </div>
+
     </main>
   );
 };
