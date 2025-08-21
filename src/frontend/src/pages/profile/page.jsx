@@ -1,5 +1,6 @@
 import { CopyIcon, EditIcon, PencilIcon } from "../../components/ui/icons";
 import { copyToClipboard, p2str, shortP } from "../../utils/functions";
+import PersonIcon from '@mui/icons-material/Person';
 
 import { Link } from "react-router";
 import { useAuth } from "@nfid/identitykit/react";
@@ -33,15 +34,20 @@ const Profile = () => {
     <main>
       <section className="flex items-center justify-between p-4">
         {/* profile img */}
-        <div>
-          <h1>{member?.name || "Username"}</h1>
-          <p className="flex items-center gap-2 mt-4">
-            Guardian ID: {shortP(p2str(user?.principal || "") || "abced-cai")}{" "}
-            <CopyIcon
-              className="cursor-pointer"
-              onClick={() => copyToClipboard(p2str(user?.principal || "") || "abcde-cai")}
-            />
-          </p>
+        <div className="flex items-center gap-4">
+          <div className="rounded-full bg-gray-300 border border-black w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center">
+            <PersonIcon className="text-gray-500" />
+          </div>
+          <div>
+            <h1>{member?.name || "Name Username"}</h1>
+            <p className="flex items-center gap-2 mt-4">
+              Guardian ID: {shortP(p2str(user?.principal || "") || "abced-cai")}{" "}
+              <CopyIcon
+                className="cursor-pointer"
+                onClick={() => copyToClipboard(p2str(user?.principal || "") || "abcde-cai")}
+              />
+            </p>
+          </div>
         </div>
 
         <div className="rounded-full bg-kokowai p-2 cursor-pointer">

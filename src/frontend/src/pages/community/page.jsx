@@ -10,6 +10,7 @@ import {
 import { useEffect, useState } from "react";
 
 import Button from "../../components/shared/Button";
+import LoadingIcon from "../../components/loading/LoadingIcon";
 import { CloseIcon } from "../../components/ui/icons";
 import MemberCommunityCard from "../../components/community/MemberCommunityCard";
 import { memberParser } from "../../utils/parsers";
@@ -87,7 +88,7 @@ const Community = () => {
     <main>
       <section className="lg:max-w-[800px] lg:m-auto p-4">
         {members.loading ? (
-          <p>Loading...</p>
+          <LoadingIcon />
         ) : members.data.length > 0 ? (
           members.data.map((member) => (
             <MemberCommunityCard
