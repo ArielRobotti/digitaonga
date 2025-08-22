@@ -23,7 +23,7 @@ const FirstSteps = () => {
         </p>
 
         <div className="grid place-items-center gap-4 mt-40 w-full md:mt-0">
-          <Button variant="kokowai">Assign roles</Button>
+          <Button variant="kokowai" onClick={() => window.location.href = `/assign-role`}>Assign roles</Button>
           {/* <Button variant="kokowai">Complete your profile</Button> */}
         </div>
       </section>

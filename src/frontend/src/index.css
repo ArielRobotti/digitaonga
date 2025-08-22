@@ -36,12 +36,10 @@ body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  min-height: calc(100vh - 60px);
+  min-height: 100vh;
 }
 
-main {
-  margin-top: 60px;
-}
+/* Removed main margin-top as it's now handled by Layout component */
 
 .custom__button:disabled {
   box-shadow: var(--shadow-digitaonga);
@@ -263,4 +261,14 @@ ul.MuiMenu-list li:hover {
       font-weight: bold;
     }
   }
+}
+
+/* Hide scrollbar for webkit browsers */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Safari and Chrome */
 }
