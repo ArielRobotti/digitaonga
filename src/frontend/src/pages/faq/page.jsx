@@ -1,4 +1,3 @@
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Accordion from "../../components/shared/Accordion";
 
 // FAQ data
@@ -55,11 +54,10 @@ const faqs = [
 const FAQ = () => {
   return (
     <main className="flex flex-col p-5 lg:flex-row lg:p-28">
-
       {/* Title FAQ*/}
-      <div className="w-full h-full pb-8 lg:pb-0 lg:w-1/3">
+      <div className="w-full h-full pb-8 lg:pb-0 lg:w-1/3 xl:block hidden">
         <h2>
-          FREQUENTLY 
+          FREQUENTLY
           <br />
           ASKED
           <br />
@@ -68,10 +66,9 @@ const FAQ = () => {
       </div>
 
       {/* Content FAQ */}
-      <div className="w-full h-full lg:w-2/3">
+      <div className="w-full h-full xl:w-2/3">
         <Accordion data={faqs} />
       </div>
-
     </main>
   );
 };

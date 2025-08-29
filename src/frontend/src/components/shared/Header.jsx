@@ -14,7 +14,7 @@ const links = [
   { title: "Proposals", link: "/proposals" },
   { title: "Community", link: "/community" },
   { title: "Profile", link: "/profile" },
-  { title: "About Digitaonga", link: "/about" },
+  { title: "FAQ", link: "/faqs" },
   // { title: "Log In", link: "/login" },
 ];
 
@@ -23,7 +23,7 @@ const desktopLinks = [
   { title: "Calendar", link: "/calendar" },
   { title: "Proposals", link: "/proposals" },
   { title: "Profile", link: "/profile" },
-  { title: "About Amnesty", link: "/about" },
+  { title: "FAQ", link: "/faqs" },
 ];
 
 const Header = () => {
@@ -33,7 +33,7 @@ const Header = () => {
   const { connect, disconnect, user } = useMember();
 
   // State
-  const [open, setOpen] = useState(false);                        // Menu open/close state (view mobile)
+  const [open, setOpen] = useState(false); // Menu open/close state (view mobile)
 
   // Handlers
   const toggleMenu = () => setOpen(!open);

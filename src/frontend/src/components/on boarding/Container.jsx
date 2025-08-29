@@ -3,7 +3,7 @@ import ProgressBar from "../shared/ProgressBar";
 
 const Container = ({ title, description, Icon, onNext, onBack, step, totalSteps }) => {
   return (
-    <section className="grid place-items-center gap-12 text-center mt-12">
+    <section className="grid place-items-center gap-12 text-center mt-12 xl:flex xl:flex-col xl:justify-between xl:items-center xl:h-[calc(100vh-200px)]">
       <h3 className="uppercase">{title}</h3>
 
       <div className="w-[258px] h-[258px] grid place-items-center">

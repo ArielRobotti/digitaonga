@@ -10,8 +10,8 @@ import {
 import { useEffect, useState } from "react";
 
 import Button from "../../components/shared/Button";
-import LoadingIcon from "../../components/loading/LoadingIcon";
 import { CloseIcon } from "../../components/ui/icons";
+import LoadingIcon from "../../components/loading/LoadingIcon";
 import MemberCommunityCard from "../../components/community/MemberCommunityCard";
 import { memberParser } from "../../utils/parsers";
 import { str2p } from "../../utils/functions";
@@ -108,7 +108,7 @@ const Community = () => {
             className="w-[340px]"
             variant="kokowai"
             // disabled={}
-            // onClick={() => navigate(`/proposals/create?type=motion`)}
+            onClick={() => setOpen(true)}
           >
             Update roles
           </Button>
