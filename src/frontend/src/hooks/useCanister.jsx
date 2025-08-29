@@ -1,9 +1,9 @@
 import { Actor, HttpAgent } from "@dfinity/agent";
-import { useEffect, useMemo, useState } from "react";
 
 import { canisters } from "../utils/canisters";
 import { env } from "../utils/env";
 import { useAgent } from "@nfid/identitykit/react";
+import { useMemo } from "react";
 
 const useCanister = (canisterName = "dao") => {
   const canister = canisters[canisterName];

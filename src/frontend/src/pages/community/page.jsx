@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 
 import Button from "../../components/shared/Button";
 import { CloseIcon } from "../../components/ui/icons";
+import LoadingIcon from "../../components/loading/LoadingIcon";
 import MemberCommunityCard from "../../components/community/MemberCommunityCard";
 import { memberParser } from "../../utils/parsers";
 import { str2p } from "../../utils/functions";
@@ -18,11 +19,14 @@ import useCanister from "../../hooks/useCanister";
 import useMemberStore from "../../store/useMemberStore";
 
 const Community = () => {
+  // State
   const [open, setOpen] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [value, setValue] = useState(null);
   const [members, setMembers] = useState({ loading: true, data: [] });
   const [selectedMembers, setSelectedMembers] = useState([]);
+
+  // Store
   const [daoAuth, dao] = useCanister();
   const { member } = useMemberStore();
 
@@ -36,8 +40,11 @@ const Community = () => {
   //     </main>
   //   );
 
+  // Dialog
   const toggleDialog = () => setOpen(!open);
   const toggleOpenDialog = () => setOpenDialog(!openDialog);
+
+  // Handlers
   const handleChange = (e) => setValue(e.target.value);
   const handleSelectMember = (member) => {
     setSelectedMembers((prev) => {
@@ -81,7 +88,7 @@ const Community = () => {
     <main>
       <section className="lg:max-w-[800px] lg:m-auto p-4">
         {members.loading ? (
-          <p>Loading...</p>
+          <LoadingIcon />
         ) : members.data.length > 0 ? (
           members.data.map((member) => (
             <MemberCommunityCard
@@ -101,7 +108,7 @@ const Community = () => {
             className="w-[340px]"
             variant="kokowai"
             // disabled={}
-            // onClick={() => navigate(`/proposals/create?type=motion`)}
+            onClick={() => setOpen(true)}
           >
             Update roles
           </Button>

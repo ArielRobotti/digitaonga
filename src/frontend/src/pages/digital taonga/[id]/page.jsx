@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import Button from "../../../components/shared/Button";
 import { CircularProgress } from "@mui/material";
 import { p2str } from "../../../utils/functions";
 import useCanister from "../../../hooks/useCanister";
@@ -56,12 +57,33 @@ const NftDetail = () => {
             />
           </div>
 
-          <section className="p-6 flex flex-col gap-2">
+          <section className="p-6 flex flex-col gap-2 max-w-[600px] m-auto">
             <p>Token ID: {id}</p>
             <p>Label: {asset.data?.name}</p>
             <p>Owner: {asset.data?.owner}</p>
             <p>Cultural description: {asset.data?.description}</p>
             <p>History: {asset.data?.history}</p>
+
+            <div className="absolute bottom-4 inset-x-0 z-10 grid gap-4 place-items-center">
+              <Button
+                className="w-[340px]"
+                // variant="kokowai"
+                disabled={true}
+                // onClick={() => setOpen(true)}
+              >
+                Download
+              </Button>
+              <Button
+                className="w-[340px]"
+                variant="kokowai"
+
+                // onClick={() => setOpen(true)}
+              >
+                Create a proposal
+              </Button>
+
+              {/* <ProgressBar step={1} totalSteps={4} /> */}
+            </div>
           </section>
         </>
       ) : (

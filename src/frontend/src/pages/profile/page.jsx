@@ -1,7 +1,9 @@
-import { CopyIcon, EditIcon, PencilIcon } from "../../components/ui/icons";
+import { CopyIcon, EditIcon } from "../../components/ui/icons";
 import { copyToClipboard, p2str, shortP } from "../../utils/functions";
 
+import { ChevronRight } from "@mui/icons-material";
 import { Link } from "react-router";
+import PersonIcon from "@mui/icons-material/Person";
 import { useAuth } from "@nfid/identitykit/react";
 import useMemberStore from "../../store/useMemberStore";
 import useProposal from "../../hooks/useProposal";
@@ -30,43 +32,55 @@ const Profile = () => {
   ];
 
   return (
-    <main>
-      <section className="flex items-center justify-between p-4">
-        {/* profile img */}
-        <div>
-          <h1>{member?.name || "Username"}</h1>
-          <p className="flex items-center gap-2 mt-4">
-            Guardian ID: {shortP(p2str(user?.principal || "") || "abced-cai")}{" "}
-            <CopyIcon
-              className="cursor-pointer"
-              onClick={() => copyToClipboard(p2str(user?.principal || "") || "abcde-cai")}
-            />
-          </p>
-        </div>
+    <main className="xl:p-8">
+      <section className="xl:flex">
+        <section className="flex items-center justify-between p-4 xl:justify-start xl:gap-8 xl:w-1/3">
+          {/* profile img */}
+          <div className="flex items-center gap-4">
+            <div className="rounded-full bg-gray-300 border border-black w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center">
+              <PersonIcon className="text-gray-500" />
+            </div>
+            <div>
+              <h1>{member?.name || "Name Username"}</h1>
+              <p className="flex items-center gap-2 mt-4">
+                Guardian ID: {shortP(p2str(user?.principal || "") || "abced-cai")}
+                <CopyIcon
+                  className="cursor-pointer"
+                  onClick={() => copyToClipboard(p2str(user?.principal || "") || "abcde-cai")}
+                />
+              </p>
+            </div>
+          </div>
 
-        <div className="rounded-full bg-kokowai p-2 cursor-pointer">
-          <Link to="/profile/settings">
-            <EditIcon />
-          </Link>
-        </div>
+          <div className="rounded-full bg-kokowai p-2 cursor-pointer">
+            <Link to="/profile/settings">
+              <EditIcon />
+            </Link>
+          </div>
+        </section>
+
+        <section className="grid grid-cols-3 gap-4 mt-4 xl:w-2/3 xl:self-center xl:flex xl:justify-center xl:gap-8">
+          {array.map((item) => (
+            <article
+              key={item.n}
+              className="bg-gray-200 grid place-items-center max-w-[139px] h-[101px] sm:max-w-[210px] sm:h-[110px] xl:p-4 xl:min-w-[200px]"
+            >
+              <h1>{item.n}</h1>
+              <p className="text-center">{item.s}</p>
+            </article>
+          ))}
+        </section>
       </section>
 
-      <section className="grid grid-cols-3 gap-4 mt-4">
-        {array.map((item) => (
-          <article
-            key={item.n}
-            className="bg-gray-200 grid place-items-center max-w-[139px] h-[101px] sm:max-w-[210px] sm:h-[110px]"
-          >
-            <h1>{item.n}</h1>
-            <p className="text-center">{item.s}</p>
-          </article>
-        ))}
-      </section>
-
-      <section className="grid mt-12 sm:mt-16">
+      <section className="grid mt-12 sm:mt-16 xl:max-w-[425px]">
         {links.map((link) => (
-          <Link to={link.href} key={link.title} className="p-6 border-t cursor-pointer">
+          <Link
+            to={link.href}
+            key={link.title}
+            className="p-6 border-t cursor-pointer xl:border flex justify-between"
+          >
             {link.title.toUpperCase()}
+            <ChevronRight className="rotate-90" />
           </Link>
         ))}
         {user?.principal && (

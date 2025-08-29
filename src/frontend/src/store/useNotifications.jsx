@@ -1,5 +1,6 @@
 import { create } from "zustand";
 
+// Mocks data
 const notifications = [
   {
     id: 1,

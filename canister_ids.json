@@ -10,5 +10,8 @@
   },
   "frontend": {
     "ic": "ep6bk-xaaaa-aaaal-qsmxq-cai"
+  },
+  "frontend-dev": {
+    "ic": "m2irv-mqaaa-aaaal-qssha-cai"
   }
 }

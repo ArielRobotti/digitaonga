@@ -14,7 +14,7 @@ const links = [
   { title: "Proposals", link: "/proposals" },
   { title: "Community", link: "/community" },
   { title: "Profile", link: "/profile" },
-  { title: "About Digitaonga", link: "/about" },
+  { title: "FAQ", link: "/faqs" },
   // { title: "Log In", link: "/login" },
 ];
 
@@ -23,26 +23,32 @@ const desktopLinks = [
   { title: "Calendar", link: "/calendar" },
   { title: "Proposals", link: "/proposals" },
   { title: "Profile", link: "/profile" },
-  { title: "About Amnesty", link: "/about" },
+  { title: "FAQ", link: "/faqs" },
 ];
 
 const Header = () => {
-  const [open, setOpen] = useState(false);
+  // Store
   const navigate = useNavigate();
   const { notifications } = useNotification();
   const { connect, disconnect, user } = useMember();
 
+  // State
+  const [open, setOpen] = useState(false); // Menu open/close state (view mobile)
+
+  // Handlers
   const toggleMenu = () => setOpen(!open);
   const handleLogin = () => (user ? disconnect() : connect());
 
   return (
-    <header className="h-[60px] xl:h-[70px] w-screen bg-kokowai text-white flex xl:justify-between items-center fixed top-0 xl:px-4">
+    <header className="h-[60px] xl:h-[70px] w-screen bg-kokowai text-white flex xl:justify-between items-center fixed top-0 xl:px-4 z-10">
+      {/* Burger menu for mobile view */}
       <div className="basis-1/3 pl-4 xl:hidden">
         <BurgerMenu className="cursor-pointer" onClick={toggleMenu} />
       </div>
 
       <h2 className="basis-1/3 text-center xl:hidden">HEADLINE</h2>
 
+      {/* Notifications */}
       <Badge
         badgeContent={notifications?.length || 0}
         color="primary"
@@ -51,6 +57,7 @@ const Header = () => {
         <BellIcon className="cursor-pointer" onClick={() => navigate("/notifications")} />
       </Badge>
 
+      {/* Mobile menu */}
       <motion.aside
         initial={{ x: "-100%" }}
         animate={{ x: open ? 0 : "-100%" }}
@@ -76,7 +83,7 @@ const Header = () => {
         </nav>
       </motion.aside>
 
-      {/* start desktop header */}
+      {/* Start desktop header */}
       <img
         src="/images/png/digitaonga logo header.png"
         alt="digitaonga"
