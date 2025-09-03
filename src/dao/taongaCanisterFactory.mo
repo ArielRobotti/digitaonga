@@ -50,6 +50,8 @@ persistent actor {
             name : Text = init.name;
         };
         ignore Map.put<TaongaId, TaongaMetadata>(taongas, nhash, id, metadata);
+        // TODO traer desde el proposal arpobado correspondiente los fragmentos del archivo GLB y pasarlos al nuevo canister
+        // let addChunkResponse = await newTaonga.uploadTaonga({chunk; index})
 
         Principal.fromActor(newTaonga);       
         
