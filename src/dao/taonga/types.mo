@@ -1,0 +1,33 @@
+module {
+
+  public type InitArgs = {
+    controller : Principal;
+    admin : Principal;
+    name : Text;
+    culturalDescription : Text;
+    description : Text;
+    dataSize : Nat;
+    chunksQty : Nat;
+  };
+
+  public type TaongaMetadata = {
+
+  };
+
+  public type AssetMetadata = {
+    name : Text;
+    description : Text;
+    history : Text;
+    token_uri : ?Text;
+    image : ?Blob;
+    symbol : Text;
+  };
+
+  public type GetAssetResponse = {
+    #Ok : {
+      chunk : Blob;
+      hasNext : Bool;
+    };
+    #Err : Text;
+  };
+};

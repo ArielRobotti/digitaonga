@@ -11,12 +11,16 @@
       "type": "rust"
     },
     "frontend": {
-      "source": ["src/frontend/dist"],
+      "source": [
+        "src/frontend/dist"
+      ],
       "type": "assets",
       "workspace": "frontend"
     },
     "frontend-dev": {
-      "source": ["src/frontend/dist"],
+      "source": [
+        "src/frontend/dist"
+      ],
       "type": "assets",
       "workspace": "frontend"
     }
@@ -24,7 +28,7 @@
   "defaults": {
     "build": {
       "args": "",
-      "packtool": ""
+      "packtool": "mops sources"
     }
   },
   "output_env_file": ".env",
