@@ -5,26 +5,9 @@ import { phash } "mo:map/Map";
 import Array "mo:base/Array";
 import { print } "mo:base/Debug";
 import Nat "mo:base/Nat";
+import Cycles "mo:base/ExperimentalCycles";
 
-module {
-
-  public type InitArgs = Types.InitArgs;
-
-  public type TaongaMetadata = {
-    id: Nat;
-    canisterId: Principal;
-    remoteActorReference: Taonga;
-    name: Text;
-    // image: ?Blob;
-  };
-
-  type State = {
-    initialized: Bool;
-    ready: Bool;
-    
-  };
-
-  public shared ({ caller = DEPLOYER }) persistent actor class Taonga(initArgs : InitArgs) {
+  shared ({ caller = DEPLOYER }) persistent actor class Taonga(initArgs : Types.InitArgs, callback: shared Int -> ()) {
     let admins = Set.fromIter<Principal>([DEPLOYER, initArgs.admin].vals(), phash); // Los administradores iniciales son el canister principal y el admin pasado como parametro
 
     func isAdmin(p : Principal) : Bool {
@@ -33,7 +16,8 @@ module {
 
     var taongaIsReady = false;
 
-    let assetData = Array.init<Blob>(initArgs.chunksQty, "" : Blob); // Array mut para guardar los chuncks del asset
+    var assetData = Array.init<Blob>(initArgs.chunksQty, "" : Blob); // Array mut para guardar los chuncks del asset
+
     var assetMetadata : Types.AssetMetadata = {
       description : Text = initArgs.description;
       history : Text = initArgs.culturalDescription;
@@ -43,7 +27,7 @@ module {
       token_uri : ?Text = null;
     };
 
-    type callback = shared (Nat) -> async { chunk : Blob; next : ?callback };
+    // type callback = shared (Nat) -> async { chunk : Blob; next : ?callback };
 
 
     public shared ({ caller }) func uploadTaonga({ chunk : Blob; index : Nat }) : async {
@@ -52,7 +36,7 @@ module {
     } {
       //Carga del GLB en fragmentos de 1.8 MiB despues del deploy
       assert (isAdmin(caller));
-      if (taongaIsReady) {
+      if (taongaIsReady) { // Quitar esta validación si existe la posibilidad de actualizar el archivo GLB
         return #Err("Error: Taonga is already initialized");
       };
       assetData[index] := chunk;
@@ -66,6 +50,8 @@ module {
           };
           i += 1;
         };
+        print("Upload file process complete");
+        callback(initArgs.tempFileId)
       };
       #Ok
 
@@ -83,7 +69,10 @@ module {
 
     public query func get_asset_metadata() : async Types.AssetMetadata {
       assetMetadata;
-    }
+    };
+
+    public shared query func balance(): async Nat{
+      Cycles.balance()
+    };
 
   };
-};

@@ -6,13 +6,18 @@ module {
     name : Text;
     culturalDescription : Text;
     description : Text;
+    tempFileId: Int;
     dataSize : Nat;
     chunksQty : Nat;
   };
 
-  public type TaongaMetadata = {
-
-  };
+  // public type TaongaMetadata = {
+  //   id: Nat;
+  //   canisterId: Principal;
+  //   remoteActorReference: Taonga; // Referencia circular
+  //   name: Text;
+  //   // image: ?Blob;
+  // };
 
   public type AssetMetadata = {
     name : Text;
