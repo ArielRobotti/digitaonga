@@ -32,6 +32,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import Support from "./pages/profile/help/support/page";
 import AssignRole from "./pages/assign role/page";
+import InviteNewMemberPage from "./pages/invite new member/page";
 
 global.Buffer = Buffer;
 
@@ -64,6 +65,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             <Route path="on_boarding" element={<OnBoarding />} />
             <Route path="first_steps" element={<FirstSteps />} />
             <Route path="assign-role" element={<AssignRole />} />
+            <Route path="invite-new-member" element={<InviteNewMemberPage />} />
             <Route path="digital-taonga">
               <Route index element={<Nfts />} />
               <Route path="create" element={<CreateNft />} />
