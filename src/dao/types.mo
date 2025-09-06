@@ -5,23 +5,25 @@ import { now } "mo:base/Time";
 module {
 
   public type State = {
-    members: Map.Map<Principal, Member>;
-    tempFiles: Map.Map<Int, [Blob]>;    // Ver si es necesario un owner para control de acceso
-    proposals: Map.Map<Int, Proposal>;  // El id puede ser el Timestamp en lugar del tamaño actual del Map
+    members : Map.Map<Principal, Member>;
+    tempFiles : Map.Map<Int, [Blob]>; // Ver si es necesario un owner para control de acceso
+    proposals : Map.Map<Int, Proposal>; // El id puede ser el Timestamp en lugar del tamaño actual del Map
   };
 
-  public func initState(): State {
+  public func initState() : State {
     {
       members = Map.new<Principal, Member>();
-      tempFiles = Map.new<Int, [Blob]>();    
+      tempFiles = Map.new<Int, [Blob]>();
       proposals = Map.new<Int, Proposal>();
-    }
+    };
   };
 
-  public func create_member(state: State, caller: Principal): Member { // Cambio de retorno 
+  /////////////////////// Functions migrated from the Rust version //////////////////////////////////
+
+  public func create_member(state : State, caller : Principal) : Member {
     switch (Map.get<Principal, Member>(state.members, phash, caller)) {
       case null {
-        let newMember: Member = {
+        let newMember : Member = {
           name : ?Text = null;
           principal = caller;
           cover_img : ?Blob = null;
@@ -29,44 +31,45 @@ module {
           created_at = now();
           last_activity = now();
           liked_proposals = [];
-          role = if(Map.size(state.members) == 0){ #Admin} else {#Viewer}; // Lógica heredada de la version Rust
-          email = null;
-          socialMedia = null;
-        }; 
-        ignore Map.put<Principal, Member>(state.members, phash, caller,newMember);
+          role = if (Map.size(state.members) == 0) { #Admin } else { #Viewer }; // Lógica heredada de la version Rust
+        };
+        ignore Map.put<Principal, Member>(state.members, phash, caller, newMember);
         newMember;
       };
-      case ( ?member ) { member }
-    }
+      case (?member) { member };
+    };
+  };
+  // Los argumentos profile_pic, cover_img y name si no se quieren modificar deben venir en el estado actual
+
+  public func edit_member(state : State, caller : Principal, { profile_pic; cover_img; name } : MemberEditableData) : Result {
+    switch (Map.get<Principal, Member>(state.members, phash, caller)) {
+      case null { #Err(#NotFound) };
+      case (?member) {
+        let updatedMember : Member = { member with name; profile_pic; cover_img; };
+        ignore Map.put<Principal, Member>(state.members, phash, caller, updatedMember);
+        #Ok(updatedMember);
+      };
+    };
   };
 
-  public func edit_member(state: State, caller: Principal, name : ?Text, email : ?Text, socialMedia : ?Text): Result{
-    switch (Map.get<Principal, Member>(state.members, phash, caller)){
-      case null {#Err(#NotFound)};
-      case ( ?member ) {
-        let updatedMember: Member = {member with  name; email; socialMedia};
-        ignore Map.put<Principal, Member>(state.members, phash, caller, updatedMember);
-        #Ok(updatedMember)
-      }
-    }
-  };
+  /////////////////////////// End Migration ///////////////
 
   public type CreateDigitalTaongaArgs = {
-    name: Text;
-    description: Text;
-    history: Text;
-    deadline: Int;
-    imageID: Nat; // Revisar 
-    chunksQty: Nat;
-    chunksFile: [Blob]; //en el submit del proposal se envia vacio y en chunksQty llamadas iterativas se envian los chunks de 1 MiB desde el front
-    dataSize: Nat;
+    name : Text;
+    description : Text;
+    history : Text;
+    deadline : Int;
+    imageID : Nat; // Revisar
+    chunksQty : Nat;
+    chunksFile : [Blob]; //en el submit del proposal se envia vacio y en chunksQty llamadas iterativas se envian los chunks de 1 MiB desde el front
+    dataSize : Nat;
   };
 
   public type DigitalTaongaProposal = {
     #UpdateDigitalTaonga : UpdateDigitalTaongaProposal;
     #DeleteDigitalTaonga : Nat64;
     // #CreateDigitalTaonga : (Text, Text, Text, Nat64, Text); // Cambiar por argumentos de deploy + archivo GLB: [Blob] para upload
-    #CreateDigitalTaonga: CreateDigitalTaongaArgs;
+    #CreateDigitalTaonga : CreateDigitalTaongaArgs;
     #RequestDownloadPermision;
   };
   public type GuardianProposal = {
@@ -81,11 +84,15 @@ module {
     name : ?Text; // Consultar por cambio a Text no opcional
     role : MemberRole;
     created_at : Int; // Originalmente Nat64
-    last_activity : Int;  // Originalmente Nat64
-    cover_img : ?Blob;  // Originalmente Text
-    profile_pic : ?Blob;  // Originalmente Text
-    email: ?Text; // Agregado para que funcione la funcion edit_member
-    socialMedia: ?Text; // Idem... Sugerir cambio ?Text por [?Text]
+    last_activity : Int; // Originalmente Nat64
+    cover_img : ?Blob; // Originalmente Text
+    profile_pic : ?Blob; // Originalmente Text
+  };
+
+  public type MemberEditableData = {
+    name : ?Text;
+    cover_img : ?Blob;
+    profile_pic : ?Blob;
   };
 
   public type MemberError = {
@@ -104,7 +111,7 @@ module {
     #Observer;
   };
 
-  public type MotionProposal = {#}; // Consultar
+  public type MotionProposal = { # }; // Consultar
 
   public type Proposal = {
     id : Int; // Cambio de Nat a Int, podemos definir el ID con el Timestamp de ingreso del proposal en lugar de con la cnatidad actual de proposals
@@ -125,7 +132,7 @@ module {
     created_at : Nat64;
     likes : Nat64;
     comment : Text;
-    thread : [ProposalComment]; // 
+    thread : [ProposalComment]; //
     dislikes : Nat64;
   };
   public type ProposalError = { #LastAdmin; #Closed; #NotFound; #Unauthorized };
@@ -291,4 +298,3 @@ module {
     vote_proposal : shared (Nat, Vote) -> async Result_2;
   }
 */
-

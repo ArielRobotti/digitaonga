@@ -9,16 +9,19 @@ persistent actor {
   let state: DaoTypes.State = DaoTypes.initState(); 
 
     
-    ///////// Migracion de funciones existentes /////////
+    
+  ////////////////////// Migracion de funciones existentes /////////
+  //////////////////////////////// Done ////////////////////////
 
   public shared ({ caller }) func create_member() : async DaoTypes.Member {
     DaoTypes.create_member(state, caller)
   };
 
-  // edit_member : shared (?Text, ?Text, ?Text) -> async Result;
-  public shared ({ caller }) func edit_member(name : ?Text, email : ?Text, socialMedia : ?Text) : async () {
-    // return Result{};
+  public shared ({ caller }) func edit_member({name; profile_pic; cover_img }: DaoTypes.MemberEditableData) : async DaoTypes.Result {
+    DaoTypes.edit_member(state, caller, {name; profile_pic; cover_img})
   };
+
+  /////////////////////// TODO ////////////////////////////
 
   // accept_member_invitation : shared () -> async Result;
   public shared ({ caller }) func accept_member_invitation() : async () {
