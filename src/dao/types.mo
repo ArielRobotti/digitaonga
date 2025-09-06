@@ -1,5 +1,6 @@
 import Map "mo:map/Map";
-import { phash } "mo:map/Map";
+import Buffer "mo:base/Buffer";
+import { phash; ihash } "mo:map/Map";
 import { now } "mo:base/Time";
 
 module {
@@ -18,38 +19,173 @@ module {
     };
   };
 
-  /////////////////////// Functions migrated from the Rust version //////////////////////////////////
+ /////////////////////// Functions migrated from the Rust version //////////////////////////////////
 
-  public func create_member(state : State, caller : Principal) : Member {
-    switch (Map.get<Principal, Member>(state.members, phash, caller)) {
-      case null {
-        let newMember : Member = {
-          name : ?Text = null;
-          principal = caller;
-          cover_img : ?Blob = null;
-          profile_pic : ?Blob = null;
-          created_at = now();
-          last_activity = now();
-          liked_proposals = [];
-          role = if (Map.size(state.members) == 0) { #Admin } else { #Viewer }; // Lógica heredada de la version Rust
-        };
-        ignore Map.put<Principal, Member>(state.members, phash, caller, newMember);
-        newMember;
-      };
-      case (?member) { member };
-    };
-  };
+  // public func create_member(state : State, caller : Principal) : Member {
+  //   switch (Map.get<Principal, Member>(state.members, phash, caller)) {
+  //     case null {
+  //       let newMember : Member = {
+  //         name : ?Text = null;
+  //         principal = caller;
+  //         cover_img : ?Blob = null;
+  //         profile_pic : ?Blob = null;
+  //         created_at = now();
+  //         last_activity = now();
+  //         liked_proposals = [];
+  //         role = if (Map.size(state.members) == 0) { #Admin } else { #Viewer }; // Lógica heredada de la version Rust
+  //       };
+  //       ignore Map.put<Principal, Member>(state.members, phash, caller, newMember);
+  //       newMember;
+  //     };
+  //     case (?member) { member };
+  //   };
+  // };
   // Los argumentos profile_pic, cover_img y name si no se quieren modificar deben venir en el estado actual
 
-  public func edit_member(state : State, caller : Principal, { profile_pic; cover_img; name } : MemberEditableData) : Result {
-    switch (Map.get<Principal, Member>(state.members, phash, caller)) {
-      case null { #Err(#NotFound) };
-      case (?member) {
-        let updatedMember : Member = { member with name; profile_pic; cover_img; };
-        ignore Map.put<Principal, Member>(state.members, phash, caller, updatedMember);
-        #Ok(updatedMember);
-      };
+  // public func edit_member(state : State, caller : Principal, { profile_pic; cover_img; name } : MemberEditableData) : Result {
+  //   switch (Map.get<Principal, Member>(state.members, phash, caller)) {
+  //     case null { #Err(#NotFound) };
+  //     case (?member) {
+  //       let updatedMember : Member = { member with name; profile_pic; cover_img; };
+  //       ignore Map.put<Principal, Member>(state.members, phash, caller, updatedMember);
+  //       #Ok(updatedMember);
+  //     };
+  //   };
+  // };
+  
+  // public func is_admin(s: State, p: Principal): Bool{
+  //   switch (Map.get<Principal, Member>(s.members, phash, p)){
+  //     case (?member){ member.role == #Admin};
+  //     case null false;
+  //   }
+  // };
+
+  // public func get_member(s: State, p: Principal) :  Result{
+  //   switch (Map.get<Principal, Member>(s.members, phash, p)) {
+  //     case null { #Err(#NotFound) };
+  //     case ( ? member ) { #Ok(member)}
+  //   }
+  // };
+
+  // public func get_role_member(s: State, p: Principal): ?MemberRole {
+  //   switch (Map.get<Principal, Member>(s.members, phash, p)){
+  //     case null null;
+  //     case (?member) {?member.role}
+  //   }
+  // };
+
+
+  // Cambio de retorno... de { #Ok : [Principal]; #Err : MemberError }  cambio por un array de resultados erroneos
+  // public func batch_update_member_role(s: State, member_list: [Principal], new_role: MemberRole): [{#Ok: Principal; #Err: MemberError}] {
+  // public func batch_update_member_role(s: State, member_list: [Principal], new_role: MemberRole): [(Principal, MemberError)] {
+
+  //   let failsBuffer = Buffer.fromArray<(Principal, MemberError)>([]);
+  //   for(p in member_list.vals()) {
+  //     switch (Map.get<Principal, Member>(s.members, phash, p)){
+  //       case null {
+  //         failsBuffer.add((p, #NotFound))
+  //       };
+  //       case ( ?member ) {
+  //         if(member.role == #Admin){
+  //           // failsBuffer.add((p, )) // TODO Si el miembro al que se le quiere cambiar el rol es un admin no se hace nada... consultar esto
+  //         } else {
+  //           ignore Map.put<Principal, Member>(s.members, phash, p, {member with role = new_role});
+  //         };
+  //       };
+  //     };
+  //   };
+  //   Buffer.toArray(failsBuffer)
+  // };
+
+ ///////////
+  public type NewProposalArgs = {
+    title: Text;
+    description: Text;
+    kind: ProposalType;
+    deadline: Int;
+  };
+
+  public type ProposalEditableData = {
+    title : Text; 
+    description : Text; 
+    kind : ProposalType
+  };
+
+  public func new_proposal(s: State, caller: Principal, proposal: NewProposalArgs) : Proposal {
+    let id = now(); // TODO Validar este cambio
+    let newProposal: Proposal = {
+      proposal with
+      active_members : Nat = Map.size(s.members);
+      comments : [ProposalComment] = [];
+      created_at : Int = id;
+      creator : Principal = caller;
+      id ;
+      likes : [(Principal, LikeProposal)] = [];
+      status : ProposalStatus = #Open; // TODO 
+      votes : [(Principal, Vote)] = []
     };
+    ignore Map.put<Int, Proposal>(s.proposals, ihash, id, newProposal);
+    newProposal
+  };
+
+  public func get_proposal(s: State, id: Int) :?Proposal{
+    Map.get<Int, Proposal>(s.proposals, ihash, id)
+  };
+
+  func proposalUpdatable(pr: Proposal): Bool {
+    // TODO establecer mas reglas para permitir edicion de proposal
+    pr.status != (#Approved) and
+    pr.status != (#Rejected) and
+    pr.votes.size() > 0
+  };
+
+  public func edit_proposal(s: State, caller: Principal, id: Int, data: ProposalEditableData ): ?Proposal {
+    switch (Map.get<Principal, Member>(s.members, phash, caller)){
+      case ( ?_ ) { //Si un proposal fue hecho por un miembro que ya no es miembro, no lo podrá editar
+        switch (Map.get<Int, Proposal>(s.proposals, ihash, id)){
+          case ( ?proposal ) {
+            if (proposal.creator != caller) {
+              return null
+            };
+            if (not proposalUpdatable(proposal)) {
+              return null
+            };
+            let { title; description; kind } = data;
+            let updatedProposal: Proposal = { proposal with title; description; kind };
+            ignore Map.put<Int, Proposal>(s.proposals, ihash, id, updatedProposal);
+            ?updatedProposal
+          };
+          case null null
+        }
+      };
+      case null null
+    }
+  };
+
+  public func delete_proposal(s: State, caller: Principal, id: Int): ?Proposal {
+    switch (Map.remove<Int, Proposal>(s.proposals, ihash, id)){
+      case null null;
+      case ( ?proposal ) {
+        if (proposal.creator == caller and proposalUpdatable(proposal)) {
+          return ?proposal
+        } else {
+          ignore Map.put<Int, Proposal>(s.proposals, ihash, id, proposal);
+          return null
+        }
+      }
+    };
+  };
+
+  public func refresh_proposal_status(s: State, id: Int): ?Proposal {
+    switch (Map.get<Int, Proposal>(s.proposals, ihash, id)){
+      case null { null };
+      case ( ?proposal ) {
+        let _now = now();
+        let active_members = 
+        null
+
+      }
+    }
   };
 
   /////////////////////////// End Migration ///////////////
@@ -80,7 +216,7 @@ module {
 
   public type Member = {
     principal : Principal;
-    liked_proposals : [(Nat, LikeProposal)]; // Originalmente TrieMap
+    liked_proposals : [(Nat, LikeProposal)]; // Originalmente HashMap
     name : ?Text; // Consultar por cambio a Text no opcional
     role : MemberRole;
     created_at : Int; // Originalmente Nat64

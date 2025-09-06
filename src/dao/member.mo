@@ -1,0 +1,149 @@
+import Types "./types";
+import Map "mo:map/Map";
+import Buffer "mo:base/Buffer";
+import { phash; ihash } "mo:map/Map";
+import { now } "mo:base/Time";
+import Array "mo:base/Array";
+import Iter "mo:base/Iter";
+
+module {
+
+  public type LikeProposal = { #Like; #Dislike };
+
+  public type Member = {
+    principal : Principal;
+    liked_proposals : [(Nat, LikeProposal)]; // Originalmente HashMap
+    name : ?Text; // Consultar por cambio a Text no opcional
+    role : MemberRole;
+    created_at : Int; // Originalmente Nat64
+    last_activity : Int; // Originalmente Nat64
+    cover_img : ?Blob; // Originalmente Text
+    profile_pic : ?Blob; // Originalmente Text
+  };
+
+  public type MemberEditableData = {
+    name : ?Text;
+    cover_img : ?Blob;
+    profile_pic : ?Blob;
+  };
+
+  public type Result = { #Ok : Member; #Err : MemberError };
+
+  public type MemberError = {
+    #NotFound;
+    #NotOnlyOneMember;
+    #MemberIsNotViewer;
+    #MemberIsNotPendingMember;
+  };
+
+  public type MemberRole = {
+    #Viewer;
+    #PendingMember : MemberRole; // Evitar una asignacion recursiva infinita
+    #Guardian;
+    #Admin;
+    #Voter;
+    #NFTCreator;
+    #Observer;
+  };
+
+  public func create_member(state : Types.State, caller : Principal) : Member {
+    switch (Map.get<Principal, Member>(state.members, phash, caller)) {
+      case null {
+        let newMember : Member = {
+          name : ?Text = null;
+          principal = caller;
+          cover_img : ?Blob = null;
+          profile_pic : ?Blob = null;
+          created_at = now();
+          last_activity = now();
+          liked_proposals = [];
+          role = if (Map.size(state.members) == 0) { #Admin } else { #Viewer }; // Lógica heredada de la version Rust
+        };
+        ignore Map.put<Principal, Member>(state.members, phash, caller, newMember);
+        newMember;
+      };
+      case (?member) { member };
+    };
+  };
+
+  public func edit_member(state : Types.State, caller : Principal, { profile_pic; cover_img; name } : MemberEditableData) : Result {
+    switch (Map.get<Principal, Member>(state.members, phash, caller)) {
+      case null { #Err(#NotFound) };
+      case (?member) {
+        let updatedMember : Member = { member with name; profile_pic; cover_img; };
+        ignore Map.put<Principal, Member>(state.members, phash, caller, updatedMember);
+        #Ok(updatedMember);
+      };
+    };
+  };
+
+  public func is_admin(s: Types.State, p: Principal): Bool{
+    switch (Map.get<Principal, Member>(s.members, phash, p)){
+      case (?member){ member.role == #Admin};
+      case null false;
+    }
+  };
+
+  public func batch_update_member_role(s: Types.State, member_list: [Principal], new_role: MemberRole): [(Principal, MemberError)] {
+
+    let failsBuffer = Buffer.fromArray<(Principal, MemberError)>([]);
+    for(p in member_list.vals()) {
+      switch (Map.get<Principal, Member>(s.members, phash, p)){
+        case null {
+          failsBuffer.add((p, #NotFound))
+        };
+        case ( ?member ) {
+          if(member.role == #Admin){
+            // failsBuffer.add((p, )) // TODO Si el miembro al que se le quiere cambiar el rol es un admin no se hace nada... consultar esto
+          } else {
+            ignore Map.put<Principal, Member>(s.members, phash, p, {member with role = new_role});
+          };
+        };
+      };
+    };
+    Buffer.toArray(failsBuffer)
+  };
+
+  public func get_member(s: Types.State, p: Principal) :  Result{
+    switch (Map.get<Principal, Member>(s.members, phash, p)) {
+      case null { #Err(#NotFound) };
+      case ( ? member ) { #Ok(member)}
+    }
+  };
+
+  func is_active_member(m: Member): Bool {
+    let two_weeks = 2 * 7 * 24 * 60 * 60 * 1_000_000_000;
+    m.last_activity + two_weeks > now()
+  };
+
+  func is_approved_member(m: Member): Bool {
+    switch (m.role) {
+      case ( #PendingMember(_) or #Viewer ) { false };
+      case _ { true }
+    }
+  };
+
+  public func get_active_members(s: Types.State): [Member] {
+    let members = Iter.toArray(Map.vals<Principal, Member>(s.members));
+    Array.filter<Member>(
+      members, 
+      func x = is_active_member(x) and is_approved_member(x))
+
+  };
+
+  public func get_total_admins(s: Types.State): Nat {
+    var count = 0;
+    for (m in Map.vals<Principal, Member>(s.members)){
+      if(m.role == #Admin){ count += 1 }
+    };
+    count
+  };
+
+  public func get_role_member(s: Types.State, p: Principal): ?MemberRole {
+    switch (Map.get<Principal, Member>(s.members, phash, p)){
+      case null null;
+      case (?member) {?member.role}
+    }
+  };
+
+};

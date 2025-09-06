@@ -1,4 +1,5 @@
 import DaoTypes "./types";
+import Member "./member";
 import Error "mo:base/Error";
 
 
@@ -14,11 +15,50 @@ persistent actor {
   //////////////////////////////// Done ////////////////////////
 
   public shared ({ caller }) func create_member() : async DaoTypes.Member {
-    DaoTypes.create_member(state, caller)
+    // DaoTypes.create_member(state, caller)
+    Member.create_member(state, caller)
   };
 
   public shared ({ caller }) func edit_member({name; profile_pic; cover_img }: DaoTypes.MemberEditableData) : async DaoTypes.Result {
-    DaoTypes.edit_member(state, caller, {name; profile_pic; cover_img})
+    // DaoTypes.edit_member(state, caller, {name; profile_pic; cover_img});
+    Member.edit_member(state, caller, {name; profile_pic; cover_img})
+  };
+
+  // batch_update_member_role : shared ([Principal], MemberRole,) -> async Result_1; 
+  public shared ({ caller }) func batch_update_member_role(principals : [Principal], role : DaoTypes.MemberRole) : async [(Principal, DaoTypes.MemberError)] {
+    // assert(DaoTypes.is_admin(state, caller));
+    assert(Member.is_admin(state, caller));
+    // DaoTypes.batch_update_member_role(state, principals, role);
+    Member.batch_update_member_role(state, principals, role);
+    // TODO. Registrar Fecha, Cambio y autor del autor del cambio?
+  };
+
+  ///////////////////////////// CRUD Proposals ///////////
+  // create_proposal : shared (Text, Text, ProposalType, Nat64,) -> async Proposal;
+  public shared ({ caller }) func create_proposal(args: DaoTypes.NewProposalArgs) : async DaoTypes.Proposal {
+    let callerRole = Member.get_role_member(state, caller);
+    assert(callerRole != null and callerRole != ?#Observer); //
+    DaoTypes.new_proposal(state, caller, args)
+  };
+  
+  // get_proposal : shared query Nat -> async ?Proposal;
+  public query func get_proposal(id: Int): async ?DaoTypes.Proposal {
+    DaoTypes.get_proposal(state, id);
+  };
+
+  // edit_proposal : shared (Nat, Text, Text, ProposalType) -> async ?Proposal; // Cambio de firma (id: Int; data: ProposalEditableData)
+  public shared ({ caller }) func edit_proposal(id : Int, data: DaoTypes.ProposalEditableData) : async ?DaoTypes.Proposal {
+    DaoTypes.edit_proposal(state, caller, id, data);
+  };
+
+  public shared ({ caller }) func delete_proposal(id: Int): async ?DaoTypes.Proposal {
+    DaoTypes.delete_proposal(state, caller, id);
+  };
+  //////////////////////////////////////////////////////////////////
+  
+  // vote_proposal : shared (Nat, Vote) -> async Result_2;
+  public shared ({ caller }) func vote_proposal(id : Int, vote : DaoTypes.Vote) : async () {
+    
   };
 
   /////////////////////// TODO ////////////////////////////
@@ -33,25 +73,9 @@ persistent actor {
 
   };
 
-  // batch_update_member_role : shared ([Principal], MemberRole,) -> async Result_1;
-  public shared ({ caller }) func batch_update_member_role(principals : [Principal], role : DaoTypes.MemberRole) : async () {
-    // return Result_1{};
-  };
-
   // check_proposal_status : shared Nat -> async Result_2;
   public shared ({ caller }) func check_proposal_status(id : Nat) : async () {
     // return Result_2{};
-  };
-
-
-  // create_proposal : shared (Text, Text, ProposalType, Nat64,) -> async Proposal;
-  public shared ({ caller }) func create_proposal(title : Text, description : Text, proposalType : DaoTypes.ProposalType, startDate : Nat64) : async () {
-    // return Proposal{};
-  };
-
-  // edit_proposal : shared (Nat, Text, Text, ProposalType) -> async ?Proposal;
-  public shared ({ caller }) func edit_proposal(id : Nat, title : Text, description : Text, proposalType : DaoTypes.ProposalType) : async () {
-    // return ?Proposal{};
   };
 
   // get_active_members : shared query () -> async [Member];
@@ -72,11 +96,6 @@ persistent actor {
   // get_member : shared query Principal -> async Result;
   public query func get_member(principal : Principal) : async () {
     // return Result{};
-  };
-
-  // get_proposal : shared query Nat -> async ?Proposal;
-  public query func get_proposal(id : Nat) : async () {
-    // return ?Proposal{};
   };
 
   // get_proposals_by_member : shared query Principal -> async [Proposal];
@@ -138,8 +157,4 @@ persistent actor {
     // return Result_2{};
   };
 
-  // vote_proposal : shared (Nat, Vote) -> async Result_2;
-  public shared ({ caller }) func vote_proposal(id : Nat, vote : DaoTypes.Vote) : async () {
-    // return Result_2{};
-  };
 }
