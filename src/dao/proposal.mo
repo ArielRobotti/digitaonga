@@ -4,6 +4,7 @@ import Buffer "mo:base/Buffer";
 import Member "member";
 import { phash; ihash } "mo:map/Map";
 import { now } "mo:base/Time";
+import Array "mo:base/Array";
 
 module {
 
@@ -93,6 +94,28 @@ module {
 
   public type Vote = { #Approve; #Abstain; #Disapprove };
 
+  public type ProposalExecutionResult = {
+    #Ok: {
+      #Void; 
+      #NewTaongaResult: {
+        taongaId: Nat;
+        canisterId: Principal;
+        deployDate: Int;
+        readyDate: ?Int;
+        taongaName: Text;
+        //TODO otros datos
+      };
+      #UpdatedTaonga: { /*TODO*/ };
+
+      #Action: { /*TODO*/ };
+      #Guardian: { /*TODO*/ };
+      #Motion: { /*TODO*/ };
+    };
+    #Err: Text
+  };
+
+  ///////////////////////
+
 
   public func new_proposal(s: Types.State, caller: Principal, proposal: NewProposalArgs) : Proposal {
     let id = now(); // TODO Validar este cambio
@@ -108,7 +131,31 @@ module {
       votes : [(Principal, Vote)] = []
     };
     ignore Map.put<Int, Proposal>(s.proposals, ihash, id, newProposal);
+
+    // Si el proposal es para crear un Taonga, inicializar un archivo de volcado en el state con el mismo id
+    switch (newProposal.kind) {
+      case (#DigitalTaonga(#CreateDigitalTaonga(args))) {
+        let data = Array.init<Blob>(args.chunksQty, "");
+        let newFile: Types.File = {owner = caller; data};
+        ignore Map.put<Int, Types.File>(s.tempFiles, ihash, id, newFile);
+      };
+      case _ {}
+    };
     newProposal
+  };
+
+  public func addChunk({s: Types.State; caller: Principal; fileId: Int; chunk: Blob; index: Nat}): {#Ok; #Err} {
+    switch (Map.get<Int, Types.File>(s.tempFiles, ihash, fileId)) {
+      case null { #Err };
+      case ( ?{owner; data} ) {
+        if (caller == owner) {
+          data[index] := chunk;
+          #Ok
+        } else {
+          #Err;
+        }
+      }
+    };
   };
 
   public func get_proposal(s: Types.State, id: Int) :?Proposal{
@@ -159,12 +206,53 @@ module {
     };
   };
 
+  func didProposalPass(pr: Proposal): Bool {
+    var yes = 0;
+    var no = 0;
+    for ((_, v)  in pr.votes.vals()){
+      switch v {
+        case (#Approve){ yes += 1};
+        case (#Disapprove) { no += 1};
+        case _ {}
+      }
+    };
+    yes > no;
+  };
+
+  func executeProposal(pr: Proposal): ProposalExecutionResult {
+    switch (pr.kind) {
+      case ( #DigitalTaonga(dt)){
+        switch (dt) {
+          case (#CreateDigitalTaonga(args)) {
+
+            #Ok( #Void )
+          };
+          case (_) {
+            // TODO
+            #Ok( #Void )
+          }
+        };
+        
+      };
+      case _ {
+        // TODO #Action; #Guardian; #Motion;
+        #Ok( #Void )
+      }
+    }
+  };
+
   public func refresh_proposal_status(s: Types.State, id: Int): ?Proposal {
     switch (Map.get<Int, Proposal>(s.proposals, ihash, id)){
       case null { null };
       case ( ?proposal ) {
         let active_members = Member.get_active_members(s).size();
         let total_admins = Member.get_total_admins(s);
+        if (now() > proposal.deadline and proposal.status == #Open){
+          if(didProposalPass(proposal)) {
+            //TODO Ejecutar accion asociada a la aprobacion, si es necesario agregar variante a status que indique que esta en proceso de ejecucion
+            //ya que para estar en ejecucion tiene que estar aprovada se puede asociar la misma variante a un valor que indique el estado de ejecicion
+          }
+        };
         //TODO Actualizar estado 
         null
 

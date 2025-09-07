@@ -57,7 +57,7 @@ module {
           created_at = now();
           last_activity = now();
           liked_proposals = [];
-          role = if (Map.size(state.members) == 0) { #Admin } else { #Viewer }; // Lógica heredada de la version Rust
+          role = if (Map.size(state.members) == 0) { #Admin } else { #Viewer }; // Lógica heredada de la version Rust. Revisar
         };
         ignore Map.put<Principal, Member>(state.members, phash, caller, newMember);
         newMember;

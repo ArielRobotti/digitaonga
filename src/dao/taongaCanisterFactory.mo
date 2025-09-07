@@ -26,6 +26,8 @@ persistent actor {
     // image: ?Blob;
   };
 
+  public type TempFile =  {owner: Principal; data: [var Blob]};
+
   //////////////////////// Config values ////////////////////////
 
   var cyclesForTaongaDeploy = 1_000_000_000_000; // Cyclos necesarios para desplegar un canister class Taonga... probar cuantos se requieren en mainnet
@@ -36,7 +38,7 @@ persistent actor {
   let taongas = Map.new<TaongaId, TaongaMetadata>();
   // let taongasProposalCreate = Map.new<ProposalId, CreateDigitalTaonga>(); // TODO Revisar dónde se guardan los proposal
 
-  let glbTempStore = Map.new<Int, [Blob]>();
+  let glbTempStore = Map.new<Int, {owner: Principal; data: [var Blob]}>();
 
   var lastTaongaId = 0;
 
@@ -49,12 +51,12 @@ persistent actor {
   /// for its preview display (such as its name, and other necessary data) and for direct access from the frontend (the Canister ID).
 
   func deployTaonga(init : TaongaTypes.InitArgs) : async Principal {
-    let data = switch (Map.get<Int, [Blob]>(glbTempStore, ihash, init.tempFileId)) {
+    let { data } = switch (Map.get<Int, TempFile>(glbTempStore, ihash, init.tempFileId)) {
       case null throw Error.reject("No data found in glbTempStore for the given id");
-      case (?data) { data };
+      case (?file) { file };
     };
     print("Desplegando Canister Class Taonga...");
-    let newTaonga = await (with cycles = cyclesForTaongaDeploy) Taonga.Taonga(init, callbackLoadAssetOk); //Nuevo canister class
+    let newTaonga = await (with cycles = cyclesForTaongaDeploy) Taonga.Taonga(init, callbackRemoveTempFile); //Nuevo canister class
 
     print("Canister class desplegado en " # debug_show (Principal.fromActor(newTaonga)));
     print("Indexando Canister Class");
@@ -72,7 +74,7 @@ persistent actor {
     let responsesUpload = Array.init<async { #Err : Text; #Ok }>(data.size(), async #Err("not yet"));
 
     // Pruebas en local: El canister se Taonga se despliega sin problemas y acto seguido se envian todos los chunks del archivo GLB simulado
-    // sin esperar el retorno de la llamada. Todos los chunks de 1 MB son cargados exitosamente. Prueba maxima 500 Chunks de 1 MB -> Ok
+    // sin esperar el retorno de las llamadas. Todos los chunks de 2 MiB - 1 KB son cargados exitosamente. Prueba maxima 250 (aprox 500 MiB) resultado Ok
     var index = 0;
     for (chunk in data.vals()) {
       responsesUpload[index] := newTaonga.uploadTaonga({ chunk; index }); // Probar sin esperar retorno del Taonga para ver si sube mas rapido
@@ -100,23 +102,20 @@ persistent actor {
     Principal.fromActor(newTaonga);
   };
 
-  public shared func callbackLoadAssetOk(tempFileId : Int) : () {
-    let deletedTempFile = switch (Map.remove<Int, [Blob]>(glbTempStore, ihash, tempFileId)) {
-      case null [];
-      case (?arr) { arr };
+  public shared func callbackRemoveTempFile(tempFileId : Int) : () {
+    let recoveredBytes = switch (Map.remove<Int, TempFile>(glbTempStore, ihash, tempFileId)) {
+      case null {0};
+      case (?file) { file.data.size() };
     };
-    print(Nat.toText(deletedTempFile.size()) # "MB temporary file successfully deleted");
+    print(Nat.toText(recoveredBytes * limit_payload_per_call - 1024) # " Bytes temporary file successfully deleted");
   };
 
-  public shared ({ caller }) func testDeployTaonga(init : TaongaTypes.InitArgs) : async {
-    #Ok : Principal;
-    #Err;
-  } {
+  public shared ({ caller }) func testDeployTaonga(init : TaongaTypes.InitArgs) : async {#Ok : Principal; #Err; } {
     // assert isAdmin(caller);
     let tempFileId = now();
     let fakeChunkReal1MB = Blob.fromArray(Array.tabulate<Nat8>(limit_payload_per_call - 1024, func x = Nat8.fromNat(x % 256))); //Blob de 2 MiB - 1 KB
-    let fakeGLBFileChunked = Array.tabulate<Blob>(init.chunksQty, func x = fakeChunkReal1MB);
-    ignore Map.put<Int, [Blob]>(glbTempStore, ihash, tempFileId, fakeGLBFileChunked);
+    let fakeGLBFileChunked = Array.tabulateVar<Blob>(init.chunksQty, func x = fakeChunkReal1MB);
+    ignore Map.put<Int, TempFile>(glbTempStore, ihash, tempFileId, {owner = caller; data = fakeGLBFileChunked});
     #Ok(await deployTaonga({ init with tempFileId }))
 
   };

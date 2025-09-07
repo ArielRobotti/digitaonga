@@ -7,14 +7,19 @@ module {
 
   public type State = {
     members : Map.Map<Principal, Member>;
-    tempFiles : Map.Map<Int, [Blob]>; // Ver si es necesario un owner para control de acceso
+    tempFiles : Map.Map<Int, File>; // Ver si es necesario un owner para control de acceso
     proposals : Map.Map<Int, Proposal>; // El id puede ser el Timestamp en lugar del tamaño actual del Map
+  };
+
+  public type File = { // Por ahora no es necesario mas información
+    owner: Principal;
+    data: [var Blob]
   };
 
   public func initState() : State {
     {
       members = Map.new<Principal, Member>();
-      tempFiles = Map.new<Int, [Blob]>();
+      tempFiles = Map.new<Int, File>();
       proposals = Map.new<Int, Proposal>();
     };
   };
@@ -98,95 +103,95 @@ module {
   // };
 
  ///////////
-  public type NewProposalArgs = {
-    title: Text;
-    description: Text;
-    kind: ProposalType;
-    deadline: Int;
-  };
+  // public type NewProposalArgs = {
+  //   title: Text;
+  //   description: Text;
+  //   kind: ProposalType;
+  //   deadline: Int;
+  // };
 
-  public type ProposalEditableData = {
-    title : Text; 
-    description : Text; 
-    kind : ProposalType
-  };
+  // public type ProposalEditableData = {
+  //   title : Text; 
+  //   description : Text; 
+  //   kind : ProposalType
+  // };
 
-  public func new_proposal(s: State, caller: Principal, proposal: NewProposalArgs) : Proposal {
-    let id = now(); // TODO Validar este cambio
-    let newProposal: Proposal = {
-      proposal with
-      active_members : Nat = Map.size(s.members);
-      comments : [ProposalComment] = [];
-      created_at : Int = id;
-      creator : Principal = caller;
-      id ;
-      likes : [(Principal, LikeProposal)] = [];
-      status : ProposalStatus = #Open; // TODO 
-      votes : [(Principal, Vote)] = []
-    };
-    ignore Map.put<Int, Proposal>(s.proposals, ihash, id, newProposal);
-    newProposal
-  };
+  // public func new_proposal(s: State, caller: Principal, proposal: NewProposalArgs) : Proposal {
+  //   let id = now(); // TODO Validar este cambio
+  //   let newProposal: Proposal = {
+  //     proposal with
+  //     active_members : Nat = Map.size(s.members);
+  //     comments : [ProposalComment] = [];
+  //     created_at : Int = id;
+  //     creator : Principal = caller;
+  //     id ;
+  //     likes : [(Principal, LikeProposal)] = [];
+  //     status : ProposalStatus = #Open; // TODO 
+  //     votes : [(Principal, Vote)] = []
+  //   };
+  //   ignore Map.put<Int, Proposal>(s.proposals, ihash, id, newProposal);
+  //   newProposal
+  // };
 
-  public func get_proposal(s: State, id: Int) :?Proposal{
-    Map.get<Int, Proposal>(s.proposals, ihash, id)
-  };
+  // public func get_proposal(s: State, id: Int) :?Proposal{
+  //   Map.get<Int, Proposal>(s.proposals, ihash, id)
+  // };
 
-  func proposalUpdatable(pr: Proposal): Bool {
-    // TODO establecer mas reglas para permitir edicion de proposal
-    pr.status != (#Approved) and
-    pr.status != (#Rejected) and
-    pr.votes.size() > 0
-  };
+  // func proposalUpdatable(pr: Proposal): Bool {
+  //   // TODO establecer mas reglas para permitir edicion de proposal
+  //   pr.status != (#Approved) and
+  //   pr.status != (#Rejected) and
+  //   pr.votes.size() > 0
+  // };
 
-  public func edit_proposal(s: State, caller: Principal, id: Int, data: ProposalEditableData ): ?Proposal {
-    switch (Map.get<Principal, Member>(s.members, phash, caller)){
-      case ( ?_ ) { //Si un proposal fue hecho por un miembro que ya no es miembro, no lo podrá editar
-        switch (Map.get<Int, Proposal>(s.proposals, ihash, id)){
-          case ( ?proposal ) {
-            if (proposal.creator != caller) {
-              return null
-            };
-            if (not proposalUpdatable(proposal)) {
-              return null
-            };
-            let { title; description; kind } = data;
-            let updatedProposal: Proposal = { proposal with title; description; kind };
-            ignore Map.put<Int, Proposal>(s.proposals, ihash, id, updatedProposal);
-            ?updatedProposal
-          };
-          case null null
-        }
-      };
-      case null null
-    }
-  };
+  // public func edit_proposal(s: State, caller: Principal, id: Int, data: ProposalEditableData ): ?Proposal {
+  //   switch (Map.get<Principal, Member>(s.members, phash, caller)){
+  //     case ( ?_ ) { //Si un proposal fue hecho por un miembro que ya no es miembro, no lo podrá editar
+  //       switch (Map.get<Int, Proposal>(s.proposals, ihash, id)){
+  //         case ( ?proposal ) {
+  //           if (proposal.creator != caller) {
+  //             return null
+  //           };
+  //           if (not proposalUpdatable(proposal)) {
+  //             return null
+  //           };
+  //           let { title; description; kind } = data;
+  //           let updatedProposal: Proposal = { proposal with title; description; kind };
+  //           ignore Map.put<Int, Proposal>(s.proposals, ihash, id, updatedProposal);
+  //           ?updatedProposal
+  //         };
+  //         case null null
+  //       }
+  //     };
+  //     case null null
+  //   }
+  // };
 
-  public func delete_proposal(s: State, caller: Principal, id: Int): ?Proposal {
-    switch (Map.remove<Int, Proposal>(s.proposals, ihash, id)){
-      case null null;
-      case ( ?proposal ) {
-        if (proposal.creator == caller and proposalUpdatable(proposal)) {
-          return ?proposal
-        } else {
-          ignore Map.put<Int, Proposal>(s.proposals, ihash, id, proposal);
-          return null
-        }
-      }
-    };
-  };
+  // public func delete_proposal(s: State, caller: Principal, id: Int): ?Proposal {
+  //   switch (Map.remove<Int, Proposal>(s.proposals, ihash, id)){
+  //     case null null;
+  //     case ( ?proposal ) {
+  //       if (proposal.creator == caller and proposalUpdatable(proposal)) {
+  //         return ?proposal
+  //       } else {
+  //         ignore Map.put<Int, Proposal>(s.proposals, ihash, id, proposal);
+  //         return null
+  //       }
+  //     }
+  //   };
+  // };
 
-  public func refresh_proposal_status(s: State, id: Int): ?Proposal {
-    switch (Map.get<Int, Proposal>(s.proposals, ihash, id)){
-      case null { null };
-      case ( ?proposal ) {
-        let _now = now();
-        let active_members = 
-        null
+  // public func refresh_proposal_status(s: State, id: Int): ?Proposal {
+  //   switch (Map.get<Int, Proposal>(s.proposals, ihash, id)){
+  //     case null { null };
+  //     case ( ?proposal ) {
+  //       let _now = now();
+  //       let active_members = 
+  //       null
 
-      }
-    }
-  };
+  //     }
+  //   }
+  // };
 
   /////////////////////////// End Migration ///////////////
 

@@ -1,68 +1,75 @@
 import DaoTypes "./types";
 import Member "./member";
+import Proposal "./proposal";
 import Error "mo:base/Error";
 
 
 persistent actor {
 
-  /////////////////////// Types /////////////////////////
 
   let state: DaoTypes.State = DaoTypes.initState(); 
 
-    
-    
+     
   ////////////////////// Migracion de funciones existentes /////////
-  //////////////////////////////// Done ////////////////////////
+  //////////////////////////////// Done ////////////////////////////
 
-  public shared ({ caller }) func create_member() : async DaoTypes.Member {
-    // DaoTypes.create_member(state, caller)
+  public shared ({ caller }) func create_member() : async Member.Member {
+    // Revisar logica de creacion de Miembros y asignacion de roles
+    // Actualmente por efecto de esta funcion el primero que se registra es admin y el resto viewer
     Member.create_member(state, caller)
   };
 
-  public shared ({ caller }) func edit_member({name; profile_pic; cover_img }: DaoTypes.MemberEditableData) : async DaoTypes.Result {
-    // DaoTypes.edit_member(state, caller, {name; profile_pic; cover_img});
+  public shared ({ caller }) func edit_member({name; profile_pic; cover_img }: Member.MemberEditableData) : async Member.Result {
     Member.edit_member(state, caller, {name; profile_pic; cover_img})
   };
 
-  // batch_update_member_role : shared ([Principal], MemberRole,) -> async Result_1; 
-  public shared ({ caller }) func batch_update_member_role(principals : [Principal], role : DaoTypes.MemberRole) : async [(Principal, DaoTypes.MemberError)] {
-    // assert(DaoTypes.is_admin(state, caller));
+  public shared ({ caller }) func batch_update_member_role(principals : [Principal], role : Member.MemberRole) : async [(Principal, Member.MemberError)] {
     assert(Member.is_admin(state, caller));
-    // DaoTypes.batch_update_member_role(state, principals, role);
     Member.batch_update_member_role(state, principals, role);
     // TODO. Registrar Fecha, Cambio y autor del autor del cambio?
   };
 
   ///////////////////////////// CRUD Proposals ///////////
-  // create_proposal : shared (Text, Text, ProposalType, Nat64,) -> async Proposal;
-  public shared ({ caller }) func create_proposal(args: DaoTypes.NewProposalArgs) : async DaoTypes.Proposal {
+
+  public shared ({ caller }) func create_proposal(args: Proposal.NewProposalArgs) : async Proposal.Proposal {
     let callerRole = Member.get_role_member(state, caller);
     assert(callerRole != null and callerRole != ?#Observer); //
-    DaoTypes.new_proposal(state, caller, args)
+    Proposal.new_proposal(state, caller, args)
+  };
+
+  public shared ({ caller }) func uploadFileChunk({fileId: Int; chunk: Blob; index: Nat}): async {#Ok; #Err}{
+    Proposal.addChunk({
+      s = state;
+      fileId;
+      chunk;
+      caller;
+      index
+    })
   };
   
   // get_proposal : shared query Nat -> async ?Proposal;
-  public query func get_proposal(id: Int): async ?DaoTypes.Proposal {
-    DaoTypes.get_proposal(state, id);
+  public query func get_proposal(id: Int): async ?Proposal.Proposal {
+    Proposal.get_proposal(state, id);
   };
 
   // edit_proposal : shared (Nat, Text, Text, ProposalType) -> async ?Proposal; // Cambio de firma (id: Int; data: ProposalEditableData)
-  public shared ({ caller }) func edit_proposal(id : Int, data: DaoTypes.ProposalEditableData) : async ?DaoTypes.Proposal {
-    DaoTypes.edit_proposal(state, caller, id, data);
+  public shared ({ caller }) func edit_proposal(id : Int, data: Proposal.ProposalEditableData) : async ?Proposal.Proposal {
+    Proposal.edit_proposal(state, caller, id, data);
   };
 
-  public shared ({ caller }) func delete_proposal(id: Int): async ?DaoTypes.Proposal {
-    DaoTypes.delete_proposal(state, caller, id);
+  public shared ({ caller }) func delete_proposal(id: Int): async ?Proposal.Proposal {
+    Proposal.delete_proposal(state, caller, id);
   };
   //////////////////////////////////////////////////////////////////
   
-  // vote_proposal : shared (Nat, Vote) -> async Result_2;
-  public shared ({ caller }) func vote_proposal(id : Int, vote : DaoTypes.Vote) : async () {
-    
-  };
 
   /////////////////////// TODO ////////////////////////////
 
+  // vote_proposal : shared (Nat, Vote) -> async Result_2;
+  public shared ({ caller }) func vote_proposal(id : Int, vote : Proposal.Vote) : async () {
+    
+  };
+  
   // accept_member_invitation : shared () -> async Result;
   public shared ({ caller }) func accept_member_invitation() : async () {
     // return Result{};

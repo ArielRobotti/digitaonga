@@ -10,6 +10,11 @@
       "type": "motoko"
     },
 
+    "motokoDao": {
+      "main": "src/dao/main.mo",
+      "type": "motoko"
+    },
+
     "digital_asset": {
       "candid": "src/digital_asset/digital_asset.did",
       "package": "digital_asset",
