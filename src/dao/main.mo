@@ -33,7 +33,7 @@ persistent actor {
 
   public shared ({ caller }) func create_proposal(args: Proposal.NewProposalArgs) : async Proposal.Proposal {
     let callerRole = Member.get_role_member(state, caller);
-    assert(callerRole != null and callerRole != ?#Observer); //
+    assert(callerRole != null and callerRole != ?#Observer and callerRole != ?#Viewer); //
     Proposal.new_proposal(state, caller, args)
   };
 
