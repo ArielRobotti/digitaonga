@@ -201,15 +201,14 @@ module {
     history : Text;
     deadline : Int;
     imageID : Nat; // Revisar
+    thumbnail: Blob;
     chunksQty : Nat;
-    chunksFile : [Blob]; //en el submit del proposal se envia vacio y en chunksQty llamadas iterativas se envian los chunks de 1 MiB desde el front
     dataSize : Nat;
   };
 
   public type DigitalTaongaProposal = {
     #UpdateDigitalTaonga : UpdateDigitalTaongaProposal;
     #DeleteDigitalTaonga : Nat64;
-    // #CreateDigitalTaonga : (Text, Text, Text, Nat64, Text); // Cambiar por argumentos de deploy + archivo GLB: [Blob] para upload
     #CreateDigitalTaonga : CreateDigitalTaongaArgs;
     #RequestDownloadPermision;
   };

@@ -84,21 +84,28 @@ module {
     }
   };
 
-  public func batch_update_member_role(s: Types.State, member_list: [Principal], new_role: MemberRole): [(Principal, MemberError)] {
+  public func set_member_role(s: Types.State, p: Principal, new_role: MemberRole): ?MemberError{
+    switch (Map.get<Principal, Member>(s.members, phash, p)) {
+      case null { ? #NotFound };
+      case ( ?member ) {
+        if ( member.role == #Admin){
+          // TODO C0nsultar por esta acción. En caso del que el usuario sea un admin, se le puede modificar el rol?
+        } else {
+          ignore Map.put<Principal, Member>(s.members, phash, p, {member with role = new_role});
+        };
+        null
+      }
+    }
+  };
 
+  public func batch_update_member_role(s: Types.State, member_list: [Principal], new_role: MemberRole): [(Principal, MemberError)] {
     let failsBuffer = Buffer.fromArray<(Principal, MemberError)>([]);
     for(p in member_list.vals()) {
-      switch (Map.get<Principal, Member>(s.members, phash, p)){
-        case null {
-          failsBuffer.add((p, #NotFound))
+      switch (set_member_role(s, p, new_role)){
+        case ( ?error ) {
+          failsBuffer.add((p, error))
         };
-        case ( ?member ) {
-          if(member.role == #Admin){
-            // failsBuffer.add((p, )) // TODO Si el miembro al que se le quiere cambiar el rol es un admin no se hace nada... consultar esto
-          } else {
-            ignore Map.put<Principal, Member>(s.members, phash, p, {member with role = new_role});
-          };
-        };
+        case _ {}
       };
     };
     Buffer.toArray(failsBuffer)
@@ -123,12 +130,25 @@ module {
     }
   };
 
-  public func get_active_members(s: Types.State): [Member] {
-    let members = Iter.toArray(Map.vals<Principal, Member>(s.members));
-    Array.filter<Member>(
-      members, 
-      func x = is_active_member(x) and is_approved_member(x))
 
+  public func get_active_members(s: Types.State): [Member] { // Warning. El límite máximo de 2 MiB puede ser superado facilmente. Paginar response
+    let members = Iter.toArray(Map.vals<Principal, Member>(s.members));
+    let actives = Array.filter<Member>(
+      members, 
+      func x = is_active_member(x) and is_approved_member(x)
+    );
+    Array.map<Member, Member>(
+      actives, 
+      func x = {x with cover_img = null; profile_pic = null}  // Omitimos las imagenes
+    );
+  };
+
+  public func get_all_members(s: Types.State) : [Member] { // Warning. El límite máximo de 2 MiB puede ser superado facilmente. Paginar response u omitir imagenes
+    let membersArray = Iter.toArray(Map.vals<Principal, Member>(s.members));
+    Array.map<Member, Member>(
+      membersArray, 
+      func x = {x with cover_img = null; profile_pic = null} // Omitimos las imagenes
+    ); 
   };
 
   public func get_total_admins(s: Types.State): Nat {

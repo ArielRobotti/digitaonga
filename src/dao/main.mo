@@ -29,6 +29,30 @@ persistent actor {
     // TODO. Registrar Fecha, Cambio y autor del autor del cambio?
   };
 
+  // Revisar politicas de acceso a esta informacion
+  public query func get_active_members() : async [Member.Member] { // Peligro de desbordamiento de response sobre los 2 MiB
+    Member.get_active_members(state)
+  };
+  // Quienes tienen acceso a estos datos?
+  public query func get_all_members() : async [Member.Member] {  // Peligro de desbordamiento de response sobre los 2 MiB
+    Member.get_all_members(state)
+  };
+
+  // TODO Verificar quien puede leer estos datos.. en este momento son públicos
+  /*
+    principal;
+    liked_proposals : [(Nat, LikeProposal)];
+    name 
+    role
+    created_at 
+    last_activity 
+    cover_img 
+    profile_pic
+  */
+  public query func get_member(p : Principal) : async Member.Result {
+    Member.get_member(state, p)
+  };
+
   ///////////////////////////// CRUD Proposals ///////////
 
   public shared ({ caller }) func create_proposal(args: Proposal.NewProposalArgs) : async Proposal.Proposal {
@@ -48,7 +72,7 @@ persistent actor {
   };
   
   // get_proposal : shared query Nat -> async ?Proposal;
-  public query func get_proposal(id: Int): async ?Proposal.Proposal {
+  public query func get_proposal(id: Int): async ?Proposal.ProposalPublicData { // En ProposalPublicData se omiten los votos y el creador
     Proposal.get_proposal(state, id);
   };
 
@@ -60,6 +84,12 @@ persistent actor {
   public shared ({ caller }) func delete_proposal(id: Int): async ?Proposal.Proposal {
     Proposal.delete_proposal(state, caller, id);
   };
+  
+  // get_all_proposals : shared query () -> async [Proposal];
+  public query func get_all_proposals() : async () {
+    // return [Proposal]{};
+  };
+  
   //////////////////////////////////////////////////////////////////
   
 
@@ -85,25 +115,8 @@ persistent actor {
     // return Result_2{};
   };
 
-  // get_active_members : shared query () -> async [Member];
-  public query func get_active_members() : async () {
-    // return [Member]{};
-  };
 
-  // get_all_members : shared query () -> async [Member];
-  public query func get_all_members() : async () {
-    // return [Member]{};
-  };
 
-  // get_all_proposals : shared query () -> async [Proposal];
-  public query func get_all_proposals() : async () {
-    // return [Proposal]{};
-  };
-
-  // get_member : shared query Principal -> async Result;
-  public query func get_member(principal : Principal) : async () {
-    // return Result{};
-  };
 
   // get_proposals_by_member : shared query Principal -> async [Proposal];
   public query func get_proposals_by_member(principal : Principal) : async () {

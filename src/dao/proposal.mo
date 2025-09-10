@@ -23,16 +23,7 @@ module {
     #RequestDownloadPermision;
   };
 
-  public type CreateDigitalTaongaArgs = {
-    name : Text;
-    description : Text;
-    history : Text;
-    deadline : Int;
-    imageID : Nat; // Revisar
-    chunksQty : Nat;
-    chunksFile : [Blob]; //en el submit del proposal se envia vacio y en chunksQty llamadas iterativas se envian los chunks de 1 MiB desde el front
-    dataSize : Nat;
-  };
+  type CreateDigitalTaongaArgs = Types.CreateDigitalTaongaArgs;
 
   public type UpdateDigitalTaongaProposal = {
     #UpdateImageURL : Text;
@@ -41,19 +32,22 @@ module {
 
   public type MotionProposal = { # }; // Consultar
 
-  public type Proposal = {
+  public type ProposalPublicData = {
     id : Int; // Cambio de Nat a Int, podemos definir el ID con el Timestamp de ingreso del proposal en lugar de con la cnatidad actual de proposals
     created_at : Int; // Informacion duplicada por el cambio en el ID
     deadline : Int;
     status : ProposalStatus;
     title : Text;
-    creator : Principal;
     votes : [(Principal, Vote)];
     kind : ProposalType;
     description : Text;
-    likes : [(Principal, LikeProposal)];
     active_members : Nat;
     comments : [ProposalComment];
+  };
+
+  public type Proposal = ProposalPublicData and {
+    creator : Principal;
+    likes : [(Principal, LikeProposal)];
   };
   
   public type NewProposalArgs = {
@@ -128,7 +122,7 @@ module {
       id ;
       likes : [(Principal, LikeProposal)] = [];
       status : ProposalStatus = #Open; // TODO 
-      votes : [(Principal, Vote)] = []
+      votes : [(Principal, Vote)] = [(caller, #Approve)] // Agregamos el voto positivo del creador
     };
     ignore Map.put<Int, Proposal>(s.proposals, ihash, id, newProposal);
 
@@ -206,6 +200,39 @@ module {
     };
   };
 
+  func canVote(s: Types.State, p: Principal) : Bool {
+    let role = Member.get_role_member(s, p);
+    switch role {
+      case (?#Admin or ?#Guardian or ?#Voter) {
+        true
+      };
+      case _ { false}
+    }
+  };
+
+  public func vote_proposal(s: Types.State, caller: Principal, id: Int, vote: Vote): ?ProposalPublicData {
+    switch (Map.get<Int, Proposal>(s.proposals, ihash, id)){
+      case null { null };
+      case ( ?proposal ) {
+        if (canVote(s, caller)) {
+          for (vote in proposal.votes.vals()){
+            if(vote.0 == caller){ // Si ya voto retornamos null sin hacer nada
+              return null
+            };
+          };
+          let update_votes = Array.tabulate<(Principal, Vote)>(
+            s.proposals.size() + 1,
+            func i = if (i < s.proposals.size()){proposal.votes[i]} else ((caller, vote))
+          );
+          ignore Map.put<Int, Proposal>(s.proposals, ihash, id, {proposal with votes = update_votes});
+          ?proposal
+        } else {
+          null
+        }
+      }
+    }
+  };
+
   func didProposalPass(pr: Proposal): Bool {
     var yes = 0;
     var no = 0;
@@ -216,7 +243,7 @@ module {
         case _ {}
       }
     };
-    yes > no;
+    yes > no and yes > 1; // Nos aseguramos de que no se gane solo con el voto del creador. Revisar esto
   };
 
   func executeProposal(pr: Proposal): ProposalExecutionResult {
