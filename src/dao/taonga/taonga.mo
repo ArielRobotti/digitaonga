@@ -63,7 +63,7 @@ import Cycles "mo:base/ExperimentalCycles";
       };
       #Ok({
         chunk = assetData[chunkIndex];
-        hasNext = (chunkIndex + 2) < assetData.size();
+        hasNext = (chunkIndex + 1) < assetData.size();
       });
     };
 

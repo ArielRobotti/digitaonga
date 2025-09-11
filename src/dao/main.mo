@@ -57,7 +57,7 @@ persistent actor {
 
   public shared ({ caller }) func create_proposal(args: Proposal.NewProposalArgs) : async Proposal.Proposal {
     let callerRole = Member.get_role_member(state, caller);
-    assert(callerRole != null and callerRole != ?#Observer and callerRole != ?#Viewer); //
+    assert(callerRole == ?#Admin or callerRole == ?#Guardian); //
     Proposal.new_proposal(state, caller, args)
   };
 
@@ -90,15 +90,16 @@ persistent actor {
     // return [Proposal]{};
   };
   
+  // vote_proposal : shared (Nat, Vote) -> async Result_2;
+  public shared ({ caller }) func vote_proposal(id : Int, vote : Proposal.Vote) : async () {
+    
+  };
+
   //////////////////////////////////////////////////////////////////
   
 
   /////////////////////// TODO ////////////////////////////
 
-  // vote_proposal : shared (Nat, Vote) -> async Result_2;
-  public shared ({ caller }) func vote_proposal(id : Int, vote : Proposal.Vote) : async () {
-    
-  };
   
   // accept_member_invitation : shared () -> async Result;
   public shared ({ caller }) func accept_member_invitation() : async () {

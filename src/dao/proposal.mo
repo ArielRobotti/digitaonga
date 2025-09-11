@@ -9,10 +9,16 @@ import Array "mo:base/Array";
 module {
 
   public type LikeProposal = { #Like; #Dislike };
+  // public type Role = Member.Role;
   
   public type GuardianProposal = {
-    #RemoveFromDao : (Principal, Nat64);
-    #AssignAsObserver : (Principal, Nat64);
+    #RemoveFromDao : (Principal, Int);
+    #AssignAsObserver : (Principal, Int);
+    // #AssignRole: {
+    //   member: Principal;
+    //   role: Member.MemberRole;
+    //   deadline: Int;
+    // }
   };
 
   public type DigitalTaongaProposal = {
@@ -246,7 +252,20 @@ module {
     yes > no and yes > 1; // Nos aseguramos de que no se gane solo con el voto del creador. Revisar esto
   };
 
-  func executeProposal(pr: Proposal): ProposalExecutionResult {
+  func checkFileIntegrity(s: Types.State, id: Int, size: Nat): Bool {
+    switch (Map.get<Int, Types.File>(s.tempFiles, ihash, id)){
+      case null { false };
+      case ( ?file ){
+        var counterBytes = 0;
+        for (chunk in file.data.vals()) {
+          counterBytes += chunk.size()
+        };
+        return counterBytes == size
+      }
+    }
+  };
+
+  func executeProposal(s: Types.State, pr: Proposal): ProposalExecutionResult {
     switch (pr.kind) {
       case ( #DigitalTaonga(dt)){
         switch (dt) {
@@ -272,16 +291,17 @@ module {
     switch (Map.get<Int, Proposal>(s.proposals, ihash, id)){
       case null { null };
       case ( ?proposal ) {
-        let active_members = Member.get_active_members(s).size();
-        let total_admins = Member.get_total_admins(s);
+        let _active_members = Member.get_active_members(s).size();
+        let _total_admins = Member.get_total_admins(s);
         if (now() > proposal.deadline and proposal.status == #Open){
           if(didProposalPass(proposal)) {
-            //TODO Ejecutar accion asociada a la aprobacion, si es necesario agregar variante a status que indique que esta en proceso de ejecucion
-            //ya que para estar en ejecucion tiene que estar aprovada se puede asociar la misma variante a un valor que indique el estado de ejecicion
+        
+            let _resultProposalExecution = executeProposal(s, proposal );
+
           }
         };
         //TODO Actualizar estado 
-        null
+        ?proposal
 
       }
     }

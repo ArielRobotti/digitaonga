@@ -23,7 +23,7 @@ persistent actor {
     canisterId : Principal;
     remoteActorReference : Taonga.Taonga;
     name : Text;
-    // image: ?Blob;
+    thumbnail: Blob;
   };
 
   public type TempFile =  {owner: Principal; data: [var Blob]};
@@ -55,8 +55,10 @@ persistent actor {
       case null throw Error.reject("No data found in glbTempStore for the given id");
       case (?file) { file };
     };
+
     print("Desplegando Canister Class Taonga...");
     let newTaonga = await (with cycles = cyclesForTaongaDeploy) Taonga.Taonga(init, callbackRemoveTempFile); //Nuevo canister class
+    let taongaCanisterId = Principal.fromActor(newTaonga);
 
     print("Canister class desplegado en " # debug_show (Principal.fromActor(newTaonga)));
     print("Indexando Canister Class");
@@ -65,9 +67,10 @@ persistent actor {
     let id = lastTaongaId;
     let metadata : TaongaMetadata = {
       id;
-      canisterId = Principal.fromActor(newTaonga);
+      canisterId = taongaCanisterId;
       remoteActorReference = newTaonga;
       name : Text = init.name;
+      thumbnail = init.thumbnail
     };
     ignore Map.put<TaongaId, TaongaMetadata>(taongas, nhash, id, metadata);
     // Esperar todos los responses juntos
@@ -99,22 +102,33 @@ persistent actor {
     //     print("Chunk numero " # Nat.toText(index) # " subido exitosamente");
     //     index += 1;
     // };
-    Principal.fromActor(newTaonga);
+    ignore Map.put<Int, TempFile>(glbTempStore, ihash, init.tempFileId, {owner = taongaCanisterId; data});
+    taongaCanisterId;
   };
 
-  public shared func callbackRemoveTempFile(tempFileId : Int) : () {
-    let recoveredBytes = switch (Map.remove<Int, TempFile>(glbTempStore, ihash, tempFileId)) {
+  public shared ({ caller })func callbackRemoveTempFile(tempFileId : Int) : () {
+    let recoveredBytes = switch (Map.get<Int, TempFile>(glbTempStore, ihash, tempFileId)) {
       case null {0};
-      case (?file) { file.data.size() };
+      case (?file) {
+        if(file.owner == caller){
+          ignore Map.remove<Int, TempFile>(glbTempStore, ihash, tempFileId);
+          file.data.size() 
+        } else {
+          0
+        }
+        
+      };
     };
     print(Nat.toText(recoveredBytes * limit_payload_per_call - 1024) # " Bytes temporary file successfully deleted");
   };
 
   public shared ({ caller }) func testDeployTaonga(init : TaongaTypes.InitArgs) : async {#Ok : Principal; #Err; } {
     // assert isAdmin(caller);
+
     let tempFileId = now();
-    let fakeChunkReal1MB = Blob.fromArray(Array.tabulate<Nat8>(limit_payload_per_call - 1024, func x = Nat8.fromNat(x % 256))); //Blob de 2 MiB - 1 KB
-    let fakeGLBFileChunked = Array.tabulateVar<Blob>(init.chunksQty, func x = fakeChunkReal1MB);
+    let fakeChunkReal2MB = Blob.fromArray(Array.tabulate<Nat8>(limit_payload_per_call - 1024, func x = Nat8.fromNat(x % 256))); //Blob de 2 MiB - 1 KB
+    let fakeGLBFileChunked = Array.tabulateVar<Blob>(init.chunksQty, func x = fakeChunkReal2MB);
+
     ignore Map.put<Int, TempFile>(glbTempStore, ihash, tempFileId, {owner = caller; data = fakeGLBFileChunked});
     #Ok(await deployTaonga({ init with tempFileId }))
 

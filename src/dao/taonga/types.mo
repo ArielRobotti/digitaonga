@@ -9,6 +9,7 @@ module {
     tempFileId: Int;
     dataSize : Nat;
     chunksQty : Nat;
+    thumbnail: Blob;
   };
 
   // public type TaongaMetadata = {
@@ -27,6 +28,7 @@ module {
     image : ?Blob;
     symbol : Text;
   };
+  
 
   public type GetAssetResponse = {
     #Ok : {

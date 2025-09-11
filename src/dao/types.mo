@@ -213,8 +213,9 @@ module {
     #RequestDownloadPermision;
   };
   public type GuardianProposal = {
-    #RemoveFromDao : (Principal, Nat64);
-    #AssignAsObserver : (Principal, Nat64);
+    #RemoveFromDao : (Principal, Int);
+    #AssignAsObserver : (Principal, Int);
+    // #AssignRoleToMember: { memberId: Principal ; role: Proposal.Role}
   };
   public type LikeProposal = { #Like; #Dislike };
 
