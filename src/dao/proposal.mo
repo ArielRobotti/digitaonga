@@ -5,6 +5,7 @@ import Member "member";
 import { phash; ihash } "mo:map/Map";
 import { now } "mo:base/Time";
 import Array "mo:base/Array";
+import Iter "mo:base/Iter";
 
 module {
 
@@ -160,6 +161,10 @@ module {
 
   public func get_proposal(s: Types.State, id: Int) :?Proposal{
     Map.get<Int, Proposal>(s.proposals, ihash, id)
+  };
+
+  public func get_all_proposals(s: Types.State) : [ProposalPublicData] {
+    Iter.toArray(Map.vals<Int, Proposal>(s.proposals))
   };
 
   func proposalUpdatable(pr: Proposal): Bool {

@@ -17,6 +17,7 @@ persistent actor {
     // Revisar logica de creacion de Miembros y asignacion de roles
     // Actualmente por efecto de esta funcion el primero que se registra es admin y el resto viewer
     Member.create_member(state, caller)
+    // actualizar last_activity
   };
 
   public shared ({ caller }) func edit_member({name; profile_pic; cover_img }: Member.MemberEditableData) : async Member.Result {
@@ -86,8 +87,8 @@ persistent actor {
   };
   
   // get_all_proposals : shared query () -> async [Proposal];
-  public query func get_all_proposals() : async () {
-    // return [Proposal]{};
+  public query func get_all_proposals() : async [Proposal.ProposalPublicData] {
+    Proposal.get_all_proposals(state);
   };
   
   // vote_proposal : shared (Nat, Vote) -> async Result_2;
