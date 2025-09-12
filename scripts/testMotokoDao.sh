@@ -1,10 +1,11 @@
 #!/bin/bash
 dfx stop
 dfx start --clean --background
-dfx deploy motokoDao
 
 dfx identity list | grep -q "^000Admin$" || dfx identity new 000Admin
 export PrincipalAdmin=$(dfx identity get-principal --identity 000Admin)
+dfx identity use 000Admin
+dfx deploy motokoDao
 
 dfx identity list | grep -q "^000Guardian1$" || dfx identity new 000Guardian1
 export PrincipalGuardian01=$(dfx identity get-principal --identity 000Guardian1)
@@ -85,7 +86,7 @@ CreateTaongaProposal=$(dfx canister call motokoDao create_proposal "(
     kind = variant {
       DigitalTaonga = variant {
         CreateDigitalTaonga = record {
-          thumbnail = blob \"\\00\\11\\33\\44\";
+          thumbnail = blob \"\\00\\11\\33\\99\";
           name = \"Test Create Taonga\";
           description = \"Test Description \";
           deadline = 0 : int;
@@ -100,20 +101,22 @@ CreateTaongaProposal=$(dfx canister call motokoDao create_proposal "(
     deadline = 0 : int;
   },
 )")
-echo $CreateTaongaProposal
-FileId=0;
-echo "Extraer fileId de CreateTaongaProposal (response anterior a esta linea)"
+echo "Response from create_proposal: $CreateTaongaProposal"
+
+# Corrected variable assignment
+FileId=$(echo "$CreateTaongaProposal" | grep -o 'id = [0-9_]\+' | head -n 1 | awk '{print $NF}' | tr -d '_')
+echo "Extracted ID: $FileId"
+
 dfx canister call motokoDao uploadFileChunk "(
   record {
     chunk = blob \"\\99\\99\\99\\77\";
-    fileId = $FileId : int;
+    fileId = $FileId;
     index = 0 : nat;
     retry = false;
   },
-)
+)"
 
 echo "... Refreshing the status of the proposals and performing the corresponding executions"
 dfx canister call motokoDao refresh_all_proposals
 
 exit 0
-
