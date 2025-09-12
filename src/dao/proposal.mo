@@ -1,5 +1,7 @@
 import Types "./types";
 import SharedTypes "./sharedTypes";
+import Taonga "./taonga/taonga";
+import TaongaTypes "./taonga/types";
 import Map "mo:map/Map";
 import Buffer "mo:base/Buffer";
 import Member "member";
@@ -8,6 +10,9 @@ import { now } "mo:base/Time";
 import Array "mo:base/Array";
 import List "mo:base/List";
 import Iter "mo:base/Iter";
+import Principal "mo:base/Principal";
+import { print } "mo:base/Debug";
+import Error "mo:base/Error";
 
 
 module {
@@ -21,6 +26,7 @@ module {
   type UpdateDigitalTaongaProposal = SharedTypes.UpdateDigitalTaongaProposal;
   type Proposal = SharedTypes.Proposal;
   
+  /////////////////////// Type definitions ////////////////////////////
   public type NewProposalArgs = {
     title: Text;
     description: Text;
@@ -34,16 +40,14 @@ module {
     kind : ProposalType
   };
 
-
   public type ProposalExecutionResult = {
     #Ok: {
       #Void; 
       #NewTaongaResult: {
-        taongaId: Nat;
         canisterId: Principal;
         deployDate: Int;
         readyDate: ?Int;
-        taongaName: Text;
+        name: Text;
         //TODO otros datos
       };
       #UpdatedTaonga: { /*TODO*/ };
@@ -55,8 +59,7 @@ module {
     #Err: Text
   };
 
-  ///////////////////////
-
+  /////////////////////// Public Functions ////////////////////////////
 
   public func new_proposal(s: Types.State, caller: Principal, proposal: NewProposalArgs) : Proposal {
     let id = now(); // TODO Validar este cambio
@@ -108,26 +111,13 @@ module {
       }
     };
   };
-
-  func checkUploadFile(file: Types.File): Bool {
-    var counter = 0;
-    for(ch in file.data.vals()) { counter += ch.size() };
-    counter == file.size
-  };
-
+  
   public func get_proposal(s: Types.State, id: Int) :?Proposal{
     Map.get<Int, Proposal>(s.proposals, ihash, id)
   };
 
   public func get_all_proposals(s: Types.State) : [ProposalPublicData] {
     Iter.toArray(Map.vals<Int, Proposal>(s.proposals))
-  };
-
-  func proposalUpdatable(pr: Proposal): Bool {
-    // TODO establecer mas reglas para permitir edicion de proposal
-    pr.status != (#Approved) and
-    pr.status != (#Rejected) and
-    pr.votes.size() > 0
   };
 
   public func edit_proposal(s: Types.State, caller: Principal, id: Int, data: ProposalEditableData ): ?Proposal {
@@ -167,16 +157,6 @@ module {
     };
   };
 
-  func canVote(s: Types.State, p: Principal) : Bool {
-    let role = Member.get_role_member(s, p);
-    switch role {
-      case (?#Admin or ?#Guardian or ?#Voter) {
-        true
-      };
-      case _ { false}
-    }
-  };
-
   public func vote_proposal(s: Types.State, caller: Principal, id: Int, vote: SharedTypes.Vote): ?ProposalPublicData {
     switch (Map.get<Int, Proposal>(s.proposals, ihash, id)){
       case null { null };
@@ -199,32 +179,7 @@ module {
       }
     }
   };
-
-  func get_proposal_reaction(reactions: [(Principal, LikeProposal)], prop: Int, p: Principal): ?LikeProposal {
-    for(r in reactions.vals()){
-      if (r.0 == p) { return ?r.1 }
-    };
-    return null
-  };
-
-  func can_give_like(roleMember: ?SharedTypes.MemberRole): Bool { 
-    switch roleMember {
-      case ( ?#Admin or ?#Guardian ) {
-        true
-      };
-      case _ { false }
-    }
-  };
-
-  func can_comment_proposal(roleMember: ?SharedTypes.MemberRole): Bool {
-    switch roleMember {
-      case ( ?#Admin or ?#Guardian ) {
-        true
-      };
-      case _ { false }
-    }
-  };
-
+  
   public func like_proposal(s: Types.State, caller: Principal, id: Int, like: ?LikeProposal): ?Proposal {
 
     if(not can_give_like(Member.get_role_member(s, caller))) { 
@@ -252,7 +207,89 @@ module {
       }
     };
   };
+  
+  public func refresh_proposal_status(s: Types.State, id: Int, callback: shared Int -> ()): async ?Proposal {
+    switch (Map.get<Int, Proposal>(s.proposals, ihash, id)){
+      case null { null };
+      case ( ?proposal ) {
+        let _active_members = Member.get_active_members(s).size();
+        let _total_admins = Member.get_total_admins(s);
+        let roleOfCreatorProposal = Member.get_role_member(s, proposal.creator);
+        let guardiansQty = Array.filter<(Principal, SharedTypes.Member)>(
+          Map.toArray<Principal, SharedTypes.Member>(s.members), 
+          func entry = entry.1.role == #Guardian
+        ).size();
+        if (proposal.status == #Open) { 
+          print("Actulizando proposal " # debug_show(id));
+          if (roleOfCreatorProposal == ?#Admin and guardiansQty < 10) {
+            ignore await executeProposal(s, proposal, callback);
+            ignore Map.put<Int, SharedTypes.Proposal>(s.proposals, ihash, id, { proposal with status = #Approved});
+          } else {
+            // Si se superó el plazo se evalúa el la votación para ver si puede ser ejecutada.
+            if (now() > proposal.deadline ) {
+              if (didProposalPass(proposal)) {
+                let resultProposalExecution = await executeProposal(s, proposal, callback);
+                print("resultProposalExecution ----> " # debug_show(resultProposalExecution));
+                ignore Map.put<Int, SharedTypes.Proposal>(s.proposals, ihash, id, { proposal with status = #Approved})
+              } else {
+                ignore Map.put<Int, SharedTypes.Proposal>(s.proposals, ihash, id, { proposal with status = #Rejected})
+              }
+            }
+          };
+        };
+        ?proposal
+      }
+    }
+  };
+  
+  func checkUploadFile(file: Types.File): Bool {
+    var counter = 0;
+    for(ch in file.data.vals()) { counter += ch.size() };
+    counter == file.size
+  };
 
+  func proposalUpdatable(pr: Proposal): Bool {
+    // TODO establecer mas reglas para permitir edicion de proposal
+    pr.status != (#Approved) and
+    pr.status != (#Rejected) and
+    pr.votes.size() > 0
+  };
+
+  func canVote(s: Types.State, p: Principal) : Bool {
+    let role = Member.get_role_member(s, p);
+    switch role {
+      case (?#Admin or ?#Guardian or ?#Voter) {
+        true
+      };
+      case _ { false}
+    }
+  };
+
+  func can_give_like(roleMember: ?SharedTypes.MemberRole): Bool { 
+    switch roleMember {
+      case ( ?#Admin or ?#Guardian ) {
+        true
+      };
+      case _ { false }
+    }
+  };
+
+  func can_comment_proposal(roleMember: ?SharedTypes.MemberRole): Bool {
+    switch roleMember {
+      case ( ?#Admin or ?#Guardian ) {
+        true
+      };
+      case _ { false }
+    }
+  };
+
+  func get_proposal_reaction(reactions: [(Principal, LikeProposal)], prop: Int, p: Principal): ?LikeProposal {
+    for(r in reactions.vals()){
+      if (r.0 == p) { return ?r.1 }
+    };
+    return null
+  };
+  
   func didProposalPass(pr: Proposal): Bool {
     var yes = 0;
     var no = 0;
@@ -266,26 +303,79 @@ module {
     yes > no and yes > 1; // Nos aseguramos de que no se gane solo con el voto del creador. Revisar esto
   };
 
-  // func checkFileIntegrity(s: Types.State, id: Int, size: Nat): Bool {
-  //   switch (Map.get<Int, Types.File>(s.tempFiles, ihash, id)){
-  //     case null { false };
-  //     case ( ?file ){
-  //       var counterBytes = 0;
-  //       for (chunk in file.data.vals()) {
-  //         counterBytes += chunk.size()
-  //       };
-  //       return counterBytes == size
-  //     }
-  //   }
-  // };
 
-  func executeProposal(s: Types.State, pr: Proposal): ProposalExecutionResult {
+  func deployTaonga(s: Types.State, init : TaongaTypes.InitArgs, callback: shared Int -> ()) : async Principal {
+    let tempFile = switch (Map.get<Int, Types.File>(s.tempFiles , ihash, init.tempFileId)) {
+      case null throw Error.reject("No data found in tempFiles for the given id");
+      case (?file) { file };
+    };
+    let { data; size } = tempFile;
+
+    print("Desplegando Canister Class Taonga...");
+    let newTaonga = await (with cycles = s.cyclesForTaongaDeploy) Taonga.Taonga(init, callback); //Nuevo canister class
+    let canisterId = Principal.fromActor(newTaonga);
+
+    print("Canister class desplegado en " # debug_show (Principal.fromActor(newTaonga)));
+    print("Indexando Canister Class");
+
+    let metadata : SharedTypes.TaongaMetadata = {
+      canisterId;
+      remoteActorReference = newTaonga;
+      name : Text = init.name;
+      thumbnail = init.thumbnail
+    };
+    ignore Map.put<Principal, SharedTypes.TaongaMetadata>(s.taongas, phash, canisterId, metadata);
+    // Esperar todos los responses juntos
+    let responsesUpload = Array.init<async { #Err : Text; #Ok }>(data.size(), async #Err("not yet"));
+
+    // Pruebas en local: El canister se Taonga se despliega sin problemas y acto seguido se envian todos los chunks del archivo GLB simulado
+    // sin esperar el retorno de las llamadas. Todos los chunks de 2 MiB - 1 KB son cargados exitosamente. Prueba maxima 250 (aprox 500 MiB) resultado Ok
+    var index = 0;
+    for (chunk in data.vals()) {
+      responsesUpload[index] := newTaonga.uploadTaonga({ chunk; index }); // Probar sin esperar retorno del Taonga para ver si sube mas rapido
+      index += 1;
+    };
+    // index := 0;
+    // /// Probar si esto es necesario. Edit: Funciona sin esto en local, si anda bien en mainnet omitir el array responsesUpload tambien
+    // for (response in responsesUpload.vals()){
+    //     print("Esperando acuse de recibo de chunk numero " # Nat.toText(index) # " subido al Taonga");
+    //     let responseAwaited = await response; // El primer chunck deberia ser el que mas demora
+    //     switch responseAwaited {
+    //         case (#Err(_)) {
+    //             print("Reintentando subir chunk numero " # Nat.toText(index));
+    //             let retry = await newTaonga.uploadTaonga({chunk = data[index]; index});
+    //             switch ( retry ) {
+    //                 case (#Err(e)) {throw Error.reject("Error uploading glb file. Taonga Canister sai: " # e)};
+    //                 case ( _ ){}
+    //             }
+    //         };
+    //         case (#Ok) { }
+    //     };
+    //     print("Chunk numero " # Nat.toText(index) # " subido exitosamente");
+    //     index += 1;
+    // };
+    ignore Map.put<Int, Types.File>(s.tempFiles, ihash, init.tempFileId, {owner = canisterId; data; size });
+    canisterId;
+  };
+
+  func executeProposal(s: Types.State, pr: Proposal, callback: shared Int -> ()): async ProposalExecutionResult {
     switch (pr.kind) {
       case ( #DigitalTaonga(dt)){
         switch (dt) {
-          case (#CreateDigitalTaonga(args)) {
-
-            #Ok( #Void )
+          case (#CreateDigitalTaonga(argsCreateTaonga)) {
+            let argsDeploy = { 
+              argsCreateTaonga with
+              admin = pr.creator;
+              tempFileId = pr.id;
+            };
+            let canisterId = await deployTaonga(s, argsDeploy, callback);
+            let taongaMetadata = {
+              canisterId;
+              deployDate =  now();
+              readyDate = null;
+              name = argsCreateTaonga.name;
+            };
+            #Ok(#NewTaongaResult(taongaMetadata))
           };
           case (_) {
             // TODO
@@ -294,6 +384,27 @@ module {
         };
         
       };
+      case (#Guardian(args)) {
+        switch args {
+          case (#AssignRole({member = p; role })) {
+            let member = Map.get<Principal, SharedTypes.Member>(s.members, phash, p);
+            switch member {
+              case null {
+                #Err("Member not Found");
+              };
+              case ( ?member ) {
+                ignore Map.put<Principal, SharedTypes.Member>(s.members, phash, p , { member with role });
+                #Ok(#Guardian({}));
+              }
+            }
+          };
+          case _ {
+            #Ok(#Void);
+            //TODO
+          }
+        };
+        // #Ok(#Void)
+      };
       case _ {
         // TODO #Action; #Guardian; #Motion;
         #Ok( #Void )
@@ -301,24 +412,15 @@ module {
     }
   };
 
-  public func refresh_proposal_status(s: Types.State, id: Int): ?Proposal {
-    switch (Map.get<Int, Proposal>(s.proposals, ihash, id)){
-      case null { null };
-      case ( ?proposal ) {
-        let _active_members = Member.get_active_members(s).size();
-        let _total_admins = Member.get_total_admins(s);
-        if (now() > proposal.deadline and proposal.status == #Open){
-          if(didProposalPass(proposal)) {
-        
-            let _resultProposalExecution = executeProposal(s, proposal );
+  /*
+    deadline : Int;
+    imageID : Nat;
 
-          }
-        };
-        //TODO Actualizar estado 
-        ?proposal
-
-      }
-    }
-  };
+    ->
+    
+    admin : Principal;
+    controller : Principal;
+    tempFileId : Int;
+  */
 
 };

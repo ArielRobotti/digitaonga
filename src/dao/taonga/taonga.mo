@@ -20,11 +20,11 @@ import Cycles "mo:base/ExperimentalCycles";
 
     var assetMetadata : Types.AssetMetadata = {
       description : Text = initArgs.description;
-      history : Text = initArgs.culturalDescription;
+      history : Text = initArgs.history;
       image : ?Blob = null;
       name : Text = initArgs.name;
-      symbol : Text = ""; // podría incluirse en el argumento de deploy y traerlo de ahí
-      token_uri : ?Text = null;
+      symbol : Text = ""; 
+      token_uri : ?Text = null; //
     };
 
     // type callback = shared (Nat) -> async { chunk : Blob; next : ?callback };

@@ -1,10 +1,9 @@
 module {
 
   public type InitArgs = {
-    controller : Principal;
     admin : Principal;
     name : Text;
-    culturalDescription : Text;
+    history : Text;
     description : Text;
     tempFileId: Int;
     dataSize : Nat;

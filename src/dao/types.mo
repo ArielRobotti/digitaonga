@@ -22,7 +22,10 @@ module {
     members : Map.Map<Principal, Member>;
     tempFiles : Map.Map<Int, File>; // Ver si es necesario un owner para control de acceso
     proposals : Map.Map<Int, Proposal>; // El id puede ser el Timestamp en lugar del tamaño actual del Map
-    taongas: Map.Map<Nat, SharedTypes.TaongaMetadata>;
+    // taongas: Map.Map<Nat, SharedTypes.TaongaMetadata>;
+    taongas: Map.Map<Principal, SharedTypes.TaongaMetadata>;
+    // callback: shared Int -> ();
+    cyclesForTaongaDeploy: Nat;
   };
 
   public type File = { // Por ahora no es necesario mas información
@@ -31,12 +34,15 @@ module {
     size: Nat;
   };
 
-  public func initState() : State {
+  public func initState({cyclesForTaongaDeploy: Nat} ) : State {
     {
       members = Map.new<Principal, Member>();
       tempFiles = Map.new<Int, File>();
       proposals = Map.new<Int, Proposal>();
-      taongas = Map.new<Nat, SharedTypes.TaongaMetadata>();
+      // taongas = Map.new<Nat, SharedTypes.TaongaMetadata>();
+      taongas = Map.new<Principal, SharedTypes.TaongaMetadata>();
+      // callback;
+      cyclesForTaongaDeploy;
     };
   };
 

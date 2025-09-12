@@ -35,6 +35,7 @@ module {
     #NotOnlyOneMember;
     #MemberIsNotViewer;
     #MemberIsNotPendingMember;
+    #UnassignableRole;
   };
 
   public type MemberRole = {
@@ -127,7 +128,7 @@ module {
   };
 
   public type TaongaMetadata = {
-    id : Nat;
+    // id : Nat;
     canisterId : Principal;
     remoteActorReference : Taonga.Taonga;
     name : Text;
