@@ -16,6 +16,6 @@ dfx canister call taonga_factory testDeployTaonga "(record {
     dataSize =  524_288_000 : nat;
     tempFileId = 0 : int;
     chunksQty = $chunks : nat;
-    thumbnail = blob "\00\11";
+    thumbnail = blob \"thumbnailBlob\";
   },
 )"

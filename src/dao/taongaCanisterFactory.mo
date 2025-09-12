@@ -11,6 +11,8 @@ import Array "mo:base/Array";
 import Nat "mo:base/Nat";
 import Blob "mo:base/Blob";
 import Nat8 "mo:base/Nat8";
+import SharedTypes "sharedTypes";
+
 
 persistent actor {
 
@@ -18,13 +20,7 @@ persistent actor {
 
   type TaongaId = Nat;
   type ProposalId = Nat;
-  public type TaongaMetadata = {
-    id : Nat;
-    canisterId : Principal;
-    remoteActorReference : Taonga.Taonga;
-    name : Text;
-    thumbnail: Blob;
-  };
+  public type TaongaMetadata = SharedTypes.TaongaMetadata;
 
   public type TempFile =  {owner: Principal; data: [var Blob]};
 

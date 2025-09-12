@@ -5,46 +5,17 @@ import { phash; ihash } "mo:map/Map";
 import { now } "mo:base/Time";
 import Array "mo:base/Array";
 import Iter "mo:base/Iter";
+import SharedTypes "./sharedTypes";
 
 module {
 
-  public type LikeProposal = { #Like; #Dislike };
-
-  public type Member = {
-    principal : Principal;
-    liked_proposals : [(Nat, LikeProposal)]; // Originalmente HashMap
-    name : ?Text; // Consultar por cambio a Text no opcional
-    role : MemberRole;
-    created_at : Int; // Originalmente Nat64
-    last_activity : Int; // Originalmente Nat64
-    cover_img : ?Blob; // Originalmente Text
-    profile_pic : ?Blob; // Originalmente Text
-  };
-
-  public type MemberEditableData = {
-    name : ?Text;
-    cover_img : ?Blob;
-    profile_pic : ?Blob;
-  };
+  type LikeProposal = SharedTypes.LikeProposal;
+  type Member = SharedTypes.Member;
+  type MemberRole = SharedTypes.MemberRole;
+  type MemberError = SharedTypes.MemberError;
+  type MemberEditableData = SharedTypes.MemberEditableData;
 
   public type Result = { #Ok : Member; #Err : MemberError };
-
-  public type MemberError = {
-    #NotFound;
-    #NotOnlyOneMember;
-    #MemberIsNotViewer;
-    #MemberIsNotPendingMember;
-  };
-
-  public type MemberRole = {
-    #Viewer;
-    #PendingMember : MemberRole; // Evitar una asignacion recursiva infinita
-    #Guardian;
-    #Admin;
-    #Voter;
-    #NFTCreator;
-    #Observer;
-  };
 
   public func create_member(state : Types.State, caller : Principal) : Member {
     switch (Map.get<Principal, Member>(state.members, phash, caller)) {

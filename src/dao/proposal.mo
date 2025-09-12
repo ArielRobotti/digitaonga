@@ -1,66 +1,30 @@
 import Types "./types";
+import SharedTypes "./sharedTypes";
 import Map "mo:map/Map";
 import Buffer "mo:base/Buffer";
 import Member "member";
 import { phash; ihash } "mo:map/Map";
 import { now } "mo:base/Time";
 import Array "mo:base/Array";
+import List "mo:base/List";
 import Iter "mo:base/Iter";
+
 
 module {
 
-  public type LikeProposal = { #Like; #Dislike };
-  // public type Role = Member.Role;
-  
-  public type GuardianProposal = {
-    #RemoveFromDao : (Principal, Int);
-    #AssignAsObserver : (Principal, Int);
-    // #AssignRole: {
-    //   member: Principal;
-    //   role: Member.MemberRole;
-    //   deadline: Int;
-    // }
-  };
-
-  public type DigitalTaongaProposal = {
-    #UpdateDigitalTaonga : UpdateDigitalTaongaProposal;
-    #DeleteDigitalTaonga : Nat64;
-    // #CreateDigitalTaonga : (Text, Text, Text, Nat64, Text); // Cambiar por argumentos de deploy + archivo GLB: [Blob] para upload
-    #CreateDigitalTaonga : CreateDigitalTaongaArgs;
-    #RequestDownloadPermision;
-  };
-
+  type LikeProposal = SharedTypes.LikeProposal;
+  type GuardianProposal = SharedTypes.GuardianProposal;
+  type DigitalTaongaProposal = SharedTypes.DigitalTaongaProposal;
   type CreateDigitalTaongaArgs = Types.CreateDigitalTaongaArgs;
-
-  public type UpdateDigitalTaongaProposal = {
-    #UpdateImageURL : Text;
-    #UpdateDescription : Text;
-  };
-
-  public type MotionProposal = { # }; // Consultar
-
-  public type ProposalPublicData = {
-    id : Int; // Cambio de Nat a Int, podemos definir el ID con el Timestamp de ingreso del proposal en lugar de con la cnatidad actual de proposals
-    created_at : Int; // Informacion duplicada por el cambio en el ID
-    deadline : Int;
-    status : ProposalStatus;
-    title : Text;
-    votes : [(Principal, Vote)];
-    kind : ProposalType;
-    description : Text;
-    active_members : Nat;
-    comments : [ProposalComment];
-  };
-
-  public type Proposal = ProposalPublicData and {
-    creator : Principal;
-    likes : [(Principal, LikeProposal)];
-  };
+  type ProposalType = SharedTypes.ProposalType;
+  type ProposalPublicData = SharedTypes.ProposalPublicData;
+  type UpdateDigitalTaongaProposal = SharedTypes.UpdateDigitalTaongaProposal;
+  type Proposal = SharedTypes.Proposal;
   
   public type NewProposalArgs = {
     title: Text;
     description: Text;
-    kind: ProposalType;
+    kind: SharedTypes.ProposalType;
     deadline: Int;
   };
 
@@ -70,30 +34,6 @@ module {
     kind : ProposalType
   };
 
-  public type ProposalComment = {
-    creator : Principal;
-    created_at : Nat64;
-    likes : Nat64;
-    comment : Text;
-    thread : [ProposalComment]; //
-    dislikes : Nat64;
-  };
-  public type ProposalError = { #LastAdmin; #Closed; #NotFound; #Unauthorized };
-  public type ProposalStatus = {
-    #Open;
-    #Review;
-    #Approved;
-    #Rejected;
-    #Voting;
-  };
-  public type ProposalType = {
-    #Action : (Text, Text, Nat64);
-    #Guardian : GuardianProposal;
-    #DigitalTaonga : DigitalTaongaProposal;
-    #Motion : MotionProposal;
-  };
-
-  public type Vote = { #Approve; #Abstain; #Disapprove };
 
   public type ProposalExecutionResult = {
     #Ok: {
@@ -123,13 +63,13 @@ module {
     let newProposal: Proposal = {
       proposal with
       active_members : Nat = Map.size(s.members);
-      comments : [ProposalComment] = [];
+      comments = List.fromArray<SharedTypes.ProposalComment>([]);
       created_at : Int = id;
       creator : Principal = caller;
       id ;
-      likes : [(Principal, LikeProposal)] = [];
-      status : ProposalStatus = #Open; // TODO 
-      votes : [(Principal, Vote)] = [(caller, #Approve)] // Agregamos el voto positivo del creador
+      likes = [];
+      status : SharedTypes.ProposalStatus = #Open; // TODO 
+      votes : [(Principal, SharedTypes.Vote)] = [(caller, #Approve)] // Agregamos el voto positivo del creador
     };
     ignore Map.put<Int, Proposal>(s.proposals, ihash, id, newProposal);
 
@@ -137,7 +77,7 @@ module {
     switch (newProposal.kind) {
       case (#DigitalTaonga(#CreateDigitalTaonga(args))) {
         let data = Array.init<Blob>(args.chunksQty, "");
-        let newFile: Types.File = {owner = caller; data};
+        let newFile: Types.File = {owner = caller; data; size = args.dataSize};
         ignore Map.put<Int, Types.File>(s.tempFiles, ihash, id, newFile);
       };
       case _ {}
@@ -145,18 +85,34 @@ module {
     newProposal
   };
 
-  public func addChunk({s: Types.State; caller: Principal; fileId: Int; chunk: Blob; index: Nat}): {#Ok; #Err} {
+  public func addChunk({s: Types.State; caller: Principal; fileId: Int; chunk: Blob; index: Nat; retry: Bool}): {#Ok; #Err} {
     switch (Map.get<Int, Types.File>(s.tempFiles, ihash, fileId)) {
       case null { #Err };
-      case ( ?{owner; data} ) {
-        if (caller == owner) {
-          data[index] := chunk;
+      case ( ?file ) {
+        if (caller == file.owner) {
+          file.data[index] := chunk;
+          //----------- TODO revisar y refinar esta comprobacion simulando un caso de fallo: (omitiendo el envio de un chunk)
+          if(retry or index == file.data.size()){ // Verificamos la completitud cuando se recibe el ultimo chunk o cuando se manda un chunk en un reintento
+            let complet = checkUploadFile(file);
+            if complet {
+              return #Ok
+            } else {
+              return #Err
+            }
+          };
+          //------------
           #Ok
         } else {
           #Err;
         }
       }
     };
+  };
+
+  func checkUploadFile(file: Types.File): Bool {
+    var counter = 0;
+    for(ch in file.data.vals()) { counter += ch.size() };
+    counter == file.size
   };
 
   public func get_proposal(s: Types.State, id: Int) :?Proposal{
@@ -175,7 +131,7 @@ module {
   };
 
   public func edit_proposal(s: Types.State, caller: Principal, id: Int, data: ProposalEditableData ): ?Proposal {
-    switch (Map.get<Principal, Member.Member>(s.members, phash, caller)){
+    switch (Map.get<Principal, SharedTypes.Member>(s.members, phash, caller)){
       case ( ?_ ) { //Si un proposal fue hecho por un miembro que ya no es miembro, no lo podrá editar
         switch (Map.get<Int, Proposal>(s.proposals, ihash, id)){
           case ( ?proposal ) {
@@ -221,7 +177,7 @@ module {
     }
   };
 
-  public func vote_proposal(s: Types.State, caller: Principal, id: Int, vote: Vote): ?ProposalPublicData {
+  public func vote_proposal(s: Types.State, caller: Principal, id: Int, vote: SharedTypes.Vote): ?ProposalPublicData {
     switch (Map.get<Int, Proposal>(s.proposals, ihash, id)){
       case null { null };
       case ( ?proposal ) {
@@ -231,7 +187,7 @@ module {
               return null
             };
           };
-          let update_votes = Array.tabulate<(Principal, Vote)>(
+          let update_votes = Array.tabulate<(Principal, SharedTypes.Vote)>(
             s.proposals.size() + 1,
             func i = if (i < s.proposals.size()){proposal.votes[i]} else ((caller, vote))
           );
@@ -242,6 +198,59 @@ module {
         }
       }
     }
+  };
+
+  func get_proposal_reaction(reactions: [(Principal, LikeProposal)], prop: Int, p: Principal): ?LikeProposal {
+    for(r in reactions.vals()){
+      if (r.0 == p) { return ?r.1 }
+    };
+    return null
+  };
+
+  func can_give_like(roleMember: ?SharedTypes.MemberRole): Bool { 
+    switch roleMember {
+      case ( ?#Admin or ?#Guardian ) {
+        true
+      };
+      case _ { false }
+    }
+  };
+
+  func can_comment_proposal(roleMember: ?SharedTypes.MemberRole): Bool {
+    switch roleMember {
+      case ( ?#Admin or ?#Guardian ) {
+        true
+      };
+      case _ { false }
+    }
+  };
+
+  public func like_proposal(s: Types.State, caller: Principal, id: Int, like: ?LikeProposal): ?Proposal {
+
+    if(not can_give_like(Member.get_role_member(s, caller))) { 
+      return null 
+    };
+
+    switch (get_proposal(s, id)){
+      case null { return null };
+      case (?ppsl) {
+        let filteredArray = Array.filter<(Principal, LikeProposal)>(ppsl.likes, func l = l.0 != caller); 
+        let updateLikes = switch like {
+          case null { // When the like is null and the member had previously given a Like, the like is removed.
+            filteredArray 
+          };
+          case ( ?_like ) {
+            Array.tabulate<(Principal, LikeProposal)>(
+              filteredArray.size() + 1,
+              func i = if (i == 0) { (caller, _like)} else { filteredArray[i - 1]}
+            )
+          }
+        };
+        let updatedProposal = { ppsl with likes = updateLikes };
+        ignore Map.put<Int, Proposal>(s.proposals, ihash, id, updatedProposal);
+        ?updatedProposal
+      }
+    };
   };
 
   func didProposalPass(pr: Proposal): Bool {
@@ -257,18 +266,18 @@ module {
     yes > no and yes > 1; // Nos aseguramos de que no se gane solo con el voto del creador. Revisar esto
   };
 
-  func checkFileIntegrity(s: Types.State, id: Int, size: Nat): Bool {
-    switch (Map.get<Int, Types.File>(s.tempFiles, ihash, id)){
-      case null { false };
-      case ( ?file ){
-        var counterBytes = 0;
-        for (chunk in file.data.vals()) {
-          counterBytes += chunk.size()
-        };
-        return counterBytes == size
-      }
-    }
-  };
+  // func checkFileIntegrity(s: Types.State, id: Int, size: Nat): Bool {
+  //   switch (Map.get<Int, Types.File>(s.tempFiles, ihash, id)){
+  //     case null { false };
+  //     case ( ?file ){
+  //       var counterBytes = 0;
+  //       for (chunk in file.data.vals()) {
+  //         counterBytes += chunk.size()
+  //       };
+  //       return counterBytes == size
+  //     }
+  //   }
+  // };
 
   func executeProposal(s: Types.State, pr: Proposal): ProposalExecutionResult {
     switch (pr.kind) {
