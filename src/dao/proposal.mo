@@ -99,8 +99,9 @@ module {
         if (caller == file.owner) {
           file.data[index] := chunk;
           //----------- TODO revisar y refinar esta comprobacion simulando un caso de fallo: (omitiendo el envio de un chunk)
-          if(retry or index == file.data.size()){ // Verificamos la completitud cuando se recibe el ultimo chunk o cuando se manda un chunk en un reintento
+          if(retry or index + 1 == file.data.size()){ // Verificamos la completitud cuando se recibe el ultimo chunk o cuando se manda un chunk en un reintento
             let complet = checkUploadFile(file);
+            print("checkUploadFile -> " # debug_show(complet));
             if complet {
               switch(Map.get<Int, Proposal>(s.proposals, ihash, fileId)) {
                 case null { };
