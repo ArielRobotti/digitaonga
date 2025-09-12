@@ -5,18 +5,32 @@
       "package": "dao",
       "type": "rust"
     },
+    "taonga_factory": {
+      "main": "src/dao/taongaCanisterFactory.mo",
+      "type": "motoko"
+    },
+
+    "motokoDao": {
+      "main": "src/dao/main.mo",
+      "type": "motoko"
+    },
+
     "digital_asset": {
       "candid": "src/digital_asset/digital_asset.did",
       "package": "digital_asset",
       "type": "rust"
     },
     "frontend": {
-      "source": ["src/frontend/dist"],
+      "source": [
+        "src/frontend/dist"
+      ],
       "type": "assets",
       "workspace": "frontend"
     },
     "frontend-dev": {
-      "source": ["src/frontend/dist"],
+      "source": [
+        "src/frontend/dist"
+      ],
       "type": "assets",
       "workspace": "frontend"
     }
@@ -24,7 +38,7 @@
   "defaults": {
     "build": {
       "args": "",
-      "packtool": ""
+      "packtool": "mops sources"
     }
   },
   "output_env_file": ".env",
