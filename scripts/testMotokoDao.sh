@@ -79,7 +79,7 @@ fi
 
 echo "Test push proposal to create taonga from admin whitout votation instance"
 
-dfx canister call motokoDao create_proposal "(
+CreateTaongaProposal=$(dfx canister call motokoDao create_proposal "(
   record {
     title = \"Taonga\";
     kind = variant {
@@ -90,7 +90,7 @@ dfx canister call motokoDao create_proposal "(
           description = \"Test Description \";
           deadline = 0 : int;
           history = \"Test History Taonga\";
-          dataSize = 10 : nat;
+          dataSize = 4 : nat;
           chunksQty = 1 : nat;
           imageID = 0 : nat;
         }
@@ -99,13 +99,21 @@ dfx canister call motokoDao create_proposal "(
     description = \"Test Proposal create taonga\";
     deadline = 0 : int;
   },
-)"
+)")
+echo $CreateTaongaProposal
+FileId=0;
+echo "Extraer fileId de CreateTaongaProposal (response anterior a esta linea)"
+dfx canister call motokoDao uploadFileChunk "(
+  record {
+    chunk = blob \"\\99\\99\\99\\77\";
+    fileId = $FileId : int;
+    index = 0 : nat;
+    retry = false;
+  },
+)
 
 echo "... Refreshing the status of the proposals and performing the corresponding executions"
 dfx canister call motokoDao refresh_all_proposals
-
-
-
 
 exit 0
 

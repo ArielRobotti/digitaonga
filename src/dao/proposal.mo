@@ -63,6 +63,19 @@ module {
 
   public func new_proposal(s: Types.State, caller: Principal, proposal: NewProposalArgs) : Proposal {
     let id = now(); // TODO Validar este cambio
+    var status: SharedTypes.ProposalStatus = #Open;
+
+    // Si el proposal es para crear un Taonga, inicializar un archivo de volcado en el state con el mismo id
+    switch (proposal.kind) {
+      case (#DigitalTaonga(#CreateDigitalTaonga(args))) {
+        let data = Array.init<Blob>(args.chunksQty, "");
+        let newFile: Types.File = {owner = caller; data; size = args.dataSize};
+        ignore Map.put<Int, Types.File>(s.tempFiles, ihash, id, newFile);
+        status := #UploadFileRequired;
+      };
+      case _ {}
+    };
+
     let newProposal: Proposal = {
       proposal with
       active_members : Nat = Map.size(s.members);
@@ -71,20 +84,11 @@ module {
       creator : Principal = caller;
       id ;
       likes = [];
-      status : SharedTypes.ProposalStatus = #Open; // TODO 
+      status;
       votes : [(Principal, SharedTypes.Vote)] = [(caller, #Approve)] // Agregamos el voto positivo del creador
     };
     ignore Map.put<Int, Proposal>(s.proposals, ihash, id, newProposal);
 
-    // Si el proposal es para crear un Taonga, inicializar un archivo de volcado en el state con el mismo id
-    switch (newProposal.kind) {
-      case (#DigitalTaonga(#CreateDigitalTaonga(args))) {
-        let data = Array.init<Blob>(args.chunksQty, "");
-        let newFile: Types.File = {owner = caller; data; size = args.dataSize};
-        ignore Map.put<Int, Types.File>(s.tempFiles, ihash, id, newFile);
-      };
-      case _ {}
-    };
     newProposal
   };
 
@@ -98,6 +102,13 @@ module {
           if(retry or index == file.data.size()){ // Verificamos la completitud cuando se recibe el ultimo chunk o cuando se manda un chunk en un reintento
             let complet = checkUploadFile(file);
             if complet {
+              switch(Map.get<Int, Proposal>(s.proposals, ihash, fileId)) {
+                case null { };
+                case ( ?proposal ) {
+                  ignore Map.put<Int, Proposal>(s.proposals, ihash, fileId, { proposal with status = #Open})
+                }
+              };
+
               return #Ok
             } else {
               return #Err

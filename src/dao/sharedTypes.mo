@@ -120,6 +120,7 @@ module {
   public type MotionProposal = { # }; // Consultar
 
   public type ProposalStatus = {
+    #UploadFileRequired;
     #Open;
     #Review;
     #Approved;
