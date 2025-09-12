@@ -12,6 +12,7 @@ import FormLabel from '@mui/material/FormLabel';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import SecurityIcon from '@mui/icons-material/Security';
 import ProgressBar from '../../components/shared/ProgressBar';
+import { useNavigate } from 'react-router';
 
 const InviteNewMemberPage = () => {
     /* Necesito implementar una logica de que unicamente se el button para crear una propuesta es cuadno el usuario carga el Guardian ID, la fecha y asigno el role */
@@ -20,6 +21,7 @@ const InviteNewMemberPage = () => {
     const [role, setRole] = useState('');
     const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
     const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
+    const navigate = useNavigate();
 
     const isFormValid = () => {
         return guardianId && date && role;
@@ -38,7 +40,7 @@ const InviteNewMemberPage = () => {
             date: date?.format('DD/MM/YYYY'),
             role
         });
-        
+
         setIsConfirmDialogOpen(false);
         setIsSuccessDialogOpen(true);
     };
@@ -60,7 +62,7 @@ const InviteNewMemberPage = () => {
     };
 
     return (
-        <main className="h-full w-full p-4 ">
+        <main className="h-full w-full p-4">
             {/* Subtitle */}
             <h3 className="text-3xl">Guardian Proposal</h3>
 
@@ -70,19 +72,19 @@ const InviteNewMemberPage = () => {
                 <p className='text-center'>used to add, update or remove a guardian. Requires and approved vote before execution.</p>
 
                 <div className="flex flex-col gap-4 w-full max-w-sm">
-                    <TextField 
-                        id="outlined-basic" 
-                        label="Guardian ID" 
-                        variant="outlined" 
-                        value={guardianId} 
+                    <TextField
+                        id="outlined-basic"
+                        label="Guardian ID"
+                        variant="outlined"
+                        value={guardianId}
                         onChange={(e) => setGuardianId(e.target.value)}
                         fullWidth
                     />
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DemoContainer components={['DatePicker']}>
-                            <DatePicker 
-                                label="Voting Deadline" 
-                                value={date} 
+                            <DatePicker
+                                label="Voting Deadline"
+                                value={date}
                                 onChange={(newValue) => setDate(newValue)}
                                 sx={{ width: '100%' }}
                             />
@@ -120,7 +122,7 @@ const InviteNewMemberPage = () => {
                         </div>
 
                         <div className='w-96 shadow-xl rounded-2xl border border-kokowai'>
-                            <FormControlLabel value="guardian" control={<Radio />} label="Assign as Guardian" className='p-2'/>
+                            <FormControlLabel value="guardian" control={<Radio />} label="Assign as Guardian" className='p-2' />
 
                             {/* Details */}
                             <div className='p-2'>
@@ -138,19 +140,17 @@ const InviteNewMemberPage = () => {
 
             <div className='flex flex-col gap-4 justify-center items-center w-full mt-8 mb-8'>
                 <button
-                    className={`rounded-[5px] font-medium text-[16px] leading-4 p-4 cursor-pointer w-[316px] shadow-digitaonga inline-block custom__button ${
-                        isFormValid() 
-                            ? 'bg-kokowai text-white hover:bg-opacity-90' 
-                            : 'text-kokowai border border-kokowai disabled:bg-gray-100 disabled:border-none disabled:text-gray-500 disabled:cursor-default'
-                    }`}
+                    className={`rounded-[5px] font-medium text-[16px] leading-4 p-4 cursor-pointer w-[316px] shadow-digitaonga inline-block custom__button ${isFormValid()
+                        ? 'bg-kokowai text-white hover:bg-opacity-90'
+                        : 'text-kokowai border border-kokowai disabled:bg-gray-100 disabled:border-none disabled:text-gray-500 disabled:cursor-default'
+                        }`}
                     onClick={handleCreateProposal}
                     disabled={!isFormValid()}
                 >
                     Create Proposal
                 </button>
+                <ProgressBar />
             </div>
-
-            <ProgressBar />
 
             {/* Confirmation Dialog */}
             {isConfirmDialogOpen && (
@@ -244,8 +244,9 @@ const InviteNewMemberPage = () => {
 
                         {/* Action button */}
                         <div className="flex justify-center pb-6 px-6 gap-2">
-                                <button
+                            <button
                                 className="px-6 py-3 rounded-lg border border-kokowai text-gray-700 font-medium hover:bg-gray-50 transition-colors shadow-2xl"
+                                onClick={() => navigate('/proposals')}
                             >
                                 See Proposals
                             </button>
