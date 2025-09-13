@@ -36,7 +36,7 @@ const ProposalDetail = () => {
 
   const { getProposal, loading, voteProposal, likeProposal } = useProposal();
 
-  const proposal = getProposal(parseInt(id));
+  const proposal = getProposal(id);
 
   if (loading) return <CircularProgress className="absolute top-1/2 left-1/2 " />;
 
@@ -60,7 +60,7 @@ const ProposalDetail = () => {
     setVote({ ...vote, loading: true });
 
     try {
-      const res = await voteProposal(parseInt(id), vote.value);
+      const res = await voteProposal(id, vote.value);
       console.log({ res });
       toggleOpen();
     } catch (err) {

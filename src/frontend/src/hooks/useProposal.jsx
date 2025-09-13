@@ -23,6 +23,8 @@ const useProposal = () => {
   const getAllProposals = async () => {
     try {
       const res = await dao.get_all_proposals();
+      console.log(res[0].creator)
+
       console.log("getAllProposals res:", res);
       // TODO (fran): parse proposals
       const parsed = proposalsArrayParser(res);
@@ -33,7 +35,12 @@ const useProposal = () => {
     }
   };
 
-  const getProposal = (id) => proposals.find((p) => p.id === id);
+  // const getProposal = (id) => proposals.find((p) => p.id === id);
+  const getProposal = async (id) => { 
+    console.log(id)
+    const response = await dao.get_proposal(BigInt(id));
+    console.log({response})
+  };
 
   const getProposalsByMember = (principal) =>
     proposals.filter((p) => p.creator === p2str(principal));
@@ -44,7 +51,7 @@ const useProposal = () => {
 
     toggleCreating();
 
-    const res = await daoAuth.create_proposal(title, description, kind, deadline);
+    const res = await dao.create_proposal(title, description, kind, deadline);
     console.log({ res });
     addProposal(proposalParser(res));
 
@@ -53,7 +60,7 @@ const useProposal = () => {
 
   const createEditProposal = async ({ image, description }) => {
     try {
-      const res = await daoAuth.create_edit_proposal(description, image);
+      const res = await dao.create_edit_proposal(description, image);
       console.log({ res });
     } catch (err) {
       console.warn("create edit proposal error:", err);
@@ -62,7 +69,7 @@ const useProposal = () => {
 
   const voteProposal = async (id, vote) => {
     try {
-      const res = await daoAuth.vote_proposal(id, { [vote]: null });
+      const res = await dao.vote_proposal(BigInt(id), { [vote]: null });
       console.log({ res });
 
       if (res.Ok) {
@@ -80,7 +87,7 @@ const useProposal = () => {
       } else {
         dislikeProposal(id, p2str(user.principal));
       }
-      const res = await daoAuth.like_proposal(id, { [type]: null });
+      const res = await dao.like_proposal(id, { [type]: null });
       console.log({ res });
     } catch (err) {
       console.log("likeProposal error:", err);
