@@ -2,7 +2,7 @@ import Types "./types";
 import SharedTypes "./sharedTypes";
 import Member "./member";
 import Proposal "./proposal";
-import Error "mo:base/Error";
+// import Error "mo:base/Error";
 import Map "mo:map/Map";
 import { ihash } "mo:map/Map";
 import Array "mo:base/Array";
@@ -10,6 +10,7 @@ import Iter "mo:base/Iter";
 import { print } "mo:base/Debug";
 import Nat "mo:base/Nat";
 import Principal "mo:base/Principal";
+import { now } "mo:base/Time";
 
 
 persistent actor {
@@ -18,6 +19,10 @@ persistent actor {
   var limit_payload_per_call = 1024 * 1024 * 2; // Carga maxima en Bytes para llamadas query "MiB"
   
   let state: Types.State = Types.initState({cyclesForTaongaDeploy});
+
+  public query func time(): async Int {
+    now()
+  };
 
 
      
@@ -165,9 +170,9 @@ persistent actor {
   };
 
   // new_comment_proposal : shared (Nat, Text) -> async ();
-  public shared ({ caller }) func new_comment_proposal(id : Nat, comment : Text) : async () {
+  // public shared ({ caller }) func new_comment_proposal(id : Nat, comment : Text) : async () {
 
-  };
+  // };
 
 
   //////////////////////////////////////////////////////////////////
@@ -188,61 +193,4 @@ persistent actor {
     print(Nat.toText(recoveredBytes * limit_payload_per_call - 1024) # " Bytes temporary file successfully deleted");
   };
   
-
-  /////////////////////// TODO ////////////////////////////
-
-  
-  // accept_member_invitation : shared () -> async Result;
-  public shared ({ caller }) func accept_member_invitation() : async () {
-    // return Result{};
-  };
-
-  // add_owner : shared Principal -> async ();
-  public shared ({ caller }) func add_owner(principal : Principal) : async () {
-
-  };
-
-
-
-
-
-  // reject_member_invitation : shared () -> async Result;
-  public shared ({ caller }) func reject_member_invitation() : async () {
-    // return Result{};
-  };
-
-  // remove_owner : shared Principal -> async ();
-  public shared ({ caller }) func remove_owner(principal : Principal) : async () {
-
-  };
-
-  // set_last_activity_member : shared () -> async ();
-  public shared ({ caller }) func set_last_activity_member() : async () {
-
-  };
-
-  // test_approve_proposal : shared Nat -> async ();
-  public shared ({ caller }) func test_approve_proposal(id : Nat) : async () {
-
-  };
-
-  // test_mint_asset_digital : shared (Principal, Principal, Text, Text, Text, Text, Text, ?Text,) -> async ();
-  // public shared ({ caller }) func test_mint_asset_digital(
-  //   principal1 : Principal,
-  //   principal2 : Principal,
-  //   text1 : Text,
-  //   text2 : Text,
-  //   text3 : Text,
-  //   text4 : Text,
-  //   text5 : Text,
-  //   text6 : ?Text,
-  // ) : async () {
-
-  // };
-
-  // test_reject_proposal : shared Nat -> async Result_2;
-  public shared ({ caller }) func test_reject_proposal(id : Nat) : async () {
-    // return Result_2{};
-  };
-
 }

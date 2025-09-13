@@ -1,7 +1,7 @@
 import Types "./types";
 import Map "mo:map/Map";
 import Buffer "mo:base/Buffer";
-import { phash; ihash } "mo:map/Map";
+import { phash } "mo:map/Map";
 import { now } "mo:base/Time";
 import Array "mo:base/Array";
 import Iter "mo:base/Iter";

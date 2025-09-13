@@ -3,7 +3,6 @@ import SharedTypes "./sharedTypes";
 import Taonga "./taonga/taonga";
 import TaongaTypes "./taonga/types";
 import Map "mo:map/Map";
-import Buffer "mo:base/Buffer";
 import Member "member";
 import { phash; ihash } "mo:map/Map";
 import { now } "mo:base/Time";
@@ -285,7 +284,7 @@ module {
       case _ { false }
     }
   };
-
+  /*
   func can_comment_proposal(roleMember: ?SharedTypes.MemberRole): Bool {
     switch roleMember {
       case ( ?#Admin or ?#Guardian ) {
@@ -301,6 +300,8 @@ module {
     };
     return null
   };
+
+  */
   
   func didProposalPass(pr: Proposal): Bool {
     var yes = 0;

@@ -79,16 +79,16 @@ module {
     deadline : Int;
     status : ProposalStatus;
     title : Text;
-    votes : [(Principal, Vote)];
     kind : ProposalType;
     description : Text;
     active_members : Nat;
     comments : List.List<ProposalComment>;
+    likes: [(Principal, LikeProposal)];
+    creator : Principal;
   };
 
   public type Proposal = ProposalPublicData and {
-    creator : Principal;
-    likes: [(Principal, LikeProposal)];
+    votes : [(Principal, Vote)];
   };
 
   public type Vote = { #Approve; #Abstain; #Disapprove };

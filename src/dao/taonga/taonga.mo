@@ -27,9 +27,6 @@ import Cycles "mo:base/ExperimentalCycles";
       token_uri : ?Text = null; //
     };
 
-    // type callback = shared (Nat) -> async { chunk : Blob; next : ?callback };
-
-
     public shared ({ caller }) func uploadTaonga({ chunk : Blob; index : Nat }) : async {
       #Ok;
       #Err : Text;
