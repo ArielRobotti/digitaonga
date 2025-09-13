@@ -5,14 +5,13 @@
       "package": "dao",
       "type": "rust"
     },
-    "taonga_factory": {
-      "main": "src/dao/taongaCanisterFactory.mo",
-      "type": "motoko"
-    },
-
+ 
     "motokoDao": {
       "main": "src/dao/main.mo",
-      "type": "motoko"
+      "type": "motoko",
+      "declarations": {
+        "output": "src/frontend/declarations/backend"
+      }
     },
 
     "digital_asset": {
