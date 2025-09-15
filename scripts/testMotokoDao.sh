@@ -23,10 +23,10 @@ fi
 dfx identity use 000Guardian1
 secondMember=$(dfx canister call motokoDao create_member)
 
-if echo "$secondMember" | grep -q 'role = variant { Viewer }'; then
-    echo "✅ Successful role test: The second member's role is Viewer."
+if echo "$secondMember" | grep -q 'role = variant { Observer }'; then
+    echo "✅ Successful role test: The second member's role is Observer."
 else
-    echo "❌ Role test failed: The second member's role is not Viwer."
+    echo "❌ Role test failed: The second member's role is not Observer."
 fi
 
 dfx identity use 000Admin

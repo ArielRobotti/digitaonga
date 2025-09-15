@@ -15,14 +15,15 @@ const useMember = () => {
   useEffect(() => {
     if (user && dao) {
       (async () => {
-        console.log({ dao });
-        console.log({ user });
+        // console.log({ dao });
+        // console.log({ user });
         try {
           const resMember = await dao.get_member(user.principal);
 
-          console.log({ resMember });
+          // console.log({ resMember });
           if (resMember?.Err) {
             const newMember = await dao.create_member();
+            console.log(newMember)
             setMember(memberParser(newMember));
             navigate("/on_boarding");
           } else {
@@ -30,7 +31,7 @@ const useMember = () => {
             await dao.set_last_activity_member();
           }
         } catch (err) {
-          console.log("getting or creating member error:", err);
+          // console.log("getting or creating member error:", err);
         }
       })();
     }

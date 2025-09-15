@@ -1,5 +1,7 @@
 import { CopyIcon, EditIcon } from "../../components/ui/icons";
 import { copyToClipboard, p2str, shortP } from "../../utils/functions";
+import { useEffect } from "react";
+import { useNavigate } from "react-router";
 
 import { ChevronRight } from "@mui/icons-material";
 import { Link } from "react-router";
@@ -31,6 +33,16 @@ const Profile = () => {
     { n: 3, s: "Rejected proposals" },
   ];
 
+  console.log({member: member?.data.name})
+
+  const navigate = useNavigate();
+  useEffect(() => {
+    // Redirige si el usuario no existe (por ejemplo, después de un logout)
+    if (!user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
+
   return (
     <main className="xl:p-8">
       <section className="xl:flex">
@@ -41,9 +53,9 @@ const Profile = () => {
               <PersonIcon className="text-gray-500" />
             </div>
             <div>
-              <h1>{member?.name || "Name Username"}</h1>
+              <h1>{member?.data.name[0] || "Name Username"}</h1>
               <p className="flex items-center gap-2 mt-4">
-                Guardian ID: {shortP(p2str(user?.principal || "") || "abced-cai")}
+                Principal ID: {shortP(p2str(user?.principal || "") || "abced-cai")}
                 <CopyIcon
                   className="cursor-pointer"
                   onClick={() => copyToClipboard(p2str(user?.principal || "") || "abcde-cai")}

@@ -10,7 +10,7 @@
       "main": "src/dao/main.mo",
       "type": "motoko",
       "declarations": {
-        "output": "src/frontend/declarations/backend"
+        "output": "./src/frontend/declarations/backend"
       }
     },
 

@@ -7,8 +7,8 @@ import { useMemo } from "react";
 
 const useCanister = (canisterName = "dao") => {
   const canister = canisters[canisterName];
-  console.log(env);
-  console.log({ canister });
+  // console.log(env);
+  // console.log({ canister });
 
   const isLocal = env.ICP_API_HOST.includes("localhost");
 
@@ -26,7 +26,7 @@ const useCanister = (canisterName = "dao") => {
     unauthenticatedAgent.fetchRootKey().catch((err) => {
       console.error("Failed to fetch root key:", err);
     });
-    console.log({ authenticatedAgent });
+    // console.log({ authenticatedAgent });
     authenticatedAgent?.fetchRootKey().catch((err) => {
       console.error("Failed to fetch root key auth:", err);
     });
@@ -52,7 +52,7 @@ const useCanister = (canisterName = "dao") => {
     );
   }, [authenticatedAgent, canister, canisterName]);
 
-  console.log({ authenticatedActor });
+  // console.log({ authenticatedActor });
 
   return [authenticatedActor, nonTargetUnauthenticatedActor];
 };

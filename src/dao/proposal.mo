@@ -97,6 +97,7 @@ module {
       case ( ?file ) {
         if (caller == file.owner) {
           file.data[index] := chunk;
+          print(debug_show(file.data.size()));
           //----------- TODO revisar y refinar esta comprobacion simulando un caso de fallo: (omitiendo el envio de un chunk)
           if(retry or index + 1 == file.data.size()){ // Verificamos la completitud cuando se recibe el ultimo chunk o cuando se manda un chunk en un reintento
             let complet = checkUploadFile(file);

@@ -77,6 +77,7 @@ persistent actor {
   ///////////////////////////// CRUD Proposals ///////////
 
   public shared ({ caller }) func create_proposal(args: Proposal.NewProposalArgs) : async SharedTypes.Proposal {
+    print("Proposal request from " # debug_show(caller));
     assert(not Principal.isAnonymous(caller));
     let callerRole = Member.get_role_member(state, caller);
     assert(callerRole == ?#Admin or callerRole == ?#Guardian); //
@@ -84,6 +85,7 @@ persistent actor {
   };
 
   public shared ({ caller }) func uploadFileChunk({fileId: Int; chunk: Blob; index: Nat; retry: Bool}): async {#Ok; #Err}{
+    print("recibiendo chunk nro: " # debug_show(index));
     assert(not Principal.isAnonymous(caller));
     Proposal.addChunk({
       s = state;

@@ -4,16 +4,21 @@ import Button from "../../../components/shared/Button";
 import { TextField } from "@mui/material";
 import useMemberStore from "../../../store/useMemberStore";
 import { useState } from "react";
+import useCanister from "../../../hooks/useCanister";
+
 
 const ProfileSettings = () => {
   const [form, setForm] = useState({ name: "", avatar: null });
   const { member } = useMemberStore();
   console.log({ member });
 
+  const [dao] = useCanister();
+
   const handleChange = (event) => {
     const { name, value } = event.target;
     setForm((prevForm) => ({ ...prevForm, [name]: value }));
   };
+
   const handleChangeAvatar = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -25,7 +30,15 @@ const ProfileSettings = () => {
     }
   };
 
-  const handleSubmit = () => {};
+  const handleSubmit = async () => {
+    /*
+    name : ?Text;
+    cover_img : ?Blob;
+    profile_pic : ?Blob;
+    */
+    const responseEditProfile = await dao.edit_member({name: [form.name], cover_img: [], profile_pic: []})
+    console.log(responseEditProfile)
+  };
 
   return (
     <main>

@@ -13,9 +13,11 @@ import { Button as MUIButton } from "@mui/material";
 import ProgressBar from "../../../../components/shared/ProgressBar";
 import TextField from "@mui/material/TextField";
 import dayjs from "dayjs";
-import useAssetCanister from "../../../../hooks/useAssetCanister";
+// import useAssetCanister from "../../../../hooks/useAssetCanister";
+import useCanister from "../../../../hooks/useCanister";
 import useProposal from "../../../../hooks/useProposal";
 import { useState } from "react";
+
 
 const DigitalTaongaProposalCreation = () => {
   const [form, setForm] = useState({
@@ -32,8 +34,8 @@ const DigitalTaongaProposalCreation = () => {
   const [updatedValue, setUpdatedValue] = useState(null);
   const [readyToUpdate, setReadyToUpdate] = useState(false);
   const [readyToCreate, setReadyToCreate] = useState(false);
-  const { createProposal, creating } = useProposal();
-  const { uploadFile } = useAssetCanister();
+  // const { createProposal, creating } = useProposal();
+  // const { uploadFile } = useAssetCanister();
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -48,7 +50,7 @@ const DigitalTaongaProposalCreation = () => {
       ? 1
       : 2;
 
-  console.log({ step });
+  // console.log({ step });
 
   // TODO (fran): validar datos de form antes de seguir
 
@@ -60,6 +62,9 @@ const DigitalTaongaProposalCreation = () => {
   const handleCloseResponseDialog = () => setResponseDialog({ success: false, error: false });
   const handleFileChange = (e) => setForm({ ...form, file: e.target.files[0] });
   const toggleDialog = () => setOpen(!open);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  const [ dao ] = useCanister();
 
   const handleSubmit = async () => {
     let digitalTaongaProposalAction;
@@ -71,19 +76,116 @@ const DigitalTaongaProposalCreation = () => {
 
       switch (selectedValue) {
         case "Create or Upload a New Digital Taonga":
-          const key = await uploadFile(form.file);
-          if (!key) return alert("Please upload a file");
-          digitalTaongaProposalAction = "CreateDigitalTaonga";
-          // TODO (fran): subir el archivo a canister y obtener el key
-          // const key = "";
-          console.log({ form });
-          proposalData = [
-            form.name,
-            form.description,
-            form.history,
-            form.date.unix() * 1_000_000_000,
-            key,
-          ]; // TODO (fran): check unix
+          // const key = await uploadFile(form.file);
+          // if (!key) return alert("Please upload a file");
+          // digitalTaongaProposalAction = "CreateDigitalTaonga";
+          // // TODO (fran): subir el archivo a canister y obtener el key
+          // // const key = "";
+          // console.log({ form });
+          // proposalData = [
+          //   form.name,
+          //   form.description,
+          //   form.history,
+          //   form.date.unix() * 1_000_000_000,
+          //   key,
+          // ]; // TODO (fran): check unix
+
+          /*
+
+          title: Text;
+          description: Text;
+          kind: SharedTypes.ProposalType;
+          deadline: Int;
+
+            DigitalTaongaProposal{
+              CreateDigitalTaonga {
+                CreateDigitalTaongaArgs {
+                  name : Text;
+                  description : Text;
+                  history : Text;
+                  deadline : Int;
+                  imageID : Nat; // Revisar
+                  thumbnail: Blob;
+                  chunksQty : Nat;
+                  dataSize : Nat;
+                }
+              }
+            }
+              
+          */
+          const rawGLBFile = form.file
+          const chunkSize = 1024 * 2047 // 2 MiB - 1 KB 
+          
+          const name = form.name;
+          const description = form.description;
+          const history = form.history;
+          const deadline = form.date.unix() * 1_000_000_000;
+          const thumbnail = new Uint8Array([]);  // en este campo va una imagen de captura del glb 
+          // const dataSize = rawGLBFile.size;
+          const dataSize = 1023;
+          const chunksQty = Math.ceil(dataSize / chunkSize)
+
+          const newProposalArgs = {
+            title: name,
+            description,
+            kind: {
+              DigitalTaonga: {
+                CreateDigitalTaonga: {
+                  name,
+                  description,
+                  history,
+                  deadline,
+                  imageID: BigInt(0),
+                  thumbnail,
+                  chunksQty,
+                  dataSize,
+                }
+              },
+            },
+            deadline,
+
+          }
+
+          console.log(newProposalArgs)
+          const proposalResponse = await dao.create_proposal(newProposalArgs);
+          const fileId =  proposalResponse.id;
+          
+          console.log({response: proposalResponse.id})
+
+          const promises = [];
+
+          for (let i = 0; i < Number(chunksQty); i++) {
+            let start = i * Number(chunkSize);
+            const slice = rawGLBFile.slice(start, start + Number(chunkSize));
+
+            const arrayBuffer = await slice.arrayBuffer();
+            const chunk = new Uint8Array(arrayBuffer);
+            console.log("Subiendo ", chunk.length, " Bytes from Chunck Nro ", i);
+
+            // Expected arguments on the backend: {fileId: Int; chunk: Blob; index: Nat; retry: Bool} 
+            promises.push(await dao.uploadFileChunk(
+              {
+                fileId, 
+                chunk, 
+                index: BigInt(i),
+                retry: false
+              }
+            ));
+            setUploadProgress(((i + 1) / Number(chunksQty)) * 100);
+          }
+
+          dao.refresh_all_proposals()
+
+
+          
+          
+          // let responseProposal = await dao.create_proposal({
+          //   title: form.name,
+          //   description: form.description,
+          //   kind: {DigitalTaonga: {DigitalTaongaProposal: }},
+          //   deadline: Int,
+          // })
+          
           break;
         case "":
           digitalTaongaProposalAction = "UpdateDigitalTaonga";
@@ -105,16 +207,18 @@ const DigitalTaongaProposalCreation = () => {
       }
 
       // create proposal in dao canister
-      await createProposal({
-        title: selectedValue,
-        description: `${selectedValue} ${form.principal}`,
-        kind: {
-          DigitalTaonga: {
-            [digitalTaongaProposalAction]: proposalData,
-          },
-        },
-        deadline: form.date?.unix() * 1_000_000_000,
-      });
+      // await createProposal({
+      //   title: selectedValue,
+      //   description: `${selectedValue} ${form.principal}`,
+      //   kind: {
+      //     DigitalTaonga: {
+      //       [digitalTaongaProposalAction]: proposalData,
+      //     },
+      //   },
+      //   deadline: form.date?.unix() * 1_000_000_000,
+      // });
+      
+
       toggleDialog();
       handleResponseSuccess();
     } catch (err) {
