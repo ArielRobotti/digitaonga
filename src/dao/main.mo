@@ -58,7 +58,8 @@ persistent actor {
         )
       };
       case _ {}
-    }
+    };
+    ignore refresh_all_proposals()
   };
 
   public shared ({ caller }) func edit_member({name; profile_pic; cover_img }: SharedTypes.MemberEditableData) : async Member.Result {

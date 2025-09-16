@@ -6,31 +6,34 @@ import Badge from "@mui/material/Badge";
 import Button from "./Button";
 import { motion } from "framer-motion";
 import useMember from "../../hooks/useMember";
+import useMemberStore from "../../store/useMemberStore"
 import useNotification from "../../store/useNotifications";
 import { useState } from "react";
 
-const links = [
-  { title: "Digital Taonga", link: "/digital-taonga" },
-  { title: "Proposals", link: "/proposals" },
-  { title: "Community", link: "/community" },
-  { title: "Profile", link: "/profile" },
-  { title: "FAQ", link: "/faqs" },
-  // { title: "Log In", link: "/login" },
-];
-
-const desktopLinks = [
-  { title: "Community", link: "/community" },
-  { title: "Calendar", link: "/calendar" },
-  { title: "Proposals", link: "/proposals" },
-  { title: "Profile", link: "/profile" },
-  { title: "FAQ", link: "/faqs" },
-];
 
 const Header = () => {
   // Store
   const navigate = useNavigate();
   const { notifications } = useNotification();
   const { connect, disconnect, user } = useMember();
+  const { member } = useMemberStore()
+  
+  const links = [
+    { title: "Digital Taonga", link: "/digital-taonga" },
+    { title: "Proposals", link: "/proposals" },
+    { title: "Community", link: "/community" },
+    { title: "Profile", link:  member? "/profile": "/"},
+    { title: "FAQ", link: "/faqs" },
+    // { title: "Log In", link: "/login" },
+  ];
+  
+  const desktopLinks = [
+    { title: "Community", link: "/community" },
+    { title: "Calendar", link: "/calendar" },
+    { title: "Proposals", link: "/proposals" },
+    { title: "Profile", link: member? "/profile": "/" },
+    { title: "FAQ", link: "/faqs" },
+  ];
 
   // State
   const [open, setOpen] = useState(false); // Menu open/close state (view mobile)

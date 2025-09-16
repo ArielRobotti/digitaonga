@@ -51,7 +51,7 @@ const Profile = () => {
           {/* profile img */}
           <div className="flex items-center gap-4">
               {member?.data.profile_pic[0] ?  
-            <img className="rounded-full bg-gray-300 border border-black w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center"
+            <img className="rounded-full bg-gray-300 border border-black w-16 h-16 sm:w-24 sm:h-24 object-cover"
               src={blobToImageUrl(member?.data.profile_pic[0])} alt="">
             </img>
                 : 

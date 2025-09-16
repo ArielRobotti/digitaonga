@@ -11,7 +11,7 @@ import { compressAndConvertImage } from "../../../utils/imageManager"
 
 const ProfileSettings = () => {
   const [form, setForm] = useState({ name: "", avatar: null });
-  const [ profilePic, setProfilePic] = useState()
+  const [ profilePic, setProfilePic] = useState([])
   const { member, setMember } = useMemberStore();
 
   const navigate = useNavigate();
@@ -41,6 +41,10 @@ const ProfileSettings = () => {
     navigate("/profile")
   };
 
+  if(!member){
+    navigate("/")
+  }
+
   return (
     <main>
       <h3 className="uppercase p-6">Account Settings</h3>
@@ -59,6 +63,7 @@ const ProfileSettings = () => {
               name="avatar"
               id="avatar"
               className="w-32 h-32 absolute bottom-0 right-0 opacity-0"
+              
               onChange={handleChangeAvatar}
               accept="image/*"
               aria-label="Change avatar"
@@ -67,11 +72,12 @@ const ProfileSettings = () => {
         </div>
 
         <TextField
-          label="Name"
           variant="outlined"
           className="material_input w-full"
           onChange={handleChange}
           name="name"
+          label="Name"
+          placeholder={ member?.data.name[0]?.length > 0 ? member?.data?.name[0] : "NoName"}
           value={form.name}
           required
         />
