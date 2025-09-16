@@ -30,7 +30,7 @@ const Community = () => {
   const [daoAuth, dao] = useCanister();
   const { member } = useMemberStore();
 
-  console.log({ member });
+  // console.log({ member });
 
   // if (!member.data || member.data?.role === "Admin")
   //   return (
@@ -74,7 +74,7 @@ const Community = () => {
       try {
         const members = await dao.get_all_members();
         const data = members.map(memberParser);
-        console.log({ data });
+
         setMembers({ loading: false, data });
       } catch (err) {
         console.error("Error fetching members:", err);

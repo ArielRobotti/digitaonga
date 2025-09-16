@@ -1,5 +1,4 @@
 import { Actor, HttpAgent } from "@dfinity/agent";
-
 import { canisters } from "../utils/canisters";
 import { env } from "../utils/env";
 import { useAgent } from "@nfid/identitykit/react";
@@ -7,31 +6,35 @@ import { useMemo } from "react";
 
 const useCanister = (canisterName = "dao") => {
   const canister = canisters[canisterName];
-  // console.log(env);
-  // console.log({ canister });
-
   const isLocal = env.ICP_API_HOST.includes("localhost");
 
-  const unauthenticatedAgent = HttpAgent.createSync({
-    host: env.ICP_API_HOST,
-    shouldFetchRootKey: isLocal,
-  });
+  // memoizamos el agente no autenticado
+  const unauthenticatedAgent = useMemo(() => {
+    const agent = HttpAgent.createSync({
+      host: env.ICP_API_HOST,
+      shouldFetchRootKey: isLocal,
+    });
+    if (isLocal) {
+      agent.fetchRootKey().catch((err) => {
+        console.error("Failed to fetch root key:", err);
+      });
+    }
+    return agent;
+  }, [env.ICP_API_HOST, isLocal]);
 
+  // el hook externo ya maneja memo, pero igual lo tratamos estable
   const authenticatedAgent = useAgent({
     host: env.ICP_API_HOST,
     shouldFetchRootKey: isLocal,
   });
 
   if (isLocal) {
-    unauthenticatedAgent.fetchRootKey().catch((err) => {
-      console.error("Failed to fetch root key:", err);
-    });
-    // console.log({ authenticatedAgent });
     authenticatedAgent?.fetchRootKey().catch((err) => {
       console.error("Failed to fetch root key auth:", err);
     });
   }
 
+  // memoizamos los actores
   const nonTargetUnauthenticatedActor = useMemo(() => {
     return (
       unauthenticatedAgent &&
@@ -40,7 +43,7 @@ const useCanister = (canisterName = "dao") => {
         canisterId: canister.canisterId,
       })
     );
-  }, [unauthenticatedAgent, canister, canisterName]);
+  }, [unauthenticatedAgent, canister.canisterId, canister.idl]);
 
   const authenticatedActor = useMemo(() => {
     return (
@@ -50,9 +53,7 @@ const useCanister = (canisterName = "dao") => {
         canisterId: canister.canisterId,
       })
     );
-  }, [authenticatedAgent, canister, canisterName]);
-
-  // console.log({ authenticatedActor });
+  }, [authenticatedAgent, canister.canisterId, canister.idl]);
 
   return [authenticatedActor, nonTargetUnauthenticatedActor];
 };
