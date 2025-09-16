@@ -84,6 +84,7 @@ module {
     active_members : Nat;
     comments : List.List<ProposalComment>;
     likes: [(Principal, LikeProposal)];
+    partialResults: {approving: Nat; disapproving: Nat; abstentions: Nat};
     creator : Principal;
   };
 

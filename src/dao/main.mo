@@ -37,6 +37,16 @@ persistent actor {
     // actualizar last_activity
   };
 
+  public shared ({ caller }) func logIn(): async ?SharedTypes.Member {
+    await refresh_all_proposals();
+    switch (await get_member(caller)){
+      case (#Ok(member)){
+        ?member
+      };
+      case _ { null }
+    };
+  };
+
   public shared ({ caller }) func edit_member({name; profile_pic; cover_img }: SharedTypes.MemberEditableData) : async Member.Result {
     assert(not Principal.isAnonymous(caller));
     Member.edit_member(state, caller, {name; profile_pic; cover_img})
@@ -59,17 +69,7 @@ persistent actor {
     Member.get_all_members(state)
   };
 
-  // TODO Verificar quien puede leer estos datos.. en este momento son públicos
-  /*
-    principal;
-    liked_proposals : [(Nat, LikeProposal)];
-    name 
-    role
-    created_at 
-    last_activity 
-    cover_img 
-    profile_pic
-  */
+
   public query func get_member(p : Principal) : async Member.Result {
     Member.get_member(state, p)
   };
@@ -96,14 +96,20 @@ persistent actor {
       retry;
     })
   };
-  
-  // get_proposal : shared query Nat -> async ?Proposal;
-  public query func get_proposal(id: Int): async ?SharedTypes.ProposalPublicData { // En ProposalPublicData se omiten los votos y el creador
-    Proposal.get_proposal(state, id);
+
+  public query ({ caller}) func get_proposal(id: Int): async ?SharedTypes.Proposal { // En ProposalPublicData se omiten los votos y el creador
+    // assert(not Principal.isAnonymous(caller));
+    let proposal = Proposal.get_proposal(state, id);
+    switch proposal {
+      case null { null};
+      case (?proposal) {
+        let partialResults = Proposal.getPartialResults(proposal.votes);
+        ?{ proposal with votes = []; partialResults }
+      }
+    }
   };
 
-  // edit_proposal : shared (Nat, Text, Text, ProposalType) -> async ?Proposal; // Cambio de firma (id: Int; data: ProposalEditableData)
-  public shared ({ caller }) func edit_proposal(id : Int, data: Proposal.ProposalEditableData) : async ?SharedTypes.Proposal {
+  public shared ({ caller }) func edit_proposal(id : Int, data: Proposal.ProposalEditableData) : async ?SharedTypes.ProposalPublicData {
     assert(not Principal.isAnonymous(caller));
     Proposal.edit_proposal(state, caller, id, data);
   };
@@ -113,15 +119,27 @@ persistent actor {
     Proposal.delete_proposal(state, caller, id);
   };
   
-  // get_all_proposals : shared query () -> async [Proposal];
   public query func get_all_proposals() : async [SharedTypes.ProposalPublicData] {
     Proposal.get_all_proposals(state);
   };
   
-  // vote_proposal : shared (Nat, Vote) -> async Result_2;
   public shared ({ caller }) func vote_proposal(id : Int, vote : SharedTypes.Vote) : async ?SharedTypes.ProposalPublicData {
     assert(not Principal.isAnonymous(caller));
     Proposal.vote_proposal(state, caller, id, vote)
+  };
+
+  public shared ({ caller }) func get_my_vote(id: Nat): async ?SharedTypes.Vote{
+    switch (Proposal.get_proposal(state, id)){
+      case null null;
+      case ( ?proposal ) {
+        for (vote in proposal.votes.vals()){
+          if(vote.0 == caller) {
+            return ?vote.1
+          }
+        };
+        null
+      }
+    }
   };
 
   // get_proposals_by_member : shared query Principal -> async [Proposal];
@@ -140,7 +158,7 @@ persistent actor {
     }
   };
 
-  public func refresh_all_proposals() {
+  public func refresh_all_proposals(): async () {
     let proposalsId: [Int] = Array.map<SharedTypes.ProposalPublicData, Int>(
       Proposal.get_all_proposals(state),
       func p = p.id

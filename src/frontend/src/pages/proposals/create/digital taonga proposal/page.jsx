@@ -76,43 +76,7 @@ const DigitalTaongaProposalCreation = () => {
 
       switch (selectedValue) {
         case "Create or Upload a New Digital Taonga":
-          // const key = await uploadFile(form.file);
-          // if (!key) return alert("Please upload a file");
-          // digitalTaongaProposalAction = "CreateDigitalTaonga";
-          // // TODO (fran): subir el archivo a canister y obtener el key
-          // // const key = "";
-          // console.log({ form });
-          // proposalData = [
-          //   form.name,
-          //   form.description,
-          //   form.history,
-          //   form.date.unix() * 1_000_000_000,
-          //   key,
-          // ]; // TODO (fran): check unix
 
-          /*
-
-          title: Text;
-          description: Text;
-          kind: SharedTypes.ProposalType;
-          deadline: Int;
-
-            DigitalTaongaProposal{
-              CreateDigitalTaonga {
-                CreateDigitalTaongaArgs {
-                  name : Text;
-                  description : Text;
-                  history : Text;
-                  deadline : Int;
-                  imageID : Nat; // Revisar
-                  thumbnail: Blob;
-                  chunksQty : Nat;
-                  dataSize : Nat;
-                }
-              }
-            }
-              
-          */
           const rawGLBFile = form.file
           const chunkSize = 1024 * 2047 // 2 MiB - 1 KB 
           
@@ -121,9 +85,10 @@ const DigitalTaongaProposalCreation = () => {
           const history = form.history;
           const deadline = form.date.unix() * 1_000_000_000;
           const thumbnail = new Uint8Array([]);  // en este campo va una imagen de captura del glb 
-          // const dataSize = rawGLBFile.size;
-          const dataSize = 1023;
+          const dataSize = rawGLBFile.size;
+          // const dataSize = 1023;
           const chunksQty = Math.ceil(dataSize / chunkSize)
+          console.log({chunksQty})
 
           const newProposalArgs = {
             title: name,
@@ -154,16 +119,19 @@ const DigitalTaongaProposalCreation = () => {
 
           const promises = [];
 
-          for (let i = 0; i < Number(chunksQty); i++) {
-            let start = i * Number(chunkSize);
-            const slice = rawGLBFile.slice(start, start + Number(chunkSize));
+          // Chunking process
+
+          for (let i = 0; i < chunksQty; i++) {
+            let start = i * chunkSize;
+            const slice = rawGLBFile.slice(start, start +chunkSize);
 
             const arrayBuffer = await slice.arrayBuffer();
             const chunk = new Uint8Array(arrayBuffer);
             console.log("Subiendo ", chunk.length, " Bytes from Chunck Nro ", i);
 
-            // Expected arguments on the backend: {fileId: Int; chunk: Blob; index: Nat; retry: Bool} 
-            promises.push(await dao.uploadFileChunk(
+            if(i == chunksQty - 1 ) { await Promise.all(promises) } // si es el ultimo chunk esperamos los promises anteriores
+
+            promises.push(dao.uploadFileChunk(
               {
                 fileId, 
                 chunk, 
@@ -176,9 +144,6 @@ const DigitalTaongaProposalCreation = () => {
 
           dao.refresh_all_proposals()
 
-
-          
-          
           // let responseProposal = await dao.create_proposal({
           //   title: form.name,
           //   description: form.description,

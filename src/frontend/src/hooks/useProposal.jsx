@@ -1,14 +1,15 @@
 import { proposalParser, proposalsArrayParser } from "../utils/parsers";
 
 import { p2str } from "../utils/functions";
-import { useAuth } from "@nfid/identitykit/react";
+// import { useAuth } from "@nfid/identitykit/react";
 import useCanister from "./useCanister";
 import { useEffect } from "react";
 import useProposalStore from "../store/useProposalStore";
 
 const useProposal = () => {
-  const [daoAuth, dao] = useCanister();
-  const { user } = useAuth();
+  // const [daoAuth, dao] = useCanister();
+  const [ ,dao ] = useCanister();
+  // const { user } = useAuth();
   const {
     addProposal,
     setProposals,
@@ -23,7 +24,8 @@ const useProposal = () => {
   const getAllProposals = async () => {
     try {
       const res = await dao.get_all_proposals();
-      console.log(res[0].creator)
+      
+      console.log("res[0].creator")
 
       console.log("getAllProposals res:", res);
       // TODO (fran): parse proposals
@@ -36,14 +38,15 @@ const useProposal = () => {
   };
 
   // const getProposal = (id) => proposals.find((p) => p.id === id);
-  const getProposal = async (id) => { 
-    console.log(id)
-    const response = await dao.get_proposal(BigInt(id));
+  const getProposal = async (id) => {
+    // console.log((await dao.logIn()).toString())
+    const response =  await dao.get_proposal(BigInt(id));
     console.log({response})
+    return response
   };
 
-  const getProposalsByMember = (principal) =>
-    proposals.filter((p) => p.creator === p2str(principal));
+  // const getProposalsByMember = (principal) =>
+  //   proposals.filter((p) => p.creator === p2str(principal));
 
   const createProposal = async ({ title, description, kind, deadline }) => {
     console.log({ title, description, kind, deadline });
@@ -80,19 +83,24 @@ const useProposal = () => {
     }
   };
 
+  // const likeProposal = async (id, type) => {
+  //   try {
+  //     if (type === "Like") {
+  //       likeP(id, p2str(user.principal));
+  //     } else {
+  //       dislikeProposal(id, p2str(user.principal));
+  //     }
+  //     const res = await dao.like_proposal(id, { [type]: null });
+  //     console.log({ res });
+  //   } catch (err) {
+  //     console.log("likeProposal error:", err);
+  //   }
+  // };
+
   const likeProposal = async (id, type) => {
-    try {
-      if (type === "Like") {
-        likeP(id, p2str(user.principal));
-      } else {
-        dislikeProposal(id, p2str(user.principal));
-      }
-      const res = await dao.like_proposal(id, { [type]: null });
-      console.log({ res });
-    } catch (err) {
-      console.log("likeProposal error:", err);
-    }
-  };
+    const like = type === "Like" ? {Like: null} : {Dislike: null}
+    dao.like_proposal(id, like)
+  }
 
   useEffect(() => {
     dao && loading && getAllProposals();
@@ -106,7 +114,7 @@ const useProposal = () => {
     creating,
     voteProposal,
     likeProposal,
-    getProposalsByMember,
+    // getProposalsByMember,
   };
 };
 

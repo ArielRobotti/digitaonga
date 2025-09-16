@@ -26,6 +26,7 @@ const Profile = () => {
   const { getProposalsByMember } = useProposal();
 
   //   const user = { name: "fran", principal: "kjhad-kajdbf-lkadfnb-cai" };
+  console.log({member})
 
   const array = [
     { n: 1, s: "Active proposals" },
@@ -33,7 +34,7 @@ const Profile = () => {
     { n: 3, s: "Rejected proposals" },
   ];
 
-  console.log({member: member?.data.name})
+  // console.log({member: member?.data.name})
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -53,7 +54,7 @@ const Profile = () => {
               <PersonIcon className="text-gray-500" />
             </div>
             <div>
-              <h1>{member?.data.name[0] || "Name Username"}</h1>
+              <h1>{member? "p" : "Name Username"}</h1>
               <p className="flex items-center gap-2 mt-4">
                 Principal ID: {shortP(p2str(user?.principal || "") || "abced-cai")}
                 <CopyIcon

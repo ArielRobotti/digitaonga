@@ -84,6 +84,7 @@ module {
       id ;
       likes = [];
       status;
+      partialResults = {approving = 0; disapproving = 0; abstentions = 0};
       votes : [(Principal, SharedTypes.Vote)] = [(caller, #Approve)] // Agregamos el voto positivo del creador
     };
     ignore Map.put<Int, Proposal>(s.proposals, ihash, id, newProposal);
@@ -97,7 +98,6 @@ module {
       case ( ?file ) {
         if (caller == file.owner) {
           file.data[index] := chunk;
-          print(debug_show(file.data.size()));
           //----------- TODO revisar y refinar esta comprobacion simulando un caso de fallo: (omitiendo el envio de un chunk)
           if(retry or index + 1 == file.data.size()){ // Verificamos la completitud cuando se recibe el ultimo chunk o cuando se manda un chunk en un reintento
             let complet = checkUploadFile(file);
@@ -175,15 +175,16 @@ module {
       case ( ?proposal ) {
         if (canVote(s, caller)) {
           for (vote in proposal.votes.vals()){
-            if(vote.0 == caller){ // Si ya voto retornamos null sin hacer nada
-              return null
+            if(vote.0 == caller){ // Si ya voto retornamos el proposal sin hacer nada
+              return ?proposal
             };
           };
-          let update_votes = Array.tabulate<(Principal, SharedTypes.Vote)>(
+          let votes = Array.tabulate<(Principal, SharedTypes.Vote)>(
             s.proposals.size() + 1,
             func i = if (i < s.proposals.size()){proposal.votes[i]} else ((caller, vote))
           );
-          ignore Map.put<Int, Proposal>(s.proposals, ihash, id, {proposal with votes = update_votes});
+          let partialResults = getPartialResults(votes); 
+          ignore Map.put<Int, Proposal>(s.proposals, ihash, id, {proposal with votes; partialResults });
           ?proposal
         } else {
           null
@@ -194,9 +195,9 @@ module {
   
   public func like_proposal(s: Types.State, caller: Principal, id: Int, like: ?LikeProposal): ?Proposal {
 
-    if(not can_give_like(Member.get_role_member(s, caller))) { 
-      return null 
-    };
+    // if(not can_give_like(Member.get_role_member(s, caller))) { 
+    //   return null 
+    // };
 
     switch (get_proposal(s, id)){
       case null { return null };
@@ -253,6 +254,20 @@ module {
       }
     }
   };
+
+  public func getPartialResults(votes: [(Principal, SharedTypes.Vote)]): {approving: Nat; disapproving: Nat; abstentions: Nat} {
+    var approving = 0;
+    var disapproving = 0;
+    var abstentions = 0;
+    for ( vote in votes.vals() ) {
+      switch( vote.1 ) {
+        case ( #Approve) { approving += 1 };
+        case ( #Disapprove ) { disapproving +=1 };
+        case ( #Abstain ) { abstentions += 1 };
+      }
+    };
+    {approving; disapproving; abstentions}
+  };
   
   func checkUploadFile(file: Types.File): Bool {
     var counter = 0;
@@ -285,6 +300,8 @@ module {
       case _ { false }
     }
   };
+
+  
   /*
   func can_comment_proposal(roleMember: ?SharedTypes.MemberRole): Bool {
     switch roleMember {
