@@ -5,11 +5,17 @@ import { TextField } from "@mui/material";
 import useMemberStore from "../../../store/useMemberStore";
 import { useState } from "react";
 import useCanister from "../../../hooks/useCanister";
+import { useNavigate } from "react-router";
+import { compressAndConvertImage } from "../../../utils/imageManager"
 
 
 const ProfileSettings = () => {
   const [form, setForm] = useState({ name: "", avatar: null });
-  const { member } = useMemberStore();
+  const [ profilePic, setProfilePic] = useState()
+  const { member, setMember } = useMemberStore();
+
+  const navigate = useNavigate();
+
   console.log({ member });
 
   const [dao] = useCanister();
@@ -19,25 +25,20 @@ const ProfileSettings = () => {
     setForm((prevForm) => ({ ...prevForm, [name]: value }));
   };
 
-  const handleChangeAvatar = (event) => {
+  const handleChangeAvatar = async (event) => {
     const file = event.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setForm((prevForm) => ({ ...prevForm, avatar: reader.result }));
-      };
-      reader.readAsDataURL(file);
+      setProfilePic(await compressAndConvertImage(file, 128))
     }
   };
 
   const handleSubmit = async () => {
-    /*
-    name : ?Text;
-    cover_img : ?Blob;
-    profile_pic : ?Blob;
-    */
-    const responseEditProfile = await dao.edit_member({name: [form.name], cover_img: [], profile_pic: []})
+    const responseEditProfile = await dao.edit_member({name: [form.name], cover_img: [], profile_pic: [profilePic]})
     console.log(responseEditProfile)
+    if("Ok" in responseEditProfile) {
+      setMember(responseEditProfile.Ok)
+    }
+    navigate("/profile")
   };
 
   return (

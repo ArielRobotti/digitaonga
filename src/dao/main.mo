@@ -4,7 +4,7 @@ import Member "./member";
 import Proposal "./proposal";
 // import Error "mo:base/Error";
 import Map "mo:map/Map";
-import { ihash } "mo:map/Map";
+import { ihash; phash } "mo:map/Map";
 import Array "mo:base/Array";
 import Iter "mo:base/Iter";
 import { print } "mo:base/Debug";
@@ -45,6 +45,20 @@ persistent actor {
       };
       case _ { null }
     };
+  };
+
+  public shared ({ caller }) func set_last_activity_member(): async (){
+    switch (Member.get_member(state, caller)){
+      case ( #Ok(member) ){
+        ignore Map.put<Principal, SharedTypes.Member>(
+          state.members,
+          phash,
+          caller,
+          {member with last_activity = now()}
+        )
+      };
+      case _ {}
+    }
   };
 
   public shared ({ caller }) func edit_member({name; profile_pic; cover_img }: SharedTypes.MemberEditableData) : async Member.Result {

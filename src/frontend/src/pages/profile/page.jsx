@@ -9,6 +9,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import { useAuth } from "@nfid/identitykit/react";
 import useMemberStore from "../../store/useMemberStore";
 import useProposal from "../../hooks/useProposal";
+import { blobToImageUrl } from "../../utils/imageManager"
 
 // import { CopyIcon } from "../../components/ui/icons";
 
@@ -26,7 +27,6 @@ const Profile = () => {
   const { getProposalsByMember } = useProposal();
 
   //   const user = { name: "fran", principal: "kjhad-kajdbf-lkadfnb-cai" };
-  console.log({member})
 
   const array = [
     { n: 1, s: "Active proposals" },
@@ -50,11 +50,15 @@ const Profile = () => {
         <section className="flex items-center justify-between p-4 xl:justify-start xl:gap-8 xl:w-1/3">
           {/* profile img */}
           <div className="flex items-center gap-4">
-            <div className="rounded-full bg-gray-300 border border-black w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center">
-              <PersonIcon className="text-gray-500" />
-            </div>
+              {member?.data.profile_pic[0] ?  
+            <img className="rounded-full bg-gray-300 border border-black w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center"
+              src={blobToImageUrl(member?.data.profile_pic[0])} alt="">
+            </img>
+                : 
+                <PersonIcon className="text-gray-500" />
+              }
             {user && <div>
-              <h1>{member?.data.name[0]?  member?.data.name[0]: "Name Username"}</h1>
+              <h1>{member?.data.name[0]?.length > 0 ?  member?.data.name[0]: "Name Username"}</h1>
               <p className="flex items-center gap-2 mt-4">
                 Principal ID: {shortP(p2str(user.principal))}
                 <CopyIcon
