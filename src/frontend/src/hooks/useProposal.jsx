@@ -24,8 +24,6 @@ const useProposal = () => {
   const getAllProposals = async () => {
     try {
       const res = await dao.get_all_proposals();
-      
-      console.log("res[0].creator")
 
       console.log("getAllProposals res:", res);
       // TODO (fran): parse proposals

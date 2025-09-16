@@ -53,16 +53,16 @@ const Profile = () => {
             <div className="rounded-full bg-gray-300 border border-black w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center">
               <PersonIcon className="text-gray-500" />
             </div>
-            <div>
-              <h1>{member? "p" : "Name Username"}</h1>
+            {user && <div>
+              <h1>{member?.data.name[0]?  member?.data.name[0]: "Name Username"}</h1>
               <p className="flex items-center gap-2 mt-4">
-                Principal ID: {shortP(p2str(user?.principal || "") || "abced-cai")}
+                Principal ID: {shortP(p2str(user.principal))}
                 <CopyIcon
                   className="cursor-pointer"
-                  onClick={() => copyToClipboard(p2str(user?.principal || "") || "abcde-cai")}
+                  onClick={() => copyToClipboard(p2str(user.principal))}
                 />
               </p>
-            </div>
+            </div>}
           </div>
 
           <div className="rounded-full bg-kokowai p-2 cursor-pointer">

@@ -1,9 +1,46 @@
 import Button from "../../components/shared/Button";
 import ProposalContainer from "../../components/shared/ProposalContainer";
 import { useNavigate } from "react-router";
+import { useEffect, useRef } from "react";
+import useProposalStore from "../../store/useProposalStore";
+import useCanister from "../../hooks/useCanister";
+import { proposalsArrayParser } from "../../utils/parsers";
 
 const Proposals = () => {
   const navigate = useNavigate();
+  const [,dao] = useCanister(); // No hace falta que sea el agente autenticado
+
+  const {
+    setProposals,
+  } = useProposalStore();
+
+  const intervalRef = useRef(null);
+
+  const pulling = async () => {
+    console.log("pulling...");
+    try {
+      if (dao) {
+        const propslsUpdate = await dao.get_all_proposals();
+        const parsed = proposalsArrayParser(propslsUpdate);
+        setProposals(parsed);
+      }
+    } catch (error) {
+      console.error("Error pulling proposals:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (dao && !intervalRef.current) {
+      intervalRef.current = setInterval(pulling, 1000);
+    }
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [dao]);
+
 
   return (
     <main className="p-4">
