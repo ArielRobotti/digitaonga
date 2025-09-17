@@ -38,7 +38,7 @@ persistent actor {
   };
 
   public shared ({ caller }) func logIn(): async ?SharedTypes.Member {
-    await refresh_all_proposals();
+    ignore refresh_all_proposals();
     switch (await get_member(caller)){
       case (#Ok(member)){
         ?member
@@ -69,6 +69,7 @@ persistent actor {
 
   public shared ({ caller }) func batch_update_member_role(principals : [Principal], role : SharedTypes.MemberRole) : async [(Principal, SharedTypes.MemberError)] {
     assert(Member.is_admin(state, caller));
+    print(debug_show(caller));
     //TODO. Regla: los admin pueden otorgar roles solo cuando no hay la cantidad suficiente de guardians en la DAO
     // En caso de que haya la cantidad de guardians requerida, generar una proposal (Nueva variante #Guardian{#BatchUpdateRoles})
     Member.batch_update_member_role(state, principals, role);
@@ -161,6 +162,10 @@ persistent actor {
   public query func get_proposals_by_member(principal : Principal) : async [SharedTypes.ProposalPublicData] {
     let all_proposals = Iter.toArray(Map.vals(state.proposals));
     Array.filter<SharedTypes.Proposal>(all_proposals, func p = p.creator == principal)
+  };
+
+  public query func get_all_taongas(): async [(Principal, SharedTypes.TaongaMetadata)]{
+    Map.toArray<Principal, SharedTypes.TaongaMetadata>(state.taongas);
   };
 
   // check_proposal_status : shared Nat -> async Result_2;

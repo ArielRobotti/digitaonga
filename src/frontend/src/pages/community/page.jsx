@@ -17,6 +17,7 @@ import { memberParser } from "../../utils/parsers";
 import { str2p } from "../../utils/functions";
 import useCanister from "../../hooks/useCanister";
 import useMemberStore from "../../store/useMemberStore";
+import { Principal } from "@dfinity/principal"
 
 const Community = () => {
   // State
@@ -29,6 +30,8 @@ const Community = () => {
   // Store
   const [daoAuth, dao] = useCanister();
   const { member } = useMemberStore();
+  const admin = member.data?.role
+  console.log(admin)
 
   // console.log({ member });
 
@@ -56,9 +59,16 @@ const Community = () => {
   const batchUpdateMemberRole = async () => {
     if (!dao) return;
     try {
-      await dao.batch_update_member_role(
-        selectedMembers.map((p) => str2p(p)),
-        value
+      const roles = {
+        guardian : { Guardian: null },
+        observer : { Observer: null },
+        admin : { Admin: null }
+      }
+      console.log(roles[value])
+
+      await daoAuth.batch_update_member_role(
+        selectedMembers.map((p) => Principal.fromText(p)),
+        roles[value]
       );
       setSelectedMembers([]);
       toggleDialog();
@@ -102,7 +112,7 @@ const Community = () => {
         )}
       </section>
 
-      {members.data.length > 0 && !members.loading && (
+      {members.data.length > 0 && !members.loading  && member.data?.role == "Admin" &&(
         <div className="absolute bottom-4 inset-x-0 z-10 grid gap-4 place-items-center">
           <Button
             className="w-[340px]"
@@ -139,25 +149,23 @@ const Community = () => {
               name="controlled-radio-buttons-group"
               value={value}
               onChange={handleChange}
-            >
+            > 
+              <FormControlLabel value="admin" control={<Radio />} label="Admin" />
               <FormControlLabel value="guardian" control={<Radio />} label="Guardian" />
               <FormControlLabel value="observer" control={<Radio />} label="Observer" />
+
             </RadioGroup>
           </FormControl>
         </DialogContent>
 
         <section className="w-full flex justify-center gap-4 p-4 pb-6">
-          <Button size="small" onClick={toggleDialog}>
+          <Button size="small" onClick={ toggleDialog }>
             Cancel
           </Button>
           <Button
             size="small"
             variant="kokowai"
-            onClick={() => {
-              toggleDialog();
-              toggleOpenDialog();
-              // navigate(`/proposals/create?type=${selectedValue}`);
-            }}
+            onClick={ batchUpdateMemberRole }
           >
             Submit
           </Button>

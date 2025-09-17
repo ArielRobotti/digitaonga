@@ -140,16 +140,9 @@ const DigitalTaongaProposalCreation = () => {
               }
             ));
             setUploadProgress(((i + 1) / Number(chunksQty)) * 100);
+            // Poner una barra de progreso y bloquear los botones de submit y cancell
           }
-
           dao.refresh_all_proposals()
-
-          // let responseProposal = await dao.create_proposal({
-          //   title: form.name,
-          //   description: form.description,
-          //   kind: {DigitalTaonga: {DigitalTaongaProposal: }},
-          //   deadline: Int,
-          // })
           
           break;
         case "":
@@ -171,21 +164,9 @@ const DigitalTaongaProposalCreation = () => {
           break;
       }
 
-      // create proposal in dao canister
-      // await createProposal({
-      //   title: selectedValue,
-      //   description: `${selectedValue} ${form.principal}`,
-      //   kind: {
-      //     DigitalTaonga: {
-      //       [digitalTaongaProposalAction]: proposalData,
-      //     },
-      //   },
-      //   deadline: form.date?.unix() * 1_000_000_000,
-      // });
-      
-
       toggleDialog();
       handleResponseSuccess();
+      navigate("/proposals")
     } catch (err) {
       console.log("createProposal error:", err);
       const e = err;

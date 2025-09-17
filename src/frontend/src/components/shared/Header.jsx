@@ -19,7 +19,7 @@ const Header = () => {
   const { member } = useMemberStore()
   
   const links = [
-    { title: "Digital Taonga", link: "/digital-taonga" },
+    { title: "Digital Taonga", link: "/" },
     { title: "Proposals", link: "/proposals" },
     { title: "Community", link: "/community" },
     { title: "Profile", link:  member? "/profile": "/"},
@@ -90,7 +90,8 @@ const Header = () => {
       <img
         src="/images/png/digitaonga logo header.png"
         alt="digitaonga"
-        className="hidden xl:block"
+        className="hidden xl:block h-14 cursor-pointer"
+        onClick={() => navigate("/")}
       />
 
       <nav className="hidden xl:block w-full">

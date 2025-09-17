@@ -14,6 +14,7 @@ const ProposalContainer = ({ className = "", status = "Open" } = {}) => {
           proposals
             .filter((p) => p.status === status)
             .map((proposal) => <ProposalCard key={proposal.id} {...proposal} />)
+            .reverse()
         )}
       </div>
     </section>
