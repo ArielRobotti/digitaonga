@@ -1,46 +1,46 @@
 import { useEffect, useState } from "react";
-
 import { CircularProgress } from "@mui/material";
 import NftCard from "./NftCard";
 import useCanister from "../../hooks/useCanister";
 
 const NftsContainer = ({ className }) => {
-  const [, digital] = useCanister("digital_asset");
-  const [assets, setAssets] = useState({ loading: true, data: [] });
+  const [, dao] = useCanister("dao");
+  const [assets, setAssets] = useState({ loading: true, array: [] });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log({ digital });
-        const result = await digital.list_assets();
-        const data = result.map((asset) => ({
-          id: Number(asset.id),
-          name: asset.metadata.name,
-          description: asset.metadata.description,
-          image: asset.metadata.image,
-          history: asset.metadata.history,
-          symbol: asset.metadata.symbol,
+        const result = await dao.get_all_taongas();
+        
+        const taongasArray = result.map((entry) => ({
+          canisterId: entry[0],
+          name: entry[1].name,
+          description: entry[1].description,
+          history: entry[1].history,
+          thumbnail: entry[1].thumbnail,
         }));
-        console.log({ data });
-        setAssets({ loading: false, data });
+        
+        setAssets({ loading: false, array: taongasArray });
+        console.log("jugu", taongasArray[0])
       } catch (err) {
         console.error("Error fetching assets:", err);
-        setAssets({ loading: false, data: [] });
+        // En caso de error, el estado debe reflejar que no hay datos
+        setAssets({ loading: false, array: [] });
       }
     };
 
     fetchData();
-  }, []);
+  }, [dao]); 
 
   return (
     <section className={`${className}`}>
       <div className="flex gap-4 overflow-x-auto py-2">
         {assets.loading ? (
           <CircularProgress />
-        ) : assets.data.length > 0 ? (
+        ) : assets.array.length > 0 ? (
           <>
-            {assets.data.map((asset, i) => (
-              <NftCard key={i} {...asset} />
+            {assets.array.map((asset) => (
+              <NftCard asset/>
             ))}
           </>
         ) : (

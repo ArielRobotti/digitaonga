@@ -134,6 +134,8 @@ module {
     canisterId : Principal;
     remoteActorReference : Taonga.Taonga;
     name : Text;
+    history : Text;
+    description : Text;
     thumbnail: Blob;
   };
 }

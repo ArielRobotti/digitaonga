@@ -1,44 +1,80 @@
 import { Checkbox } from "@mui/material";
+import { CopyIcon, AvatarIcon} from "../../components/ui/icons";
+import { copyToClipboard } from "../../utils/functions";
 import { MoreOptionsIcon } from "../ui/icons";
 import { shortP } from "../../utils/functions";
 import { useState } from "react";
+import { blobToImageUrl } from "../../utils/imageManager";
 
 const MemberCommunityCard = ({
   principal,
+  name,
   created_at,
   role,
+  profile_pic,
   selectedMember,
   handleSelectMember,
 }) => {
   const [checked, setChecked] = useState(false);
+  console.log(name[0])
 
   const handleChange = () => {
     handleSelectMember(principal);
     setChecked(!checked);
   };
+  console.log({ profile_pic })
 
   // Convert created_at timestamp to a legible date string
   const formattedDate = new Date(created_at / 1_000_000).toLocaleDateString();
 
   return (
     <article
-      className="px-4 py-2.5 flex items-center gap-4 cursor-pointer hover:bg-gray-200"
-      onClick={handleChange}
+      className="py-2.5 flex items-center gap-4 cursor-pointer hover:bg-gray-200"
     >
-      <Checkbox checked={checked} inputProps={{ "aria-label": "controlled" }} />
+      <Checkbox checked={checked}
+        onClick={handleChange}
 
-      <div className="w-14 h-14 bg-gray-500" />
+      />
+      <img 
+        className="w-16 h-16 rounded-full object-cover"  
+        src={blobToImageUrl(profile_pic[0]) || "/images/webp/avatar-anonymous.webp"} 
+        alt={name} 
+      />    
 
-      <section>
-        <h4>
-          {shortP(principal)} ({role})
-        </h4>
-        <p>Joined at: {formattedDate}</p>
+      <section className="w-full">
+        <div className="relative group inline-block w-full">
+          <div className="flex items-center justify-between">
+            {/* Parte izquierda */}
+            <div className="flex items-center">
+              <div className="flex flex-col items-center mr-2">
+                <span className="mr-1">Copy Id</span>
+                <CopyIcon
+                  className="cursor-pointer"
+                  onClick={() => copyToClipboard(principal.toString())}
+                />
+              </div>
+              <p className="text-[18px]">
+                {name[0] ? name[0] : "No Name"} 
+                <span className="ml-10">
+                  ({role})
+                </span>
+              </p>
+            </div>
+            {/* Tooltip */}
+            <span className="absolute w-max -translate-x-1/2 mt-2 -bottom-6 hidden group-hover:block bg-gray-700 text-white text-xs rounded px-2 py-1">
+              {principal}
+            </span>
+
+            {/* Parte derecha: Fecha */}
+            <p className=" text-sm text-gray-500 ">Joined at: {formattedDate}</p>
+          </div>
+
+        </div>
       </section>
 
-      <section className="cursor-pointer grid place-items-center gap-1 ml-auto">
+      <section className="cursor-pointer grid place-items-center gap-1">
         <MoreOptionsIcon />
-        <span>Edit role</span>
+        <span className="w-20 ml-6">Edit role</span>
       </section>
     </article>
   );

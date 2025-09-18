@@ -19,7 +19,7 @@ const Header = () => {
   const { member } = useMemberStore()
   
   const links = [
-    { title: "Digital Taonga", link: "/" },
+    { title: "Taonga Gallery", link: "/" },
     { title: "Proposals", link: "/proposals" },
     { title: "Community", link: "/community" },
     { title: "Profile", link:  member? "/profile": "/"},
@@ -28,6 +28,7 @@ const Header = () => {
   ];
   
   const desktopLinks = [
+    { title: "Taonga Gallery", link: "/" },
     { title: "Community", link: "/community" },
     { title: "Calendar", link: "/calendar" },
     { title: "Proposals", link: "/proposals" },

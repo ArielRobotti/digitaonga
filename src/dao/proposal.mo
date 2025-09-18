@@ -353,7 +353,9 @@ module {
       canisterId;
       remoteActorReference = newTaonga;
       name : Text = init.name;
-      thumbnail = init.thumbnail
+      thumbnail = init.thumbnail;
+      history = init.history;
+      description = init.description;
     };
     ignore Map.put<Principal, SharedTypes.TaongaMetadata>(s.taongas, phash, canisterId, metadata);
     // Esperar todos los responses juntos

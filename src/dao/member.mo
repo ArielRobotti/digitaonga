@@ -118,7 +118,7 @@ module {
     let membersArray = Iter.toArray(Map.vals<Principal, Member>(s.members));
     Array.map<Member, Member>(
       membersArray, 
-      func x = {x with cover_img = null; profile_pic = null} // Omitimos las imagenes
+      func x = {x with cover_img = null} // Omitimos las imagenes
     ); 
   };
 

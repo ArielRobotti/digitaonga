@@ -1,19 +1,21 @@
 import Button from "./Button";
 import { useNavigate } from "react-router";
+import { blobToImageUrl } from "../../utils/imageManager";
 
-const NftCard = ({ id = 0, name = "DIGITAL TAONGA", image }) => {
+const NftCard = (asset) => {
   const navigate = useNavigate();
+
+  console.log({asset})
 
   return (
     <article className="flex flex-col justify-between min-w-[262px] min-h-[355px] w-full h-full bg-kokowai rounded-[5px] p-6 text-white max-w-[330px]">
       <div className="overflow-hidden w-full">
         <img
           src={
-            image
-              ? `https://2ynh7-zyaaa-aaaal-qsr4q-cai.icp0.io${image}`
-              : '"/images/jpg/stars.jpg"'
+              blobToImageUrl(asset.thumbnail) |
+              '"/images/jpg/stars.jpg"'
           }
-          alt={name}
+          alt={asset.name}
           className="object-cover"
           priority="true"
         />
