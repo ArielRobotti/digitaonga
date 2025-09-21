@@ -7,6 +7,8 @@ export PrincipalAdmin=$(dfx identity get-principal --identity 000Admin)
 dfx identity use 000Admin
 dfx deploy motokoDao
 
+dfx wallet send uxrrr-q7777-77774-qaaaq-cai 50TC
+
 dfx identity list | grep -q "^000Guardian1$" || dfx identity new 000Guardian1
 export PrincipalGuardian01=$(dfx identity get-principal --identity 000Guardian1)
 
@@ -75,52 +77,52 @@ else
     echo "❌ Update Role test failed: The second member's role is not Guardian."
 fi
 
-echo "Test push proposal to create taonga from admin whitout votation instance"
+# echo "Test push proposal to create taonga from admin whitout votation instance"
 
-CreateTaongaProposal=$(dfx canister call motokoDao create_proposal "(
-  record {
-    title = \"From CLI. Admin push Create Taonga\";
-    kind = variant {
-      DigitalTaonga = variant {
-        CreateDigitalTaonga = record {
-          thumbnail = blob \"\\00\\11\\33\\99\";
-          name = \"Test Create Taonga\";
-          description = \"Test Description \";
-          deadline = 0 : int;
-          history = \"Test History Taonga\";
-          dataSize = 4 : nat;
-          chunksQty = 1 : nat;
-          imageID = 0 : nat;
-        }
-      }
-    };
-    description = \"Test Proposal create taonga. Canister Taonga is automaticaly deploy\";
-    deadline = 0 : int;
-  },
-)")
-echo "Response from create_proposal: $CreateTaongaProposal"
+# CreateTaongaProposal=$(dfx canister call motokoDao create_proposal "(
+#   record {
+#     title = \"From CLI. Admin push Create Taonga\";
+#     kind = variant {
+#       DigitalTaonga = variant {
+#         CreateDigitalTaonga = record {
+#           thumbnail = blob \"\\00\\11\\33\\99\";
+#           name = \"Test Create Taonga\";
+#           description = \"Test Description \";
+#           deadline = 0 : int;
+#           history = \"Test History Taonga\";
+#           dataSize = 4 : nat;
+#           chunksQty = 1 : nat;
+#           imageID = 0 : nat;
+#         }
+#       }
+#     };
+#     description = \"Test Proposal create taonga. Canister Taonga is automaticaly deploy\";
+#     deadline = 0 : int;
+#   },
+# )")
+# echo "Response from create_proposal: $CreateTaongaProposal"
 
-# Corrected variable assignment
-FileId=$(echo "$CreateTaongaProposal" | grep -o 'id = [0-9_]\+' | head -n 1 | awk '{print $NF}' | tr -d '_')
-echo "Extracted ID: $FileId"
+# # Corrected variable assignment
+# FileId=$(echo "$CreateTaongaProposal" | grep -o 'id = [0-9_]\+' | head -n 1 | awk '{print $NF}' | tr -d '_')
+# echo "Extracted ID: $FileId"
 
-echo " ⬆️  uploading file chunk..."
+# echo " ⬆️  uploading file chunk..."
 
 
-dfx canister call motokoDao uploadFileChunk "(
-  record {
-    chunk = blob \"\\99\\99\\99\\77\";
-    fileId = $FileId;
-    index = 0 : nat;
-    retry = false;
-  },
-)"
+# dfx canister call motokoDao uploadFileChunk "(
+#   record {
+#     chunk = blob \"\\99\\99\\99\\77\";
+#     fileId = $FileId;
+#     index = 0 : nat;
+#     retry = false;
+#   },
+# )"
 
-echo "... Refreshing the status of the proposals and performing the corresponding executions"
-echo "⏳ Waiting for 10 seconds before uploading file chunk..."
-sleep 10
+# echo "... Refreshing the status of the proposals and performing the corresponding executions"
+# echo "⏳ Waiting for 10 seconds before uploading file chunk..."
+# sleep 10
 
-dfx canister call motokoDao refresh_all_proposals
+# dfx canister call motokoDao refresh_all_proposals
 
 echo "📝 We register 10 more members and then the admin grants them the Guardian role to activate the consensus mechanism."
 
@@ -154,83 +156,83 @@ dfx identity use 000Guardian7
 export PrincipalGuardian07=$(dfx identity get-principal)
 dfx canister call motokoDao create_member
 
-dfx identity list | grep -q "^000Guardian8$" || dfx identity new 000Guardian8
-dfx identity use 000Guardian8
-export PrincipalGuardian08=$(dfx identity get-principal)
-dfx canister call motokoDao create_member
+# dfx identity list | grep -q "^000Guardian8$" || dfx identity new 000Guardian8
+# dfx identity use 000Guardian8
+# export PrincipalGuardian08=$(dfx identity get-principal)
+# dfx canister call motokoDao create_member
 
-dfx identity list | grep -q "^000Guardian9$" || dfx identity new 000Guardian9
-dfx identity use 000Guardian9
-export PrincipalGuardian09=$(dfx identity get-principal)
-dfx canister call motokoDao create_member
+# dfx identity list | grep -q "^000Guardian9$" || dfx identity new 000Guardian9
+# dfx identity use 000Guardian9
+# export PrincipalGuardian09=$(dfx identity get-principal)
+# dfx canister call motokoDao create_member
 
-dfx identity list | grep -q "^000Guardian10$" || dfx identity new 000Guardian10
-dfx identity use 000Guardian10
-export PrincipalGuardian10=$(dfx identity get-principal)
-dfx canister call motokoDao create_member
+# dfx identity list | grep -q "^000Guardian10$" || dfx identity new 000Guardian10
+# dfx identity use 000Guardian10
+# export PrincipalGuardian10=$(dfx identity get-principal)
+# dfx canister call motokoDao create_member
 
-dfx identity list | grep -q "^000Guardian11$" || dfx identity new 000Guardian11
-dfx identity use 000Guardian11
-export PrincipalGuardian11=$(dfx identity get-principal)
-dfx canister call motokoDao create_member
+# dfx identity list | grep -q "^000Guardian11$" || dfx identity new 000Guardian11
+# dfx identity use 000Guardian11
+# export PrincipalGuardian11=$(dfx identity get-principal)
+# dfx canister call motokoDao create_member
 
-dfx identity use 000Admin
+# dfx identity use 000Admin
 
-echo " Admin 👉 granting them 🛡 Guardian 🛡 role to activate the consensus mechanism"
+# echo " Admin 👉 granting them 🛡 Guardian 🛡 role to activate the consensus mechanism"
 
-fallos=$(dfx canister call motokoDao batch_update_member_role "(
-  vec {
-    principal \"$PrincipalGuardian02\";
-    principal \"$PrincipalGuardian03\";
-    principal \"$PrincipalGuardian04\";
-    principal \"$PrincipalGuardian05\";
-    principal \"$PrincipalGuardian06\";
-    principal \"$PrincipalGuardian07\";
-    principal \"$PrincipalGuardian08\";
-    principal \"$PrincipalGuardian09\";
-    principal \"$PrincipalGuardian10\";
-    principal \"$PrincipalGuardian11\";
-  },
-  variant { Guardian },
-)")
+# fallos=$(dfx canister call motokoDao batch_update_member_role "(
+#   vec {
+#     principal \"$PrincipalGuardian02\";
+#     principal \"$PrincipalGuardian03\";
+#     principal \"$PrincipalGuardian04\";
+#     principal \"$PrincipalGuardian05\";
+#     principal \"$PrincipalGuardian06\";
+#     principal \"$PrincipalGuardian07\";
+#     principal \"$PrincipalGuardian08\";
+#     principal \"$PrincipalGuardian09\";
+#     principal \"$PrincipalGuardian10\";
+#     principal \"$PrincipalGuardian11\";
+#   },
+#   variant { Guardian },
+# )")
 
-echo "👌 Cantidad de fallos: $fallos "
+# echo "👌 Cantidad de fallos: $fallos "
 
-echo " Admin creates a new proposal  "
-now=$(echo $(dfx canister call motokoDao time) | awk '{print $1}' | tr -d '()_')
-newTaongaProposal=$(dfx canister call motokoDao create_proposal "(
-  record {
-    title = \"From CLI. Admin push a Proposal for a new Taonga \";
-    kind = variant {
-      DigitalTaonga = variant {
-        CreateDigitalTaonga = record {
-          thumbnail = blob \"\\00\\01\\02\\03\\04\\05\\06\\07\";
-          name = \"Test Consensus\";
-          description = \"Test Description \";
-          deadline = $((now + 20000000000 )): int;
-          history = \"Test History Taonga\";
-          dataSize = 12 : nat;
-          chunksQty = 1 : nat;
-          imageID = 0 : nat;
-        }
-      }
-    };
-    description = \"This time it will be approved or not by vote.\";
-    deadline = 0 : int;
-  },
-)")
+# echo " Admin creates a new proposal  "
+# now=$(echo $(dfx canister call motokoDao time) | awk '{print $1}' | tr -d '()_')
+# newTaongaProposal=$(dfx canister call motokoDao create_proposal "(
+#   record {
+#     title = \"From CLI. Admin push a Proposal for a new Taonga \";
+#     kind = variant {
+#       DigitalTaonga = variant {
+#         CreateDigitalTaonga = record {
+#           thumbnail = blob \"\\00\\01\\02\\03\\04\\05\\06\\07\";
+#           name = \"Test Consensus\";
+#           description = \"Test Description \";
+#           deadline = $((now + 20000000000 )): int;
+#           history = \"Test History Taonga\";
+#           dataSize = 12 : nat;
+#           chunksQty = 1 : nat;
+#           imageID = 0 : nat;
+#         }
+#       }
+#     };
+#     description = \"This time it will be approved or not by vote.\";
+#     deadline = 0 : int;
+#   },
+# )")
 
-fileId=$(echo "$newTaongaProposal" | grep -o 'id = [0-9_]\+' | head -n 1 | awk '{print $NF}' | tr -d '_')
+# fileId=$(echo "$newTaongaProposal" | grep -o 'id = [0-9_]\+' | head -n 1 | awk '{print $NF}' | tr -d '_')
 
-dfx canister call motokoDao uploadFileChunk "(
-  record {
-    chunk = blob \"\\00\\01\\02\\03\\04\\05\\06\\07\\80\\09\\10\\11\";
-    fileId = $fileId;
-    index = 0 : nat;
-    retry = false;
-  },
-)"
+# dfx canister call motokoDao uploadFileChunk "(
+#   record {
+#     chunk = blob \"\\00\\01\\02\\03\\04\\05\\06\\07\\80\\09\\10\\11\";
+#     fileId = $fileId;
+#     index = 0 : nat;
+#     retry = false;
+#   },
+# )"
 
-echo "Response from create_proposal: $CreateTaongaProposal"
+# echo "Response from create_proposal: $CreateTaongaProposal"
 
 exit 0

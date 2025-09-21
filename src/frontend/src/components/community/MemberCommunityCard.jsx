@@ -16,13 +16,11 @@ const MemberCommunityCard = ({
   handleSelectMember,
 }) => {
   const [checked, setChecked] = useState(false);
-  console.log(name[0])
 
   const handleChange = () => {
     handleSelectMember(principal);
     setChecked(!checked);
   };
-  console.log({ profile_pic })
 
   // Convert created_at timestamp to a legible date string
   const formattedDate = new Date(created_at / 1_000_000).toLocaleDateString();

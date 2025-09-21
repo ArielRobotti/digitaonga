@@ -21,7 +21,7 @@ const NftsContainer = ({ className }) => {
         }));
         
         setAssets({ loading: false, array: taongasArray });
-        console.log("jugu", taongasArray[0])
+        
       } catch (err) {
         console.error("Error fetching assets:", err);
         // En caso de error, el estado debe reflejar que no hay datos
@@ -40,7 +40,7 @@ const NftsContainer = ({ className }) => {
         ) : assets.array.length > 0 ? (
           <>
             {assets.array.map((asset) => (
-              <NftCard asset/>
+              <NftCard key={asset.canisterId.toString()} asset={asset} />
             ))}
           </>
         ) : (

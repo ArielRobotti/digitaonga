@@ -31,7 +31,6 @@ const Community = () => {
   const [daoAuth, dao] = useCanister();
   const { member } = useMemberStore();
   const admin = member.data?.role
-  console.log(admin)
 
   // console.log({ member });
 

@@ -25,7 +25,9 @@ module {
     history : Text;
     token_uri : ?Text;
     image : ?Blob;
+    chunkQty: Nat;
     symbol : Text;
+    creation_date: Int
   };
   
 

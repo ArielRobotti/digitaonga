@@ -15,7 +15,7 @@ import TextField from "@mui/material/TextField";
 import dayjs from "dayjs";
 // import useAssetCanister from "../../../../hooks/useAssetCanister";
 import useCanister from "../../../../hooks/useCanister";
-import useProposal from "../../../../hooks/useProposal";
+// import useProposal from "../../../../hooks/useProposal";
 import { useState } from "react";
 
 
@@ -60,11 +60,18 @@ const DigitalTaongaProposalCreation = () => {
   const handleResponseError = () => setResponseDialog({ success: false, error: true });
   const handleResponseSuccess = () => setResponseDialog({ success: true, error: false });
   const handleCloseResponseDialog = () => setResponseDialog({ success: false, error: false });
-  const handleFileChange = (e) => setForm({ ...form, file: e.target.files[0] });
+  const handleFileChange = (e) => {
+    setForm({ ...form, file: e.target.files[0] });
+    setTotalChuncks(Math.ceil(e.target.files[0].size / chunkSize))
+    console.log(totalChunks)
+  }
   const toggleDialog = () => setOpen(!open);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [totalChunks, setTotalChuncks] = useState(0) 
 
   const [ dao ] = useCanister();
+
+  const chunkSize = 1024 * 2047 // 2 MiB - 1 KB
 
   const handleSubmit = async () => {
     let digitalTaongaProposalAction;
@@ -77,9 +84,7 @@ const DigitalTaongaProposalCreation = () => {
       switch (selectedValue) {
         case "Create or Upload a New Digital Taonga":
 
-          const rawGLBFile = form.file
-          const chunkSize = 1024 * 2047 // 2 MiB - 1 KB 
-          
+          const rawGLBFile = form.file   
           const name = form.name;
           const description = form.description;
           const history = form.history;
@@ -116,7 +121,8 @@ const DigitalTaongaProposalCreation = () => {
           const fileId =  proposalResponse.id;
           
           console.log({response: proposalResponse.id})
-
+          
+          let chunksProcessed = 0;
           const promises = [];
 
           // Chunking process
@@ -131,16 +137,20 @@ const DigitalTaongaProposalCreation = () => {
 
             if(i == chunksQty - 1 ) { await Promise.all(promises) } // si es el ultimo chunk esperamos los promises anteriores
 
-            promises.push(dao.uploadFileChunk(
-              {
-                fileId, 
-                chunk, 
-                index: BigInt(i),
-                retry: false
-              }
-            ));
-            setUploadProgress(((i + 1) / Number(chunksQty)) * 100);
-            // Poner una barra de progreso y bloquear los botones de submit y cancell
+            const chunkPromise = dao.uploadFileChunk({
+              fileId,
+              chunk,
+              index: BigInt(i),
+              retry: false,
+            }).then(() => {
+              // Este .then se ejecuta cuando la promesa de subida se resuelve
+              chunksProcessed++;
+              // Actualizamos el progreso en base al número de chunks que el backend procesó
+              setUploadProgress(chunksProcessed);
+            });
+
+            promises.push(chunkPromise);
+            // bloquear los botones de submit y cancell
           }
           dao.refresh_all_proposals()
           
@@ -218,7 +228,15 @@ const DigitalTaongaProposalCreation = () => {
               {form.file ? form.file.name : "Upload your file"}
               <VisuallyHiddenInput
                 type="file"
-                onChange={(e) => setForm({ ...form, file: e.target.files[0] })}
+                name="file"
+                onChange={handleFileChange}
+                
+                // onChange={(e) => {
+                //   handleChange()
+                //   setForm({ ...form, file: e.target.files[0] }); 
+                //   setTotalChuncks(Math.ceil(e.target.files[0].length / chunkSize)); 
+                //   console.log(totalChunks)}
+                // }
                 multiple
               />
             </MUIButton>
@@ -383,6 +401,14 @@ const DigitalTaongaProposalCreation = () => {
             Submit
           </Button>
         </section>
+        <div className="flex justify-center">
+
+          <ProgressBar 
+            step={uploadProgress} 
+            totalSteps={totalChunks} 
+            className="mt-12 mb-2 w-90 align-center" 
+          />
+        </div>
       </Dialog>
 
       {/* TODO (fran): ver que cuando se cierre este dialog deberia mandarlo a la proposal o la lista de proposals */}
@@ -465,7 +491,7 @@ const DigitalTaongaProposalCreation = () => {
             ? "Create proposal"
             : "Next"}
         </Button>
-        <ProgressBar step={step} totalSteps={5} />
+        <ProgressBar step={step} totalSteps={5} className="w-[288px]  md:w-[550px] xl:w-[512px]"/>
       </div>
     </main>
   );

@@ -14,6 +14,14 @@
       }
     },
 
+    "taonga" : {
+      "main": "src/dao/taonga/taonga.mo",
+      "type": "motoko",
+      "declarations": {
+        "output": "./src/frontend/declarations/backend/taonga"
+      }
+    },
+
     "digital_asset": {
       "candid": "src/digital_asset/digital_asset.did",
       "package": "digital_asset",

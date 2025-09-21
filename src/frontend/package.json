@@ -25,6 +25,7 @@
     "@mui/material": "^6.5.0",
     "@mui/x-date-pickers": "^7.28.3",
     "@nfid/identitykit": "^1.0.13",
+    "@react-three/drei": "^10.7.6",
     "@tailwindcss/vite": "^4.1.4",
     "bip39": "^3.1.0",
     "dayjs": "^1.11.13",
@@ -33,11 +34,13 @@
     "react-dom": "^19.1.0",
     "react-router": "^7.5.0",
     "tailwindcss": "^4.1.4",
+    "three": "^0.180.0",
     "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
+    "@types/three": "^0.180.0",
     "@vitejs/plugin-react": "^4.4.0",
     "dotenv": "^16.5.0",
     "typescript": "^5.8.3",

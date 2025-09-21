@@ -3,9 +3,15 @@ import { canisters } from "../utils/canisters";
 import { env } from "../utils/env";
 import { useAgent } from "@nfid/identitykit/react";
 import { useMemo } from "react";
+import  { idlFactory as taonga }   from "../../declarations/backend/taonga/index"
 
-const useCanister = (canisterName = "dao") => {
-  const canister = canisters[canisterName];
+const useCanister = (canisterName = "dao", canisterId = null) => {
+  const canister =  canisterName == "taonga"
+    ? {canisterId, idl: taonga}
+    // ? canisters[canisterName]
+    : canisters[canisterName]
+
+
   const isLocal = env.ICP_API_HOST.includes("localhost");
 
   // memoizamos el agente no autenticado

@@ -1,95 +1,191 @@
 import { useEffect, useState } from "react";
-
-import Button from "../../../components/shared/Button";
 import { CircularProgress } from "@mui/material";
-import { p2str } from "../../../utils/functions";
 import useCanister from "../../../hooks/useCanister";
 import { useParams } from "react-router";
+import { ModelViewer3D } from "../../../components/ModelViewer3D";
 
 const NftDetail = () => {
-  const [, digital] = useCanister("digital_asset");
-  const [asset, setAsset] = useState({ loading: true, data: null });
   const { id } = useParams();
+  const [, taongaRemoteActor] = useCanister("taonga", id);
+  const [metadata, setMetadata] = useState(null);
+  const [modelUrl, setModelUrl] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
     try {
-      const result = await digital.get_asset(parseInt(id));
+        setLoading(true);
 
-      console.log("Fetched asset result:", result);
+        const requestMetadata = await taongaRemoteActor.get_asset_metadata();
 
-      if (!result.length) return setAsset({ loading: false, data: null });
+        if (requestMetadata) {
+            const metadata = requestMetadata;
+            setMetadata(metadata);
 
-      const data = {
-        id: Number(result[0].id),
-        owner: p2str(result[0].owner),
-        name: result[0].metadata.name,
-        description: result[0].metadata.description,
-        image: result[0].metadata.image,
-        history: result[0].metadata.history,
-        symbol: result[0].metadata.symbol,
-      };
+            // Generamos un array de promesas para todas las solicitudes de chunks
+            const chunkPromises = [];
+            for (let i = 0; i < metadata.chunkQty; i++) {
+                chunkPromises.push(
+                    taongaRemoteActor.get_asset_data({ chunkIndex: BigInt(i) })
+                );
+            }
 
-      console.log("Fetched asset data:", data);
-      setAsset({ loading: false, data });
+            // Esperamos la resolución de todas las promesas de manera concurrente
+            const allChunkResponses = await Promise.all(chunkPromises);
+
+            // Extraemos los chunks del objeto de respuesta
+            const allChunks = allChunkResponses.map((response) => {
+                if ("Ok" in response) {
+                    return response.Ok.chunk;
+                }
+                // Si hay un error, devolvemos un array vacío para no detener el proceso
+                return new Uint8Array();
+            });
+
+            // Creamos un Blob directamente desde el array de chunks. 
+            // Esto evita la concatenación en memoria.
+            const glbBlob = new Blob(allChunks, { type: 'model/gltf-binary' });
+            
+            // Creamos una URL temporal para el Blob
+            const url = URL.createObjectURL(glbBlob);
+
+            // Actualizamos el estado con la URL del modelo
+            setModelUrl(url);
+
+        } else {
+            console.error("Error fetching metadata:", requestMetadata.Err);
+        }
     } catch (error) {
-      console.error("Error fetching asset:", error);
-      setAsset({ loading: false, data: null });
+        console.error("Error fetching data:", error);
+    } finally {
+        setLoading(false);
     }
-  };
+};
 
   useEffect(() => {
-    fetchData();
-  }, [id]);
+    // const fetchData = async () => {
+    //   try {
+    //     setLoading(true);
+
+    //     // Fetch metadata first to get the total number of chunks.
+    //     const requestMetadata = await taongaRemoteActor.get_asset_metadata();
+
+    //     if (requestMetadata) {
+    //       const metadata = requestMetadata;
+    //       setMetadata(metadata);
+
+    //       // Generate promises for all chunk requests concurrently.
+    //       const chunkPromises = [];
+    //       for (let i = 0; i < metadata.chunkQty; i++) {
+    //         chunkPromises.push(
+    //           taongaRemoteActor.get_asset_data({ chunkIndex: BigInt(i) })
+    //         );
+    //       }
+
+    //       // Wait for all promises to resolve.
+    //       const allChunkResponses = await Promise.all(chunkPromises);
+
+    //       // Extract the binary chunk data from each response.
+    //       const allChunks = allChunkResponses.map((response) => {
+    //         if ("Ok" in response) {
+    //           return response.Ok.chunk;
+    //         }
+    //         return new Uint8Array();
+    //       });
+
+    //       // Efficiently concatenate all chunks into a single Uint8Array.
+    //       const totalLength = allChunks.reduce(
+    //         (sum, chunk) => sum + chunk.length,
+    //         0
+    //       );
+    //       const finalData = new Uint8Array(totalLength);
+    //       let offset = 0;
+    //       for (const chunk of allChunks) {
+    //         finalData.set(chunk, offset);
+    //         offset += chunk.length;
+    //       }
+
+    //       // Create a Blob from the final data and a temporary URL for it.
+    //       const glbBlob = new Blob([finalData], {
+    //         type: "model/gltf-binary",
+    //       });
+    //       const url = URL.createObjectURL(glbBlob);
+
+    //       // Update the state with the model URL.
+    //       setModelUrl(url);
+    //     } else {
+    //       console.error("Error fetching metadata:", requestMetadata.Err);
+    //     }
+    //   } catch (error) {
+    //     console.error("Error fetching data:", error);
+    //   } finally {
+    //     setLoading(false);
+    //   }
+    // };
+
+    if (taongaRemoteActor && id) {
+      fetchData();
+    }
+  }, [id, taongaRemoteActor]); // Dependency on taongaRemoteActor is important
+
+  // Clean up the object URL when the component unmounts
+  useEffect(() => {
+    return () => {
+      if (modelUrl) {
+        URL.revokeObjectURL(modelUrl);
+      }
+    };
+  }, [modelUrl]);
+
+  if (loading) {
+    return (
+      <main className="grid place-items-center h-screen ">
+        <CircularProgress />
+      </main>
+    );
+  }
+
+  if (!metadata) {
+    return <p className="text-center p-8">No asset found</p>;
+  }
 
   return (
-    <main>
-      <h4 className="p-6">DIGITAL TAONGA</h4>
+    <div className="mx-auto p-2 md:p-1 h-screen bg-[#444455] ">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-2 h-[90vh]">
+        {/* Renderizador del modelo 3D */}
+        {/* Eliminamos 'aspect-w-16 aspect-h-9' y agregamos h-full o una altura fija */}
+        <div className="p-1 rounded-lg shadow-lg col-span-5 h-full">
+          {modelUrl ? (
+            <ModelViewer3D fileUrl={modelUrl}/>
+          ) : (
+            <p className="text-center text-gray-600">
+              [ Placeholder para el visor 3D ]
+              <br />
+              Modelo GLB no disponible.
+            </p>
+          )}
+        </div>
 
-      {asset.loading ? (
-        <CircularProgress />
-      ) : asset.data ? (
-        <>
-          <div className="grid place-items-center p-3">
-            <img
-              src={`https://2ynh7-zyaaa-aaaal-qsr4q-cai.icp0.io${asset.data?.image}`}
-              alt="digital taonga"
-              className="w-[288px] h-[288px]"
-            />
-          </div>
-
-          <section className="p-6 flex flex-col gap-2 max-w-[600px] m-auto">
-            <p>Token ID: {id}</p>
-            <p>Label: {asset.data?.name}</p>
-            <p>Owner: {asset.data?.owner}</p>
-            <p>Cultural description: {asset.data?.description}</p>
-            <p>History: {asset.data?.history}</p>
-
-            <div className="absolute bottom-4 inset-x-0 z-10 grid gap-4 place-items-center">
-              <Button
-                className="w-[340px]"
-                // variant="kokowai"
-                disabled={true}
-                // onClick={() => setOpen(true)}
-              >
-                Download
-              </Button>
-              <Button
-                className="w-[340px]"
-                variant="kokowai"
-
-                // onClick={() => setOpen(true)}
-              >
-                Create a proposal
-              </Button>
-
-              {/* <ProgressBar step={1} totalSteps={4} /> */}
-            </div>
-          </section>
-        </>
-      ) : (
-        <p>No asset found</p>
-      )}
-    </main>
+        {/* Detalles del Taonga */}
+        <div className="col-span-1 flex flex-col space-y-4  bg-white p-4 rounded-lg">
+          <h1 className="text-4xl font-extrabold text-gray-900">
+            {metadata.name}
+          </h1>
+          <p className="text-gray-700 leading-relaxed">
+            <span className="font-bold">Descripción:</span>{" "}
+            {metadata.description}
+          </p>
+          <p className="text-gray-700 leading-relaxed">
+            <span className="font-bold">Historia:</span> {metadata.history}
+          </p>
+          <p className="text-sm text-gray-500">
+            Fecha de creación:{" "}
+            {new Date(
+              Number(metadata.creation_date) / 1_000_000
+            ).toLocaleString()}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 };
 
