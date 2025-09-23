@@ -18,6 +18,7 @@ const NftsContainer = ({ className }) => {
           description: entry[1].description,
           history: entry[1].history,
           thumbnail: entry[1].thumbnail,
+          date: entry[1].date
         }));
         
         setAssets({ loading: false, array: taongasArray });
@@ -34,7 +35,7 @@ const NftsContainer = ({ className }) => {
 
   return (
     <section className={`${className}`}>
-      <div className="flex gap-4 overflow-x-auto py-2">
+      <div className="flex gap-4 py-2 flex-wrap justify-center mb-20">
         {assets.loading ? (
           <CircularProgress />
         ) : assets.array.length > 0 ? (

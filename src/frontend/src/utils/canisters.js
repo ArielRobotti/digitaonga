@@ -1,6 +1,6 @@
 // import { idlFactory as daoIdl } from "../../../declarations/dao/dao.did.js";
 // import { idlFactory as digitalAssetIdl } from "../../../declarations/digital_asset/digital_asset.did.js";
-import { idlFactory as motokoDao } from "../../declarations/backend/motokoDao.did.js";
+import { idlFactory as motokoDao } from "../../declarations/backend/dao/motokoDao.did.js";
 import { env } from "./env.js";
 
 export const canisters = {

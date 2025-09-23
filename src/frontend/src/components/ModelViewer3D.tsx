@@ -1,4 +1,4 @@
-import { useRef, useState, useMemo, useEffect } from "react";
+import { forwardRef, useRef, useState, useMemo, useEffect } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Environment } from "@react-three/drei";
 import {
@@ -58,8 +58,6 @@ function Model({ url, rotation }: ModelProps) {
             }
 
             if (meshRef.current) {
-                // Limpia cualquier modelo previo antes de añadir el nuevo.
-                // Esto previene que se apilen modelos si el useEffect se vuelve a ejecutar.
                 while(meshRef.current.children.length > 0) {
                     meshRef.current.remove(meshRef.current.children[0]);
                 }
@@ -68,7 +66,6 @@ function Model({ url, rotation }: ModelProps) {
         }
     }, [clonedScene, camera, controls]);
 
-    // Elimina la prop 'object={scene}' para evitar la duplicación.
     return (
         <primitive
             ref={meshRef}
@@ -84,41 +81,28 @@ interface ModelViewer3DProps {
     onCapture?: () => void;
 }
 
-export const ModelViewer3D = ({ fileUrl, onCapture }: ModelViewer3DProps) => {
+// **Modificado:** Usamos forwardRef para pasar la referencia del componente padre al canvas
+export const ModelViewer3D = forwardRef<HTMLDivElement, ModelViewer3DProps>(({ fileUrl, onCapture }, ref) => {
     const [rotation, setRotation] = useState<[number, number, number]>([0, 0, 0]);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
 
     return (
-        <div className="w-full h-full flex flex-col">
+        <div className="w-full h-full flex flex-col" ref={ref}>
             <div className="flex-1 bg-gradient-secondary rounded-lg overflow-hidden shadow-medium">
                 <Canvas
-                    ref={canvasRef}
                     camera={{ position: [3, 5, 5], fov: 50 }}
                     gl={{ preserveDrawingBuffer: true, antialias: true }}
                     className="w-full h-full"
                 >
-                    {/* <color attach="background" args={['#07293fb4']} /> */}
                     <ambientLight intensity={1.5} />
-
                     <directionalLight
-                        position={[1, 15, 1]} // Posición de la luz
+                        position={[1, 15, 1]}
                         intensity={5.4}
-                        castShadow // Permite que esta luz proyecte sombras
-                    />
-
-                    {/* Luz de Foco para resaltar el modelo */}
-                    {/* <spotLight
-                        position={[0, 5, 0]} // Posición encima del modelo
-                        angle={1} // Ángulo del cono de luz
-                        penumbra={0.3} // Difuminado en los bordes
-                        intensity={12}
                         castShadow
-                    /> */}
+                    />
                     <Model url={fileUrl} rotation={rotation} />
                     <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
-                    {/* <Environment preset="studio" /> */}
                 </Canvas>
             </div>
         </div>
     );
-};
+});

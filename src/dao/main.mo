@@ -24,6 +24,22 @@ persistent actor {
     now()
   };
 
+  //////////// Clean functions ////////////
+  public shared ({ caller }) func removeFailedProposals(id: Int): async {#Ok; #Err}{
+    assert(Principal.isController(caller));
+    switch(Map.get<Int, SharedTypes.Proposal>(state.proposals, ihash, id)){
+      case null { #Err };
+      case ( ?proposal ) {
+        switch (proposal.status) {
+          case (#UploadFileRequired) {
+            ignore Map.remove<Int, SharedTypes.Proposal>(state.proposals, ihash, id);
+            #Ok
+          };
+          case _ { #Err }
+        }
+      }
+    }
+  };
 
      
   ////////////////////// Migracion de funciones existentes /////////

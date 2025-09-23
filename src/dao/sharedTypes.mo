@@ -137,5 +137,6 @@ module {
     history : Text;
     description : Text;
     thumbnail: Blob;
+    date: Int;
   };
 }

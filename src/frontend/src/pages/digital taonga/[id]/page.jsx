@@ -13,53 +13,53 @@ const NftDetail = () => {
 
   const fetchData = async () => {
     try {
-        setLoading(true);
+      setLoading(true);
 
-        const requestMetadata = await taongaRemoteActor.get_asset_metadata();
+      const requestMetadata = await taongaRemoteActor.get_asset_metadata();
 
-        if (requestMetadata) {
-            const metadata = requestMetadata;
-            setMetadata(metadata);
+      if (requestMetadata) {
+        const metadata = requestMetadata;
+        setMetadata(metadata);
 
-            // Generamos un array de promesas para todas las solicitudes de chunks
-            const chunkPromises = [];
-            for (let i = 0; i < metadata.chunkQty; i++) {
-                chunkPromises.push(
-                    taongaRemoteActor.get_asset_data({ chunkIndex: BigInt(i) })
-                );
-            }
-
-            // Esperamos la resolución de todas las promesas de manera concurrente
-            const allChunkResponses = await Promise.all(chunkPromises);
-
-            // Extraemos los chunks del objeto de respuesta
-            const allChunks = allChunkResponses.map((response) => {
-                if ("Ok" in response) {
-                    return response.Ok.chunk;
-                }
-                // Si hay un error, devolvemos un array vacío para no detener el proceso
-                return new Uint8Array();
-            });
-
-            // Creamos un Blob directamente desde el array de chunks. 
-            // Esto evita la concatenación en memoria.
-            const glbBlob = new Blob(allChunks, { type: 'model/gltf-binary' });
-            
-            // Creamos una URL temporal para el Blob
-            const url = URL.createObjectURL(glbBlob);
-
-            // Actualizamos el estado con la URL del modelo
-            setModelUrl(url);
-
-        } else {
-            console.error("Error fetching metadata:", requestMetadata.Err);
+        // Generamos un array de promesas para todas las solicitudes de chunks
+        const chunkPromises = [];
+        for (let i = 0; i < metadata.chunkQty; i++) {
+          chunkPromises.push(
+            taongaRemoteActor.get_asset_data({ chunkIndex: BigInt(i) })
+          );
         }
+
+        // Esperamos la resolución de todas las promesas de manera concurrente
+        const allChunkResponses = await Promise.all(chunkPromises);
+
+        // Extraemos los chunks del objeto de respuesta
+        const allChunks = allChunkResponses.map((response) => {
+          if ("Ok" in response) {
+            return response.Ok.chunk;
+          }
+          // Si hay un error, devolvemos un array vacío para no detener el proceso
+          return new Uint8Array();
+        });
+
+        // Creamos un Blob directamente desde el array de chunks. 
+        // Esto evita la concatenación en memoria.
+        const glbBlob = new Blob(allChunks, { type: 'model/gltf-binary' });
+
+        // Creamos una URL temporal para el Blob
+        const url = URL.createObjectURL(glbBlob);
+
+        // Actualizamos el estado con la URL del modelo
+        setModelUrl(url);
+
+      } else {
+        console.error("Error fetching metadata:", requestMetadata.Err);
+      }
     } catch (error) {
-        console.error("Error fetching data:", error);
+      console.error("Error fetching data:", error);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-};
+  };
 
   useEffect(() => {
     // const fetchData = async () => {
@@ -152,10 +152,9 @@ const NftDetail = () => {
     <div className="mx-auto p-2 md:p-1 h-screen bg-[#444455] ">
       <div className="grid grid-cols-1 md:grid-cols-6 gap-2 h-[90vh]">
         {/* Renderizador del modelo 3D */}
-        {/* Eliminamos 'aspect-w-16 aspect-h-9' y agregamos h-full o una altura fija */}
         <div className="p-1 rounded-lg shadow-lg col-span-5 h-full">
           {modelUrl ? (
-            <ModelViewer3D fileUrl={modelUrl}/>
+            <ModelViewer3D fileUrl={modelUrl} />
           ) : (
             <p className="text-center text-gray-600">
               [ Placeholder para el visor 3D ]
@@ -166,23 +165,25 @@ const NftDetail = () => {
         </div>
 
         {/* Detalles del Taonga */}
-        <div className="col-span-1 flex flex-col space-y-4  bg-white p-4 rounded-lg">
-          <h1 className="text-4xl font-extrabold text-gray-900">
-            {metadata.name}
-          </h1>
-          <p className="text-gray-700 leading-relaxed">
-            <span className="font-bold">Descripción:</span>{" "}
-            {metadata.description}
-          </p>
-          <p className="text-gray-700 leading-relaxed">
-            <span className="font-bold">Historia:</span> {metadata.history}
-          </p>
-          <p className="text-sm text-gray-500">
-            Fecha de creación:{" "}
-            {new Date(
-              Number(metadata.creation_date) / 1_000_000
-            ).toLocaleString()}
-          </p>
+        <div className="">
+          <div className="col-span-1 flex flex-col space-y-4 bg-white p-4 h-[90vh] overflow-y-auto rounded-lg ">
+            <h1 className="text-4xl font-extrabold text-gray-900">
+              {metadata.name}
+            </h1>
+            <p className="text-gray-700 leading-relaxed">
+              <span className="font-bold">Descriptio:</span>{" "}
+              {metadata.description}
+            </p>
+            <p className="text-gray-700 leading-relaxed">
+              <span className="font-bold">History:</span> {metadata.history}
+            </p>
+            <p className="text-sm text-gray-500">
+              Created at:{" "}
+              {new Date(
+                Number(metadata.creation_date) / 1_000_000
+              ).toLocaleString()}
+            </p>
+          </div>
         </div>
       </div>
     </div>

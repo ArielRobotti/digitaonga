@@ -356,6 +356,7 @@ module {
       thumbnail = init.thumbnail;
       history = init.history;
       description = init.description;
+      date = now()
     };
     ignore Map.put<Principal, SharedTypes.TaongaMetadata>(s.taongas, phash, canisterId, metadata);
     // Esperar todos los responses juntos

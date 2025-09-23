@@ -10,8 +10,9 @@
       "main": "src/dao/main.mo",
       "type": "motoko",
       "declarations": {
-        "output": "./src/frontend/declarations/backend"
-      }
+        "output": "./src/frontend/declarations/backend/dao"
+      },
+      "specified_id": "m42ja-nqaaa-aaaap-qqdoa-cai"
     },
 
     "taonga" : {
@@ -32,7 +33,8 @@
         "src/frontend/dist"
       ],
       "type": "assets",
-      "workspace": "frontend"
+      "workspace": "frontend",
+      "specified_id": "m33pu-aiaaa-aaaap-qqdoq-cai"
     },
     "frontend-dev": {
       "source": [
