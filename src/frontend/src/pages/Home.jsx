@@ -4,7 +4,7 @@ import ProposalContainer from "../components/shared/ProposalContainer";
 
 const Home = () => {
   return (
-    <main className="grid place-items-center">
+    <main >
       <NftsContainer />
 {/*       
 

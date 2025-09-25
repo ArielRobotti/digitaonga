@@ -47,6 +47,13 @@ export const onBoardingSteps = [
 
 export const proposalTypes = [
   {
+    title: "Guardian Proposal",
+    subtitle: "For managing DAO membership.",
+    description:
+      "Guardians can create proposals to add, update, or remove a Guardian. This ensures DAO membership remains controlled and secure, maintaining the integrity of the organization.",
+    Icon: GuardianProposalIcon,
+  },
+  {
     title: "Digital Taonga Proposal",
     subtitle: "For managing cultural assets.",
     description:
@@ -54,18 +61,11 @@ export const proposalTypes = [
     Icon: DigitalTaongaProposalIcon,
   },
   {
-    title: "Action proposal",
+    title: "Motion proposal",
     subtitle: "For suggesting and voting on non-executive decisions.",
     description:
       "Guardians can create Motion Proposals to align the DAO on important matters without executing immediate changes. These proposals facilitate discussion and collective decision-making.",
     Icon: ActionProposalIcon,
-  },
-  {
-    title: "Guardian Proposal",
-    subtitle: "For managing DAO membership.",
-    description:
-      "Guardians can create proposals to add, update, or remove a Guardian. This ensures DAO membership remains controlled and secure, maintaining the integrity of the organization.",
-    Icon: GuardianProposalIcon,
   },
 ];
 

@@ -4,7 +4,7 @@ import "@nfid/identitykit/react/styles.css";
 import { BrowserRouter, Route, Routes } from "react-router";
 import { IdentityKitAuthType, InternetIdentity, NFIDW, OISY } from "@nfid/identitykit";
 
-import ActionProposalCreation from "./pages/proposals/create/action proposal/page";
+import MotionProposalCreation from "./pages/proposals/create/motion proposal/page";
 import { Buffer } from "buffer";
 import Community from "./pages/community/page";
 import CreateNft from "./pages/digital taonga/create/page";
@@ -56,7 +56,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               <Route index element={<Proposals />} />
               <Route path="create">
                 <Route index element={<CreateProposal />} />
-                <Route path="Action proposal" element={<ActionProposalCreation />} />
+                <Route path="Motion proposal" element={<MotionProposalCreation />} />
                 <Route path="Digital Taonga proposal" element={<DigitalTaongaProposalCreation />} />
                 <Route path="Guardian proposal" element={<GuardianProposalCreation />} />
               </Route>

@@ -22,7 +22,7 @@ const Header = () => {
     { title: "Taonga Gallery", link: "/digital-taonga" },
     { title: "Proposals", link: "/proposals" },
     { title: "Community", link: "/community" },
-    { title: "Profile", link:  member? "/profile": "/"},
+    { title: "Profile", link:  user? "/profile": "/"},
     { title: "FAQ", link: "/faqs" },
     // { title: "Log In", link: "/login" },
   ];
@@ -32,7 +32,7 @@ const Header = () => {
     { title: "Community", link: "/community" },
     { title: "Calendar", link: "/calendar" },
     { title: "Proposals", link: "/proposals" },
-    { title: "Profile", link: member? "/profile": "/" },
+    { title: "Profile", link: user? "/profile": "/" },
     { title: "FAQ", link: "/faqs" },
   ];
 

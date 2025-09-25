@@ -149,29 +149,29 @@ const NftDetail = () => {
   }
 
   return (
-    <div className="mx-auto p-2 md:p-1 h-screen bg-[#444455] ">
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-2 h-[90vh]">
+    <div className="mx-auto p-0 mo:p-2 md:p-1 h-screen bg-[#444455] ">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-2">
         {/* Renderizador del modelo 3D */}
-        <div className="p-1 rounded-lg shadow-lg col-span-5 h-full">
+        <div className="p-1 rounded-lg shadow-lg col-span-1 md:col-span-5 h-[95vh]">
           {modelUrl ? (
             <ModelViewer3D fileUrl={modelUrl} />
           ) : (
             <p className="text-center text-gray-600">
-              [ Placeholder para el visor 3D ]
+              [ Placeholder 3D viewer]
               <br />
-              Modelo GLB no disponible.
+              GLB Model not found.
             </p>
           )}
         </div>
 
         {/* Detalles del Taonga */}
-        <div className="">
-          <div className="col-span-1 flex flex-col space-y-4 bg-white p-4 h-[90vh] overflow-y-auto rounded-lg ">
+        <div className="w-full col-span-1 md:col-span-1 h-auto md:h-full">
+          <div className="flex flex-col space-y-4 bg-white p-4 h-auto md:h-full md:overflow-y-auto rounded-lg">
             <h1 className="text-4xl font-extrabold text-gray-900">
               {metadata.name}
             </h1>
             <p className="text-gray-700 leading-relaxed">
-              <span className="font-bold">Descriptio:</span>{" "}
+              <span className="font-bold">Description:</span>{" "}
               {metadata.description}
             </p>
             <p className="text-gray-700 leading-relaxed">

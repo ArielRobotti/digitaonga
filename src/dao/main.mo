@@ -24,6 +24,8 @@ persistent actor {
     now()
   };
 
+  transient var updatingProposals: Bool = false;
+
   //////////// Clean functions ////////////
   public shared ({ caller }) func removeFailedProposals(id: Int): async {#Ok; #Err}{
     assert(Principal.isController(caller));
@@ -174,6 +176,11 @@ persistent actor {
     }
   };
 
+  public shared query ({ caller }) func get_my_proposals(): async [SharedTypes.ProposalPublicData]{
+    let all_proposals = Iter.toArray(Map.vals(state.proposals));
+    Array.filter<SharedTypes.Proposal>(all_proposals, func p = p.creator == caller)
+  };
+
   // get_proposals_by_member : shared query Principal -> async [Proposal];
   public query func get_proposals_by_member(principal : Principal) : async [SharedTypes.ProposalPublicData] {
     let all_proposals = Iter.toArray(Map.vals(state.proposals));
@@ -195,6 +202,8 @@ persistent actor {
   };
 
   public func refresh_all_proposals(): async () {
+    if updatingProposals return;
+    updatingProposals := true;
     let proposalsId: [Int] = Array.map<SharedTypes.ProposalPublicData, Int>(
       Proposal.get_all_proposals(state),
       func p = p.id
@@ -206,6 +215,7 @@ persistent actor {
         callbackRemoveTempFile
       )
     };
+    updatingProposals := false
   };
 
   public query ({ caller })  func has_voted(id : Int) : async Bool {

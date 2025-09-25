@@ -427,10 +427,25 @@ module {
                 #Err("Member not Found");
               };
               case ( ?member ) {
-                ignore Map.put<Principal, SharedTypes.Member>(s.members, phash, p , { member with role });
+                ignore Member.set_member_role(s, p,role);
                 #Ok(#Guardian({}));
               }
             }
+          };
+          case (#AssignAsObserver((user, _dedline))) {
+            switch (Member.get_member(s, user)) {
+              case (#Ok(_)){
+                ignore Member.set_member_role(s, user, #Observer );
+                #Ok(#Guardian({}));
+              };
+              case (#Err(e)) {
+                #Err("Is Not a Member")
+              }
+            };       
+          };
+          case ( #RemoveFromDao((user, _deadline)) ) {
+            ignore Map.remove<Principal, SharedTypes.Member>(s.members, phash, user );
+            #Ok(#Guardian({}));
           };
           case _ {
             #Ok(#Void);

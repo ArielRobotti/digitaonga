@@ -24,23 +24,16 @@ const links = [
 const Profile = () => {
   const { user, disconnect } = useAuth();
   const { member } = useMemberStore();
-  const { getProposalsByMember } = useProposal();
 
-  //   const user = { name: "fran", principal: "kjhad-kajdbf-lkadfnb-cai" };
-
-  const array = [
-    { n: 1, s: "Active proposals" },
-    { n: 2, s: "Approved proposals" },
-    { n: 3, s: "Rejected proposals" },
-  ];
-
-  // console.log({member: member?.data.name})
 
   const navigate = useNavigate();
+
   useEffect(() => {
     // Redirige si el usuario no existe (por ejemplo, después de un logout)
     if (!user) {
       navigate("/");
+    } else {
+      console.log("Dentro del effect, user existe", user);
     }
   }, [user, navigate]);
 
@@ -76,7 +69,7 @@ const Profile = () => {
           </div>
         </section>
 
-        <section className="grid grid-cols-3 gap-4 mt-4 xl:w-2/3 xl:self-center xl:flex xl:justify-center xl:gap-8">
+        {/* <section className="grid grid-cols-3 gap-4 mt-4 xl:w-2/3 xl:self-center xl:flex xl:justify-center xl:gap-8">
           {array.map((item) => (
             <article
               key={item.n}
@@ -86,7 +79,7 @@ const Profile = () => {
               <p className="text-center">{item.s}</p>
             </article>
           ))}
-        </section>
+        </section> */}
       </section>
 
       <section className="grid mt-12 sm:mt-16 xl:max-w-[425px]">

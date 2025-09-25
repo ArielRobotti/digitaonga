@@ -1,14 +1,21 @@
 import Button from "../../components/shared/Button";
 import ProposalContainer from "../../components/shared/ProposalContainer";
 import { useNavigate } from "react-router";
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import useProposalStore from "../../store/useProposalStore";
 import useCanister from "../../hooks/useCanister";
 import { proposalsArrayParser } from "../../utils/parsers";
+import { useAuth } from "@nfid/identitykit/react";
 
 const Proposals = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [,dao] = useCanister(); // No hace falta que sea el agente autenticado
+  const [createDisabled, setCreateDisabled] = useState()
+
+  useEffect(() => {
+    setCreateDisabled(user != undefined? false: true)
+  },[user])
 
   const {
     setProposals,
@@ -20,6 +27,7 @@ const Proposals = () => {
     console.log("pulling...");
     try {
       if (dao) {
+        dao.refresh_all_proposals()
         const propslsUpdate = await dao.get_all_proposals();
         const parsed = proposalsArrayParser(propslsUpdate);
         setProposals(parsed);
@@ -31,7 +39,7 @@ const Proposals = () => {
 
   useEffect(() => {
     if (dao && !intervalRef.current) {
-      intervalRef.current = setInterval(pulling, 1000);
+      intervalRef.current = setInterval(pulling, 2000);
     }
     return () => {
       if (intervalRef.current) {
@@ -67,6 +75,7 @@ const Proposals = () => {
         <Button
           variant="kokowai"
           className="inline-block"
+          disabled={createDisabled}
           onClick={() => navigate("/proposals/create")}
         >
           New proposal
