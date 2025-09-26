@@ -27,7 +27,7 @@ import { useParams } from "react-router";
 import useCanister  from "../../../hooks/useCanister";
 import { Principal } from "@dfinity/principal";
 import useProposal from "../../../hooks/useProposal";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const ProposalDetail = () => {
   const { id } = useParams();
@@ -37,45 +37,35 @@ const ProposalDetail = () => {
   const [proposal, setProposal] = useState([]);
   const [likes, setLikes] = useState(0);
   const [dislikes, setDislikes] = useState(0);
+  const loading = useRef(true)
   const { user, connect } = useAuth();
 
   const [ dao ] = useCanister()
 
-
-  const { getProposal, loading, voteProposal, likeProposal } = useProposal();
-
   const updateData = (response) => {
-    setLikes(response[0].likes.filter(item => 'Like' in item[1]).length )// Revisar estos filtros
+    setLikes(response[0].likes.filter(item => 'Like' in item[1]).length )
     setDislikes(response[0].likes.filter(item => 'Dislike' in item[1]).length)
   }
   
-  useEffect(() => {
+  useEffect(() => { 
     const fetchProposal = async () => {
-      if(dao){
-        const response = await dao.get_proposal(BigInt(id))
-        // console.log({response})
-        // const response = await getProposal(id)
-        if(response.length > 0 ){
-          setProposal(response);
-          updateData(response)
-        }
-      }
+      loading.current = true
+      const response = await dao.get_proposal(BigInt(id))
+      setProposal(response);
+      updateData(response)
+      loading.current = false
     }
-    if (proposal.length == 0) {
-      fetchProposal()
-    }
+    if ( dao ) { fetchProposal() } 
   }, [dao])
 
-
-  if (loading) return <CircularProgress className="absolute top-1/2 left-1/2 " />;
-
   if (!proposal[0]) {
-    return (
-      <main className="flex flex-col items-center justify-center h-screen">
-        <h1 className="text-2xl font-bold">Proposal not found</h1>
-        <p className="text-lg">Please check the proposal ID and try again.</p>
-      </main>
-    );
+    return loading.current 
+      ? <CircularProgress className="absolute top-1/2 left-1/2 " /> 
+      :(<main className="flex flex-col items-center justify-center h-screen">
+          <h1 className="text-2xl font-bold">Proposal not found</h1>
+          <p className="text-lg">Please check the proposal ID and try again.</p>
+        </main>)
+    ;
   }
 
   const handleChange = (e) => setVote({ ...vote, value: e.target.value });
@@ -119,15 +109,19 @@ const ProposalDetail = () => {
   };
 
   return (
-    <main>
+    <main >
       {proposal[0] &&
         <>
           <section className="flex justify-between items-center p-6 overflow-hidden">
             <div>
               {/* TODO (fran): ver tema de si el nombre de la proposal es muy largo */}
               <h3 className="uppercase text-clip">{proposal[0].title}</h3>
-              <h4 className="uppercase">REF {id}</h4> {/* FIXME (fran): cambiar por proposal.id */}
+              <h4 className="uppercase">ID {id}</h4> {/* FIXME (fran): cambiar por proposal.id */}
               <p>Delegate: {proposal[0].creator.toString()}</p>
+              <p>
+                <span>Guardian Name</span>
+                <span>{proposal[0].name}</span>
+              </p>
             </div>
 
             <div className="flex flex-col items-center gap-4">

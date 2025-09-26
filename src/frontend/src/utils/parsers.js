@@ -21,7 +21,7 @@ export const proposalParser = (proposal) => ({
   dislikes: proposal.likes.filter((like) => Object.keys(like[1])[0] === "Dislike").length,
   // votes: HashMap<Principal, Vote>,
   // deadline: Number(proposal.deadline), // Lo dejamos como BigInt
-  active_members: Number(proposal.active_members), 
+  active_members: Number(proposal.active_members),
 });
 
 export const memberParser = (m) => ({

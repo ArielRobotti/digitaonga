@@ -153,7 +153,7 @@ persistent actor {
     Proposal.delete_proposal(state, caller, id);
   };
   
-  public query func get_all_proposals() : async [SharedTypes.ProposalPublicData] {
+  public query func get_all_proposals() : async [Proposal.ExtendedProposalPublicData] {
     Proposal.get_all_proposals(state);
   };
   
@@ -230,9 +230,16 @@ persistent actor {
   };
 
   // like_proposal : shared (Nat, LikeProposal) -> async ();
-  public shared ({ caller }) func like_proposal(id : Nat, like : SharedTypes.LikeProposal) : async ?SharedTypes.ProposalPublicData {
+  type ProposalPublicDataExtended = SharedTypes.ProposalPublicData and {creatorName: Text};
+
+  public shared ({ caller }) func like_proposal(id : Nat, like : SharedTypes.LikeProposal) : async ?ProposalPublicDataExtended{
     assert(not Principal.isAnonymous(caller));
-    Proposal.like_proposal(state, caller, id, ?like)
+    switch (Proposal.like_proposal(state, caller, id, ?like)) {
+      case null null;
+      case (?proposal) {
+        ?{proposal with creatorName = Member.get_member_name(state, proposal.creator)}
+      }
+    }
   };
 
   // new_comment_proposal : shared (Nat, Text) -> async ();

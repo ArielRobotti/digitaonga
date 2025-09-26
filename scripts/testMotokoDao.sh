@@ -151,10 +151,10 @@ dfx identity use 000Guardian6
 export PrincipalGuardian06=$(dfx identity get-principal)
 dfx canister call motokoDao create_member
 
-dfx identity list | grep -q "^000Guardian7$" || dfx identity new 000Guardian7
-dfx identity use 000Guardian7
-export PrincipalGuardian07=$(dfx identity get-principal)
-dfx canister call motokoDao create_member
+# dfx identity list | grep -q "^000Guardian7$" || dfx identity new 000Guardian7
+# dfx identity use 000Guardian7
+# export PrincipalGuardian07=$(dfx identity get-principal)
+# dfx canister call motokoDao create_member
 
 # dfx identity list | grep -q "^000Guardian8$" || dfx identity new 000Guardian8
 # dfx identity use 000Guardian8

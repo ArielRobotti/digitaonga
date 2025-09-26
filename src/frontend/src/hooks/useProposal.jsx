@@ -25,8 +25,6 @@ const useProposal = () => {
     try {
       const res = await dao.get_all_proposals();
 
-      // console.log("getAllProposals res:", res);
-      // TODO (fran): parse proposals
       const parsed = proposalsArrayParser(res);
 
       setProposals(parsed);
@@ -39,7 +37,7 @@ const useProposal = () => {
   const getProposal = async (id) => {
     // console.log((await dao.logIn()).toString())
     const response =  await dao.get_proposal(BigInt(id));
-    console.log({response})
+    // console.log({response})
     return response
   };
 

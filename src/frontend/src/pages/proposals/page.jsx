@@ -13,6 +13,30 @@ const Proposals = () => {
   const [,dao] = useCanister(); // No hace falta que sea el agente autenticado
   const [createDisabled, setCreateDisabled] = useState()
 
+  const proposalsShown = useRef([])
+  const [approved, setApproved] = useState([])
+  const [rejected, setRejected] = useState([])
+  const [active, setActive] = useState([])
+
+  useEffect(() => {
+    const fetchProposals = async () => {
+      if (dao) {
+        const response = await dao.get_all_proposals();
+        if (response) {
+          proposalsShown.current = proposalsArrayParser(response)
+
+          setApproved(proposalsArrayParser(response.filter(p => 'Approved' in p.status)))
+          setRejected(proposalsArrayParser(response.filter(p => 'Rejected' in p.status)))
+          setActive(proposalsArrayParser(response.filter(p => 'Open' in p.status)))
+        }
+
+      }
+    };
+    fetchProposals()
+  }, [dao])
+
+
+
   useEffect(() => {
     setCreateDisabled(user != undefined? false: true)
   },[user])
@@ -39,7 +63,7 @@ const Proposals = () => {
 
   useEffect(() => {
     if (dao && !intervalRef.current) {
-      intervalRef.current = setInterval(pulling, 2000);
+      intervalRef.current = setInterval(pulling, 10000);
     }
     return () => {
       if (intervalRef.current) {
@@ -55,19 +79,19 @@ const Proposals = () => {
       <section className="mb-6">
         <h4 className="uppercase font-normal">Pending</h4>
         {/* TODO (fran): hacer dinamico cantidad de proposals */}
-        <span className="leading-5">8 pending proposals</span>
+        <span className="leading-5">{active.length} pending proposals</span>
         <ProposalContainer className="mt-4" status="Open" />
       </section>
       <section className="mb-6">
         <h4 className="font-bold leading-6">Approved</h4>
         {/* TODO (fran): hacer dinamico cantidad de proposals */}
-        <span className="leading-5">8 approved proposals</span>
+        <span className="leading-5">{approved.length} approved proposals</span>
         <ProposalContainer className="mt-4" status="Approved" />
       </section>
       <section className="mb-16">
         <h4 className="font-bold leading-6">Rejected</h4>
         {/* TODO (fran): hacer dinamico cantidad de proposals */}
-        <span className="leading-5">8 rejected proposals</span>
+        <span className="leading-5">{rejected.length} rejected proposals</span>
         <ProposalContainer className="mt-4" status="Rejected" />
       </section>
 

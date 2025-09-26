@@ -70,10 +70,10 @@ const MemberCommunityCard = ({
         </div>
       </section>
 
-      <section className="cursor-pointer grid place-items-center gap-1">
+      {/* <section className="cursor-pointer grid place-items-center gap-1">
         <MoreOptionsIcon />
         <span className="w-20 ml-6">Edit role</span>
-      </section>
+      </section> */}
     </article>
   );
 };

@@ -37,8 +37,7 @@ const ProfileProposals = () => {
   const handleFilter = (f) => {
     if (filter === f) {
       setFilter(null);
-      // If the same filter is clicked, clear the filter and show all proposals.
-      // Concatenate the three state arrays to get all proposals.
+
       proposalsShown.current = [...approved, ...rejected, ...active];
     } else {
       setFilter(f);

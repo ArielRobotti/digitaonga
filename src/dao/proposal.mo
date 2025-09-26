@@ -124,12 +124,25 @@ module {
     };
   };
   
-  public func get_proposal(s: Types.State, id: Int) :?Proposal{
-    Map.get<Int, Proposal>(s.proposals, ihash, id)
+  public func get_proposal(s: Types.State, id: Int) : ?Proposal{
+    switch (Map.get<Int, Proposal>(s.proposals, ihash, id)) {
+      case null null;
+      case ( ?proposal ){
+        let partialResults = getPartialResults(proposal.votes);
+        ?{ proposal with partialResults }
+      }
+    }
   };
 
-  public func get_all_proposals(s: Types.State) : [ProposalPublicData] {
-    Iter.toArray(Map.vals<Int, Proposal>(s.proposals))
+  /// Eliminar esto e incluir creatorName directamente en ProposalPublicData en la proxima migración
+  public type ExtendedProposalPublicData = ProposalPublicData and {creatorName: Text};
+
+  public func get_all_proposals(s: Types.State) : [ExtendedProposalPublicData] {
+    let proposals = Iter.toArray(Map.vals<Int, Proposal>(s.proposals));
+    Array.map<ProposalPublicData, ExtendedProposalPublicData>(
+      proposals,
+      func p = {p with creatorName = Member.get_member_name(s, p.creator)} // esto ya no sería necesario luego de la proxima migracion
+    )
   };
 
   public func edit_proposal(s: Types.State, caller: Principal, id: Int, data: ProposalEditableData ): ?Proposal {
@@ -461,15 +474,5 @@ module {
     }
   };
 
-  /*
-    deadline : Int;
-    imageID : Nat;
-
-    ->
-    
-    admin : Principal;
-    controller : Principal;
-    tempFileId : Int;
-  */
 
 };

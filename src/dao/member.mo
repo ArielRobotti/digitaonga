@@ -48,6 +48,18 @@ module {
     };
   };
 
+  public func get_member_name(state: Types.State, p: Principal): Text {
+    switch (Map.get<Principal, Member>(state.members, phash, p)) {
+      case null "";
+      case (?member) {
+        switch (member.name) {
+          case null { "No Name" };
+          case ( ?name ) { name}
+        }
+      }
+    }
+  };
+
   public func is_admin(s: Types.State, p: Principal): Bool{
     switch (Map.get<Principal, Member>(s.members, phash, p)){
       case (?member){ member.role == #Admin};
