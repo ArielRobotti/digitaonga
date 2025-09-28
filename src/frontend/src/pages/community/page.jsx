@@ -95,7 +95,7 @@ const Community = () => {
 
   return (
     <main>
-      <section className="lg:max-w-[800px] lg:m-auto p-4">
+      <section className="lg:max-w-[800px] lg:m-auto p-4 pb-20">
         {members.loading ? (
           <LoadingIcon />
         ) : members.data.length > 0 ? (
@@ -112,11 +112,11 @@ const Community = () => {
       </section>
 
       {members.data.length > 0 && !members.loading  && member.data?.role == "Admin" &&(
-        <div className="absolute bottom-4 inset-x-0 z-10 grid gap-4 place-items-center">
+        <div className="fixed bottom-4 inset-x-0 z-10 grid gap-4 place-items-center">
           <Button
             className="w-[340px]"
             variant="kokowai"
-            // disabled={}
+            // disabled={true}
             onClick={() => setOpen(true)}
           >
             Update roles

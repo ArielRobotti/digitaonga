@@ -32,8 +32,6 @@ const Profile = () => {
     // Redirige si el usuario no existe (por ejemplo, después de un logout)
     if (!user) {
       navigate("/");
-    } else {
-      console.log("Dentro del effect, user existe", user);
     }
   }, [user, navigate]);
 

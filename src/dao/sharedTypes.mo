@@ -100,7 +100,8 @@ module {
     created_at : Nat64;
     likes : Nat64;
     comment : Text;
-    thread : [ProposalComment]; //
+    // thread : List.List<ProposalComment>; // TODO Incorporar en proxima migracions y quitar hashMap<Int,Comment> comments
+    thread: [ProposalComment];
     dislikes : Nat64;
   };
 

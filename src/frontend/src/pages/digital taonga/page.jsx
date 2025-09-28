@@ -12,7 +12,7 @@ const Nfts = () => {
         </p>
       </section>
 
-      <NftsContainer className="px-2" />
+      <NftsContainer className="px-4" />
 
       <div className="fixed inset-x-0 bottom-4 flex justify-center z-10">
         <Button variant="kokowai" className="inline-block">

@@ -27,14 +27,15 @@ const MemberCommunityCard = ({
 
   return (
     <article
-      className="py-2.5 flex items-center gap-4 cursor-pointer hover:bg-gray-200"
+      className="py-2.5 flex items-center gap-0 md:gap-4 cursor-pointer hover:bg-gray-200"
     >
       <Checkbox checked={checked}
+        className="h-8 w-8 "
         onClick={handleChange}
 
       />
       <img 
-        className="w-16 h-16 rounded-full object-cover"  
+        className="h-8 w-8 md:w-16 md:h-16 rounded-full object-cover"  
         src={blobToImageUrl(profile_pic[0]) || "/images/webp/avatar-anonymous.webp"} 
         alt={name} 
       />    
@@ -44,16 +45,16 @@ const MemberCommunityCard = ({
           <div className="flex items-center justify-between">
             {/* Parte izquierda */}
             <div className="flex items-center">
-              <div className="flex flex-col items-center mr-2">
+              <div className="flex flex-col items-center mr-4">
                 <span className="mr-1">Copy Id</span>
                 <CopyIcon
-                  className="cursor-pointer"
+                  className="cursor-pointer h-[14px] w-[14px] md:h-6 md:w-6"
                   onClick={() => copyToClipboard(principal.toString())}
                 />
               </div>
-              <p className="text-[18px]">
+              <p className="flex flex-col text-[18px]">
                 {name[0] ? name[0] : "No Name"} 
-                <span className="ml-10">
+                <span className="">
                   ({role})
                 </span>
               </p>
@@ -63,8 +64,10 @@ const MemberCommunityCard = ({
               {principal}
             </span>
 
-            {/* Parte derecha: Fecha */}
-            <p className=" text-sm text-gray-500 ">Joined at: {formattedDate}</p>
+            <p className="flex flex-col md:flex-row text-sm text-gray-500 gap-2">
+              <span>Joined at:</span>
+              <span>{formattedDate}</span>
+            </p>
           </div>
 
         </div>

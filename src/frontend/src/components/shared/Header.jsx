@@ -96,10 +96,11 @@ const Header = () => {
       />
 
       <nav className="hidden xl:block w-full">
-        <ul className="flex gap-4 justify-center items-center w-full">
+        <ul className="flex gap-6 justify-center items-center w-full ">
           {desktopLinks.map(({ title, link }) => (
-            <li key={title}>
-              <NavLink to={link} className="text-lg">
+            <li key={title} className="transition duration-300 ease-in-out
+            hover:scale-[1.1]">
+              <NavLink to={link} className="text-lg ">
                 {title}
               </NavLink>
             </li>

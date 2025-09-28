@@ -1,6 +1,6 @@
 import "../../index.css";
 
-import { CommentIcon, DislikeIcon, LikeIcon } from "../ui/icons";
+import { CommentIcon, DislikeIcon, LikeIcon, VotationIcon } from "../ui/icons";
 
 import Button from "./Button";
 import StatusBallProposal from "./StatusBallProposal";
@@ -38,7 +38,15 @@ const ProposalCard = ({
 
   return (
     <article
-      className={`flex flex-col justify-between min-w-[251px] w-min sm:w-fit min-h-[246px] xl:min-h-[298px] rounded-[5px] shadow-digitaonga cursor-pointer ${className} shadow__digitaonga ${status === "Approved"
+      className={`flex flex-col justify-between 
+            min-w-[200px]  /* Permitimos un encogimiento mayor en móviles */
+            sm:min-w-[250px] /* Establecemos un mínimo más razonable */
+            w-full /* Permitimos que ocupe todo el espacio de su columna */
+            min-h-[246px] xl:min-h-[298px]
+
+            transition duration-300 ease-in-out
+            hover:scale-[1.03] 
+            rounded-[5px] shadow-digitaonga cursor-pointer ${className} shadow__digitaonga ${status === "Approved"
           ? "!bg-light-green"
           : status === "Rejected"
             ? "!bg-light-red"
@@ -48,46 +56,56 @@ const ProposalCard = ({
     >
       <section className="py-4 px-6">
   
-  <div className="flex justify-between items-center">
-    <span>{startDate.toLocaleDateString()}</span> {/* Fecha de Ingreso */}
-    <span className="text-kokowai font-medium flex items-center gap-1 justify-end">
-      <StatusBallProposal status={status} />
-      {status}
-    </span>
-  </div>
+        <div className="flex justify-between items-center">
+          <span>{startDate.toLocaleDateString()}</span> {/* Fecha de Ingreso */}
+          <span className="text-kokowai font-medium flex items-center gap-1 justify-end">
+            <StatusBallProposal status={status} />
+            {status}
+          </span>
+        </div>
 
-  <h5 className="font-bold text-black mt-2 mb-4">{title}</h5>
+        <h5 className="font-bold text-black mt-1 ">{title}</h5>
 
-  {/* --- BARRA DE TIEMPO / TIMELINE --- */}
-  <div className="relative pt-1">
-    
-    {/* Contenedor de la línea */}
-    <div className="flex justify-between mb-2">
-      <span className="text-xs text-gray-500">Inicio</span>
-      <span className="text-xs font-bold text-gray-700">Deadline: {deadlineDate.toLocaleDateString()}</span>
-    </div>
+        <div className="relative pt-1">
+          
+          <div className="flex justify-between mb-2">
+            <span className="text-xs text-gray-500">Start</span>
+            <div className="flex flex-col">
+              {/* <span className="text-xs font-bold text-gray-700">Deadline: </span> */}
+              {/* <span className=""> {deadlineDate.toLocaleDateString()} </span> */}
+              <span className="group relative mb-2"> 
+                  <span className="text-sm text-gray-500">
+                  {deadlineDate.toLocaleDateString()} 
+                </span>
+                
+                {/* Tooltip con la fecha completa */}
+                <div className="hidden group-hover:block absolute z-20 
+                                bottom-2  -translate-x-1/2 
+                                bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-lg whitespace-nowrap">
+                    {deadlineDate.toLocaleDateString()} - {deadlineDate.toLocaleTimeString()}
+                </div>
+              </span>
+            </div>
+          </div>
 
-    {/* La Línea de Tiempo (Barra de Progreso) */}
-    <div className="h-2 w-full bg-gray-200 rounded-full relative">
-      
-      {/* Indicador de progreso (Línea Azul) */}
-      <div 
-        className="h-full bg-[#226622] rounded-full absolute" 
-        style={{ width: `${progressPercentage}%` }} 
-      ></div>
-      
-      {/* Indicador de HOY (Punto) */}
-      <div 
-        className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-[#] rounded-full border-2 border-white shadow-lg"
-        style={{ left: `${progressPercentage}%`, transform: 'translateX(-50%) translateY(-50%)' }}
-        title={`Hoy: ${today.toLocaleDateString()}`}
-      ></div>
-    </div>
-    
-  </div>
-  {/* ---------------------------------- */}
-  
-</section>
+          <div className="h-2 w-full bg-gray-200 rounded-full relative">
+            
+            <div 
+              className="h-full bg-green-700 rounded-full absolute" 
+              style={{ width: `${progressPercentage}%` }} 
+            ></div>
+            
+            <div 
+              className="absolute bottom-0 -translate-y-1/2 w-4 h-4  "
+              style={{ left: `${progressPercentage}%`, transform: 'translateX(-50%) translateY(-50%)' }}
+              title={`Hoy: ${today.toLocaleDateString()}`}
+            >
+              <VotationIcon />
+            </div>
+          </div>
+        </div>
+        
+      </section>
 
       <section className="py-4 px-6 text-gray-900">
         <p>Proposal ID: {id}</p>

@@ -2,6 +2,7 @@ import Types "./types";
 import SharedTypes "./sharedTypes";
 import Member "./member";
 import Proposal "./proposal";
+import Comment "./commentsManager";
 // import Error "mo:base/Error";
 import Map "mo:map/Map";
 import { ihash; phash } "mo:map/Map";
@@ -11,6 +12,7 @@ import { print } "mo:base/Debug";
 import Nat "mo:base/Nat";
 import Principal "mo:base/Principal";
 import { now } "mo:base/Time";
+import List "mo:base/List";
 
 
 persistent actor {
@@ -24,7 +26,7 @@ persistent actor {
     now()
   };
 
-  transient var updatingProposals: Bool = false;
+  var updatingProposals: Bool = false;
 
   //////////// Clean functions ////////////
   public shared ({ caller }) func removeFailedProposals(id: Int): async {#Ok; #Err}{
@@ -181,6 +183,12 @@ persistent actor {
     Array.filter<SharedTypes.Proposal>(all_proposals, func p = p.creator == caller)
   };
 
+  public shared query ({ caller }) func get_incomplete_entries(): async [SharedTypes.ProposalPublicData]{
+    assert(Member.is_admin(state, caller));
+    let proposalArray = Iter.toArray(Map.vals<Int, SharedTypes.Proposal>(state.proposals));
+    Array.filter<SharedTypes.Proposal>(proposalArray, func p = p.status == #UploadFileRequired)
+  };
+
   // get_proposals_by_member : shared query Principal -> async [Proposal];
   public query func get_proposals_by_member(principal : Principal) : async [SharedTypes.ProposalPublicData] {
     let all_proposals = Iter.toArray(Map.vals(state.proposals));
@@ -243,9 +251,56 @@ persistent actor {
   };
 
   // new_comment_proposal : shared (Nat, Text) -> async ();
-  // public shared ({ caller }) func new_comment_proposal(id : Nat, comment : Text) : async () {
 
-  // };
+  ////////////////   En la proxima migracion incluir la lista de comments en cada proposal...  /////////////////////////////////////
+
+
+
+  public type CommentList = List.List<Comment.Comment>;
+
+  let comments = Map.new<Int, CommentList>();
+
+  func canComment(p: Principal): Bool {
+    switch (Member.get_role_member(state, p)) {
+      case ( ?#Admin or ?#Guardian) { return true };
+      case _ false;
+    }
+  };
+
+  public shared ({ caller }) func new_comment_proposal({proposalId : Int; msg : Text; path: [Int]}) : async CommentList {
+    switch(Map.get<Int, SharedTypes.Proposal>(state.proposals, ihash, proposalId)) {
+      case null { return null };
+      case _ { 
+        var currentList = switch (Map.get<Int, CommentList>(comments, ihash, proposalId)) {
+          case null { List.nil<Comment.Comment>() };
+          case ( ?list ) { list }
+        };
+        if (not canComment(caller)){
+          return null;
+        };
+
+        let newComment: Comment.Comment = {
+          msg;
+          creator = caller;
+          created_at = now();
+          likes = [];
+          dislikes = [];
+          subComments = List.nil<Comment.Comment>()
+        };
+
+        currentList := Comment.push(currentList, newComment, path);
+        ignore Map.put<Int, CommentList>(comments, ihash, proposalId, currentList);
+        currentList;
+      }
+    } 
+  };
+
+  public query func loadComments( id: Int ): async CommentList {
+    switch(Map.get<Int, CommentList>(comments, ihash, id)){
+      case null { null };
+      case ( ?list ) { list }
+    }
+  };
 
 
   //////////////////////////////////////////////////////////////////

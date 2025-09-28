@@ -20,6 +20,7 @@ import {
 
 import Button from "../../../components/shared/Button";
 import ProposalComment from "../../../components/proposals/ProposalComment";
+import { CommentSection } from "../../../components/CommentSection"
 import StatusBallProposal from "../../../components/shared/StatusBallProposal";
 import { p2str } from "../../../utils/functions";
 import { useAuth } from "@nfid/identitykit/react";
@@ -34,11 +35,15 @@ const ProposalDetail = () => {
   const [vote, setVote] = useState({ value: "", loading: false });
   const [open, setOpen] = useState(false);
   const [newComment, setNewComment] = useState({ want: false, text: "" });
+  const [comments, setComments] = useState([]);
   const [proposal, setProposal] = useState([]);
   const [likes, setLikes] = useState(0);
   const [dislikes, setDislikes] = useState(0);
   const loading = useRef(true)
   const { user, connect } = useAuth();
+
+  // const comments = useRef([])
+  
 
   const [ dao ] = useCanister()
 
@@ -50,13 +55,18 @@ const ProposalDetail = () => {
   useEffect(() => { 
     const fetchProposal = async () => {
       loading.current = true
+
+      const responseComments = await dao.loadComments(BigInt(id))
+      setComments(responseComments)
+
       const response = await dao.get_proposal(BigInt(id))
       setProposal(response);
-      updateData(response)
+      updateData(response);
       loading.current = false
     }
     if ( dao ) { fetchProposal() } 
   }, [dao])
+
 
   if (!proposal[0]) {
     return loading.current 
@@ -89,6 +99,20 @@ const ProposalDetail = () => {
 
     setVote({ ...vote, loading: false });
   };
+
+  const onNewComment = async (msg, path) => {
+    /* {proposalId : Int; msg : Text; path: [Int]} */
+    const newComment = {
+      proposalId: BigInt(id),
+      msg,
+      path
+    };
+    const response = await dao.new_comment_proposal(newComment)
+    if(response) {
+      setComments(response)
+      // comments.current = response
+    }
+  }
 
   const handleLike = async (type) => {
     if (!("Open" in proposal[0].status) ) return;
@@ -156,7 +180,7 @@ const ProposalDetail = () => {
             {/* TODO (fran): ver aca que seria impact */}
             <p>{proposal[0].description}</p>
           </section>
-          <section className="p-6" id="comments">
+          {/* <section className="p-6" id="comments">
             <h4 className="pb-2.5">COMMENTS</h4>
             <div className="flex gap-4 overflow-x-auto">
               {proposal[0].comments.map((c) => (
@@ -186,6 +210,10 @@ const ProposalDetail = () => {
                 )}
               </>
             )}
+          </section> */}
+          <section>
+            {/* <h4>Comments</h4> */}
+            <CommentSection rawICComments={comments} currentPath={[]}onNewComment={onNewComment}/>
           </section>
 
           {"Open" in proposal[0].status && (

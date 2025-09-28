@@ -193,12 +193,12 @@ module {
             };
           };
           let votes = Array.tabulate<(Principal, SharedTypes.Vote)>(
-            s.proposals.size() + 1,
-            func i = if (i < s.proposals.size()){proposal.votes[i]} else ((caller, vote))
+            proposal.votes.size() + 1,
+            func i = if (i < proposal.votes.size()){proposal.votes[i]} else ((caller, vote))
           );
           let partialResults = getPartialResults(votes); 
           ignore Map.put<Int, Proposal>(s.proposals, ihash, id, {proposal with votes; partialResults });
-          ?proposal
+          ?{proposal with partialResults }
         } else {
           null
         }
