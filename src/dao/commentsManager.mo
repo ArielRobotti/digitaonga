@@ -4,26 +4,26 @@ import Array "mo:base/Array";
 // import Nat64 "mo:base/Nat64";
 
 module {
-  type ProposalComment = SharedTypes.ProposalComment; // Obsoleto. 
+  type ProposalComment = SharedTypes.ProposalComment; // Obsoleto.
 
   public type Comment = {
-    msg: Text;
-    creator: Principal;
-    created_at: Int; // Funciona como id
-    likes: [Principal];
-    dislikes: [Principal];
-    subComments: List.List<Comment>
+    msg : Text;
+    creator : Principal;
+    created_at : Int; // Funciona como id
+    likes : [Principal];
+    dislikes : [Principal];
+    subComments : List.List<Comment>;
   };
 
-  func pushBack<T>(input : T, list : List.List<T> ): List.List<T> {
+  func pushBack<T>(input : T, list : List.List<T>) : List.List<T> {
     switch list {
       case null {
         return ?(input, null);
       };
-      case (? (head, tail)) {
-        return ?(head, pushBack(input, tail ));
-      }
-    }
+      case (?(head, tail)) {
+        return ?(head, pushBack(input, tail));
+      };
+    };
   };
 
   public func push(list : List.List<Comment>, input : Comment, path : [Int]) : List.List<Comment> {

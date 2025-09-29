@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 // Importamos los tipos y la interfaz de la función
 import { Comment, CommentList } from '../../declarations/backend/dao/motokoDao.did';
 // import { OnNewCommentHandler } from './types'; // Asume que 'types.ts' tiene la OnNewCommentHandler
@@ -16,11 +16,9 @@ interface CommentListProps {
 
 // --- Componente para un solo comentario y su botón de respuesta ---
 const CommentThread: React.FC<{ comment: Comment, path: bigint[], onNewComment: OnNewCommentHandler }> = ({ comment, path, onNewComment }) => {
-    // Es CRUCIAL que el tipo 'Comment' tenga un campo 'id: bigint'
-    // Si tu tipo generado no lo tiene, DEBES agregarlo al registro de Motoko.
+
     const commentId = (comment as any).created_at; // Uso 'as any' solo si el 'id' no está tipado pero sabes que existe.
     
-    // Si tu Comment NO tiene 'id', usa 'created_at' como identificador, aunque no es ideal:
     // const commentId = comment.created_at; 
     
     // El path completo para responder a *este* comentario
@@ -28,6 +26,17 @@ const CommentThread: React.FC<{ comment: Comment, path: bigint[], onNewComment: 
     
     const [replyText, setReplyText] = useState('');
     const [isReplying, setIsReplying] = useState(false);
+
+    // Foco sutomatico en textarea
+
+    const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+    useEffect(() => {
+        if (isReplying && textareaRef.current) {
+            textareaRef.current.focus();
+        }
+    }, [isReplying]);
+    
+    ////
 
     const handleReplySubmit = () => {
         setIsReplying(false);
@@ -43,9 +52,9 @@ const CommentThread: React.FC<{ comment: Comment, path: bigint[], onNewComment: 
         const ms = Number(nanos / 1_000_000n);
         return new Date(ms).toLocaleString();
     };
-    const cretorPrincipalShort = comment.creator.toText().slice(0, 10) 
+    const cretorPrincipalShort = comment.creator.toText().slice(0, 3) 
         + "..." 
-        + comment.creator.toText().slice(comment.creator.toText().length - 10 , comment.creator.toText().length -1)
+        + comment.creator.toText().slice(comment.creator.toText().length - 3 , comment.creator.toText().length -1)
 
     function handleCancel(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
         event.preventDefault();
@@ -55,8 +64,8 @@ const CommentThread: React.FC<{ comment: Comment, path: bigint[], onNewComment: 
     return (
         <div 
           className={`
-            p-4 rounded-lg mb-3 transition-colors duration-150 ease-in-out
-            border-b border-gray-200 pb-3
+            p-1 rounded-lg mb-3 transition-colors duration-150 ease-in-out
+            flex flex-col border border-gray-300 pb-1
             hover:bg-blue-50
             ${path.length > 0 
                 ? 'ml-6 border-l-2 border-blue-300 pl-4 bg-white hover:bg-blue-50' 
@@ -64,36 +73,40 @@ const CommentThread: React.FC<{ comment: Comment, path: bigint[], onNewComment: 
             }
           `} 
           key={commentId.toString()} // Usamos el ID como key
-          style={{ marginLeft: `${path.length * 20}px`, borderLeft: '1px solid #ccc', paddingLeft: '10px' }}>
+          style={{ marginLeft: `${path.length * 6}px`, borderLeft: '1px solid #17a517ff', paddingLeft: '2px' }}>
             
-            <div className='flex gap-10 items-center text-sm text-gray-600 mb-2'>
-                <span className="font-semibold text-blue-700 mr-2">{cretorPrincipalShort}</span> 
-                <span className="text-gray-500 text-xs">{formatDate(comment.created_at)}</span>
+            <div className='flex items-center text-sm text-gray-600 mb-2'>
+                <div className='h-7 w-7 mr-1 rounded-full bg-gray-400'></div>
+                <span className="font-semibold text-blue-700">{cretorPrincipalShort}</span> 
+                <span className="text-gray-500 text-xs ml-auto">{formatDate(comment.created_at)}</span>
             </div>
-            <p className="ml-6 text-gray-800 text-base mb-3 max-h-20">{comment.msg}</p>
-            
-            
+            <p className="ml-4 text-gray-800 text-base mb-0 max-h-20 overflow-y-scroll max-h-40">{comment.msg}</p>
             {isReplying && (
                 <div className="">
                     <textarea
-                        className='w-full'
+                        ref={textareaRef}
+                        className='w-full px-4 py-1'
                         value={replyText}
                         onChange={(e) => setReplyText(e.target.value)}
                         placeholder={`Reply to ${cretorPrincipalShort}`}
                     />
-                    <button className="bg-blue-300 p-2 mx-2 rounded-md" onClick={handleReplySubmit}>send</button>
-                    <button className="bg-blue-300 p-2 rounded-md" onClick={handleCancel}>cancel</button>
+                    <div className='flex justify-end'>
+                        <button className="w-16 bg-blue-300 p-2 rounded-md cursor-pointer" onClick={handleCancel}>cancel</button>
+                        <button className="w-16 bg-blue-300 p-2 mx-2 rounded-md cursor-pointer" onClick={handleReplySubmit}>send</button>
+                    </div>
 
                 </div>
             )}
-            {!isReplying && <button className="bg-blue-300 p-2 mx-1 rounded-md" onClick={() => setIsReplying(!isReplying)}>
-                reply
+            {!isReplying && <button className=" m-2 mt-0 rounded-md ml-auto cursor-pointer" onClick={() => setIsReplying(!isReplying)}>
+                Reply
             </button>}
+            
+            
 
 
             {/* Renderizado recursivo del hilo de subcomentarios */}
             {comment.subComments.length > 0 && (
-                <div className="mt-4">
+                <div className="mt-2">
                     <CommentListRenderer 
                       commentList={comment.subComments} 
                       currentPath={replyPath} // El path de los hijos incluye el ID del padre

@@ -42,7 +42,6 @@ const ProposalDetail = () => {
   const loading = useRef(true)
   const { user, connect } = useAuth();
 
-  // const comments = useRef([])
   
 
   const [ dao ] = useCanister()
@@ -51,6 +50,30 @@ const ProposalDetail = () => {
     setLikes(response[0].likes.filter(item => 'Like' in item[1]).length )
     setDislikes(response[0].likes.filter(item => 'Dislike' in item[1]).length)
   }
+
+  const countTotalComments = (list) => {
+    let count = 0;
+    let currentList = list;
+
+    // Iteramos sobre el nivel actual de la lista vinculada (head, tail)
+    while (currentList.length > 0) {
+        // La estructura es: [[headComment, tailList]]
+        const [[headComment, tailList]] = currentList;
+        
+        // 1. Contar el comentario actual (el head)
+        count += 1;
+
+        // 2. Sumar los subcomentarios recursivamente
+        // Nota: Asegúrate que subComments es de tipo CommentList antes de la recursión.
+        if (headComment.subComments && headComment.subComments.length > 0) {
+            count += countTotalComments(headComment.subComments);
+        }
+
+        // 3. Mover al siguiente elemento de la lista (el tail)
+        currentList = tailList;
+    }
+    return count;
+}
   
   useEffect(() => { 
     const fetchProposal = async () => {
@@ -58,6 +81,7 @@ const ProposalDetail = () => {
 
       const responseComments = await dao.loadComments(BigInt(id))
       setComments(responseComments)
+      console.log(responseComments)
 
       const response = await dao.get_proposal(BigInt(id))
       setProposal(response);
@@ -110,7 +134,6 @@ const ProposalDetail = () => {
     const response = await dao.new_comment_proposal(newComment)
     if(response) {
       setComments(response)
-      // comments.current = response
     }
   }
 
@@ -133,9 +156,9 @@ const ProposalDetail = () => {
   };
 
   return (
-    <main >
+    <main className="">
       {proposal[0] &&
-        <>
+        <div className="h-full flex flex-col">
           <section className="flex justify-between items-center p-6 overflow-hidden">
             <div>
               {/* TODO (fran): ver tema de si el nombre de la proposal es muy largo */}
@@ -169,7 +192,7 @@ const ProposalDetail = () => {
                       document.getElementById("comments").scrollIntoView({ behavior: "smooth" });
                   }}
                 >
-                  {proposal[0].comments.length} <CommentIcon />
+                  {countTotalComments(comments)} <CommentIcon />
                 </h5>
               </section>
             </div>
@@ -211,8 +234,7 @@ const ProposalDetail = () => {
               </>
             )}
           </section> */}
-          <section>
-            {/* <h4>Comments</h4> */}
+          <section className="mt-auto">
             <CommentSection rawICComments={comments} currentPath={[]}onNewComment={onNewComment}/>
           </section>
 
@@ -273,7 +295,7 @@ const ProposalDetail = () => {
               </Button>
             </DialogActions>
           </Dialog>
-        </>
+        </div>
       }
     </main>
   );

@@ -95,7 +95,7 @@ export const ModelViewer3D = forwardRef<HTMLDivElement, ModelViewer3DProps>(({ f
                 >
                     <ambientLight intensity={1.5} />
                     <directionalLight
-                        position={[1, 15, 1]}
+                        position={[-15, 15, 5]}
                         intensity={5.4}
                         castShadow
                     />
