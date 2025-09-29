@@ -12,38 +12,34 @@ const Proposals = () => {
   const navigate = useNavigate();
   const [,dao] = useCanister(); // No hace falta que sea el agente autenticado
   const [createDisabled, setCreateDisabled] = useState()
-
+  
   const proposalsShown = useRef([])
   const [approved, setApproved] = useState([])
   const [rejected, setRejected] = useState([])
   const [active, setActive] = useState([])
-
+  
+  const { proposals, setProposals } = useProposalStore();
+  
   useEffect(() => {
     const fetchProposals = async () => {
       if (dao) {
         const response = await dao.get_all_proposals();
         if (response) {
           proposalsShown.current = proposalsArrayParser(response)
-
+          setProposals(proposalsArrayParser(response))
           setApproved(proposalsArrayParser(response.filter(p => 'Approved' in p.status)))
           setRejected(proposalsArrayParser(response.filter(p => 'Rejected' in p.status)))
           setActive(proposalsArrayParser(response.filter(p => 'Open' in p.status)))
         }
-
       }
     };
     fetchProposals()
   }, [dao])
 
-
-
   useEffect(() => {
     setCreateDisabled(user != undefined? false: true)
   },[user])
 
-  const {
-    setProposals,
-  } = useProposalStore();
 
   const intervalRef = useRef(null);
 

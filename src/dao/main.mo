@@ -164,7 +164,7 @@ persistent actor {
     Proposal.vote_proposal(state, caller, id, vote)
   };
 
-  public shared ({ caller }) func get_my_vote(id: Nat): async ?SharedTypes.Vote{
+  public shared query ({ caller }) func get_my_vote(id: Nat): async ?SharedTypes.Vote{
     switch (Proposal.get_proposal(state, id)){
       case null null;
       case ( ?proposal ) {
@@ -301,7 +301,6 @@ persistent actor {
       case ( ?list ) { list }
     }
   };
-
 
   //////////////////////////////////////////////////////////////////
 

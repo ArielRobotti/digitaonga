@@ -1,4 +1,4 @@
-import Button from "../../components/shared/Button";
+// import Button from "../../components/shared/Button";
 import NftsContainer from "../../components/shared/NftsContainer";
 
 const Nfts = () => {
@@ -14,11 +14,11 @@ const Nfts = () => {
 
       <NftsContainer className="px-4" />
 
-      <div className="fixed inset-x-0 bottom-4 flex justify-center z-10">
+      {/* <div className="fixed inset-x-0 bottom-4 flex justify-center z-10">
         <Button variant="kokowai" className="inline-block">
           Create
         </Button>
-      </div>
+      </div> */}
     </main>
   );
 };

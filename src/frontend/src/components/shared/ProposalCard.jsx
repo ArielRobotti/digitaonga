@@ -5,6 +5,7 @@ import { CommentIcon, DislikeIcon, LikeIcon, VotationIcon } from "../ui/icons";
 import Button from "./Button";
 import StatusBallProposal from "./StatusBallProposal";
 import { useNavigate } from "react-router";
+import { useAuth } from "@nfid/identitykit/react";
 
 const ProposalCard = ({
   title = "Proposal name",
@@ -20,6 +21,7 @@ const ProposalCard = ({
   className = "",
 } = {}) => {
   const navigate = useNavigate();
+  const { user } = useAuth()
 
   const startDate = new Date(Number(id / 1000000n))
   const deadlineDate = new Date(Number(deadline / 1000000n))
@@ -52,7 +54,7 @@ const ProposalCard = ({
             ? "!bg-light-red"
             : "bg-wheua"
         }`}
-      onClick={() => navigate(`/proposals/${id}`)}
+      onClick={() => {if(user) {navigate(`/proposals/${id}`)}}}
     >
       <section className="py-4 px-6">
   

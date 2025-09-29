@@ -74,9 +74,14 @@ module {
       };
       case _ {}
     };
-
+    let deadline = if(proposal.deadline < id) { // Consultar reglas relacionadas a establecer deadline en tiempo pasado
+      id + 48 * 24 * 60 * 60 * 1000000000
+    } else {
+      proposal.deadline
+    };
     let newProposal: Proposal = {
       proposal with
+      deadline; 
       active_members : Nat = Map.size(s.members);
       comments = List.fromArray<SharedTypes.ProposalComment>([]);
       created_at : Int = id;

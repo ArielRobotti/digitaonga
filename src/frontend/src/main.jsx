@@ -28,6 +28,7 @@ import ProfileProposals from "./pages/profile/proposals/page";
 import ProfileSettings from "./pages/profile/settings/page";
 import ProposalDetail from "./pages/proposals/[id]/page";
 import Proposals from "./pages/proposals/page";
+import Calendar from "./pages/calendar/page"
 import React from "react";
 import ReactDOM from "react-dom/client";
 import Support from "./pages/profile/help/support/page";
@@ -73,6 +74,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             </Route>
             <Route path="notifications" element={<Notifications />} />
             <Route path="community" element={<Community />} />
+            <Route path="calendar" element={<Calendar />}/> 
             <Route path="profile">
               <Route index element={<Profile />} />
               <Route path="settings" element={<ProfileSettings />} />
