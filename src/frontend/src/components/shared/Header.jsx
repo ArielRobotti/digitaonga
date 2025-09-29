@@ -22,6 +22,7 @@ const Header = () => {
     { title: "Taonga Gallery", link: "/digital-taonga" },
     { title: "Proposals", link: "/proposals" },
     { title: "Community", link: "/community" },
+    { title: "Calendar", link: "/calendar" },
     { title: "Profile", link:  user? "/profile": "/"},
     { title: "FAQ", link: "/faqs" },
     // { title: "Log In", link: "/login" },
@@ -64,22 +65,23 @@ const Header = () => {
       {/* Mobile menu */}
       <motion.aside
         initial={{ x: "-100%" }}
-        animate={{ x: open ? 0 : "-100%" }}
+        animate={{ x: open ? -2 : "-100%" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="fixed top-[60px] left-0 bg-kokowai text-white pt-[60px] h-[calc(100vh-60px)] w-full bg-primary text-primary-foreground !z-50 max-w-[556px] xl:hidden"
+        className="fixed top-[60px] left-0 bg-kokowai text-white py-4 rounded-b-xl
+          w-full bg-primary text-primary-foreground !z-50 max-w-[75vw] xl:hidden"
       >
-        <nav className="p-4">
-          <ul className="space-y-4 grid place-items-center gap-[60px]">
+        <nav className="flex flex-col p-4 pl-10">
+          <ul className=" grid gap-6 ">
             {links.map(({ title, link }) => (
               <li key={title}>
-                <h2 onClick={toggleMenu}>
+                <h2 className="text-[18px]" onClick={toggleMenu}>
                   <NavLink to={link}>{title}</NavLink>
                 </h2>
               </li>
             ))}
 
             <li>
-              <h2 className="cursor-pointer" onClick={handleLogin}>
+              <h2 className="text-[18px] cursor-pointer" onClick={handleLogin}>
                 {user ? "Log out" : "Log in"}
               </h2>
             </li>
