@@ -6,31 +6,35 @@ import Badge from "@mui/material/Badge";
 import Button from "./Button";
 import { motion } from "framer-motion";
 import useMember from "../../hooks/useMember";
+import useMemberStore from "../../store/useMemberStore"
 import useNotification from "../../store/useNotifications";
 import { useState } from "react";
 
-const links = [
-  { title: "Digital Taonga", link: "/digital-taonga" },
-  { title: "Proposals", link: "/proposals" },
-  { title: "Community", link: "/community" },
-  { title: "Profile", link: "/profile" },
-  { title: "FAQ", link: "/faqs" },
-  // { title: "Log In", link: "/login" },
-];
-
-const desktopLinks = [
-  { title: "Community", link: "/community" },
-  { title: "Calendar", link: "/calendar" },
-  { title: "Proposals", link: "/proposals" },
-  { title: "Profile", link: "/profile" },
-  { title: "FAQ", link: "/faqs" },
-];
 
 const Header = () => {
   // Store
   const navigate = useNavigate();
   const { notifications } = useNotification();
   const { connect, disconnect, user } = useMember();
+  const { member } = useMemberStore()
+  
+  const links = [
+    { title: "Taonga Gallery", link: "/digital-taonga" },
+    { title: "Proposals", link: "/proposals" },
+    { title: "Community", link: "/community" },
+    { title: "Profile", link:  user? "/profile": "/"},
+    { title: "FAQ", link: "/faqs" },
+    // { title: "Log In", link: "/login" },
+  ];
+  
+  const desktopLinks = [
+    { title: "Taonga Gallery", link: "/digital-taonga" },
+    { title: "Community", link: "/community" },
+    { title: "Calendar", link: "/calendar" },
+    { title: "Proposals", link: "/proposals" },
+    { title: "Profile", link: user? "/profile": "/" },
+    { title: "FAQ", link: "/faqs" },
+  ];
 
   // State
   const [open, setOpen] = useState(false); // Menu open/close state (view mobile)
@@ -87,14 +91,16 @@ const Header = () => {
       <img
         src="/images/png/digitaonga logo header.png"
         alt="digitaonga"
-        className="hidden xl:block"
+        className="hidden xl:block h-14 cursor-pointer"
+        onClick={() => navigate("/")}
       />
 
       <nav className="hidden xl:block w-full">
-        <ul className="flex gap-4 justify-center items-center w-full">
+        <ul className="flex gap-6 justify-center items-center w-full ">
           {desktopLinks.map(({ title, link }) => (
-            <li key={title}>
-              <NavLink to={link} className="text-lg">
+            <li key={title} className="transition duration-300 ease-in-out
+            hover:scale-[1.1]">
+              <NavLink to={link} className="text-lg ">
                 {title}
               </NavLink>
             </li>

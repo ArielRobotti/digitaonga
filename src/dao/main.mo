@@ -2,14 +2,17 @@ import Types "./types";
 import SharedTypes "./sharedTypes";
 import Member "./member";
 import Proposal "./proposal";
-import Error "mo:base/Error";
+import Comment "./commentsManager";
+// import Error "mo:base/Error";
 import Map "mo:map/Map";
-import { ihash } "mo:map/Map";
+import { ihash; phash } "mo:map/Map";
 import Array "mo:base/Array";
 import Iter "mo:base/Iter";
 import { print } "mo:base/Debug";
 import Nat "mo:base/Nat";
 import Principal "mo:base/Principal";
+import { now } "mo:base/Time";
+import List "mo:base/List";
 
 
 persistent actor {
@@ -19,6 +22,28 @@ persistent actor {
   
   let state: Types.State = Types.initState({cyclesForTaongaDeploy});
 
+  public query func time(): async Int {
+    now()
+  };
+
+  var updatingProposals: Bool = false;
+
+  //////////// Clean functions ////////////
+  public shared ({ caller }) func removeFailedProposals(id: Int): async {#Ok; #Err}{
+    assert(Principal.isController(caller));
+    switch(Map.get<Int, SharedTypes.Proposal>(state.proposals, ihash, id)){
+      case null { #Err };
+      case ( ?proposal ) {
+        switch (proposal.status) {
+          case (#UploadFileRequired) {
+            ignore Map.remove<Int, SharedTypes.Proposal>(state.proposals, ihash, id);
+            #Ok
+          };
+          case _ { #Err }
+        }
+      }
+    }
+  };
 
      
   ////////////////////// Migracion de funciones existentes /////////
@@ -32,6 +57,31 @@ persistent actor {
     // actualizar last_activity
   };
 
+  public shared ({ caller }) func logIn(): async ?SharedTypes.Member {
+    ignore refresh_all_proposals();
+    switch (await get_member(caller)){
+      case (#Ok(member)){
+        ?member
+      };
+      case _ { null }
+    };
+  };
+
+  public shared ({ caller }) func set_last_activity_member(): async (){
+    switch (Member.get_member(state, caller)){
+      case ( #Ok(member) ){
+        ignore Map.put<Principal, SharedTypes.Member>(
+          state.members,
+          phash,
+          caller,
+          {member with last_activity = now()}
+        )
+      };
+      case _ {}
+    };
+    ignore refresh_all_proposals()
+  };
+
   public shared ({ caller }) func edit_member({name; profile_pic; cover_img }: SharedTypes.MemberEditableData) : async Member.Result {
     assert(not Principal.isAnonymous(caller));
     Member.edit_member(state, caller, {name; profile_pic; cover_img})
@@ -39,6 +89,7 @@ persistent actor {
 
   public shared ({ caller }) func batch_update_member_role(principals : [Principal], role : SharedTypes.MemberRole) : async [(Principal, SharedTypes.MemberError)] {
     assert(Member.is_admin(state, caller));
+    print(debug_show(caller));
     //TODO. Regla: los admin pueden otorgar roles solo cuando no hay la cantidad suficiente de guardians en la DAO
     // En caso de que haya la cantidad de guardians requerida, generar una proposal (Nueva variante #Guardian{#BatchUpdateRoles})
     Member.batch_update_member_role(state, principals, role);
@@ -54,17 +105,7 @@ persistent actor {
     Member.get_all_members(state)
   };
 
-  // TODO Verificar quien puede leer estos datos.. en este momento son públicos
-  /*
-    principal;
-    liked_proposals : [(Nat, LikeProposal)];
-    name 
-    role
-    created_at 
-    last_activity 
-    cover_img 
-    profile_pic
-  */
+
   public query func get_member(p : Principal) : async Member.Result {
     Member.get_member(state, p)
   };
@@ -72,6 +113,7 @@ persistent actor {
   ///////////////////////////// CRUD Proposals ///////////
 
   public shared ({ caller }) func create_proposal(args: Proposal.NewProposalArgs) : async SharedTypes.Proposal {
+    print("Proposal request from " # debug_show(caller));
     assert(not Principal.isAnonymous(caller));
     let callerRole = Member.get_role_member(state, caller);
     assert(callerRole == ?#Admin or callerRole == ?#Guardian); //
@@ -79,6 +121,7 @@ persistent actor {
   };
 
   public shared ({ caller }) func uploadFileChunk({fileId: Int; chunk: Blob; index: Nat; retry: Bool}): async {#Ok; #Err}{
+    print("recibiendo chunk nro: " # debug_show(index));
     assert(not Principal.isAnonymous(caller));
     Proposal.addChunk({
       s = state;
@@ -89,14 +132,20 @@ persistent actor {
       retry;
     })
   };
-  
-  // get_proposal : shared query Nat -> async ?Proposal;
-  public query func get_proposal(id: Int): async ?SharedTypes.ProposalPublicData { // En ProposalPublicData se omiten los votos y el creador
-    Proposal.get_proposal(state, id);
+
+  public query ({ caller}) func get_proposal(id: Int): async ?SharedTypes.Proposal { // En ProposalPublicData se omiten los votos y el creador
+    // assert(not Principal.isAnonymous(caller));
+    let proposal = Proposal.get_proposal(state, id);
+    switch proposal {
+      case null { null};
+      case (?proposal) {
+        let partialResults = Proposal.getPartialResults(proposal.votes);
+        ?{ proposal with votes = []; partialResults }
+      }
+    }
   };
 
-  // edit_proposal : shared (Nat, Text, Text, ProposalType) -> async ?Proposal; // Cambio de firma (id: Int; data: ProposalEditableData)
-  public shared ({ caller }) func edit_proposal(id : Int, data: Proposal.ProposalEditableData) : async ?SharedTypes.Proposal {
+  public shared ({ caller }) func edit_proposal(id : Int, data: Proposal.ProposalEditableData) : async ?SharedTypes.ProposalPublicData {
     assert(not Principal.isAnonymous(caller));
     Proposal.edit_proposal(state, caller, id, data);
   };
@@ -106,21 +155,48 @@ persistent actor {
     Proposal.delete_proposal(state, caller, id);
   };
   
-  // get_all_proposals : shared query () -> async [Proposal];
-  public query func get_all_proposals() : async [SharedTypes.ProposalPublicData] {
+  public query func get_all_proposals() : async [Proposal.ExtendedProposalPublicData] {
     Proposal.get_all_proposals(state);
   };
   
-  // vote_proposal : shared (Nat, Vote) -> async Result_2;
   public shared ({ caller }) func vote_proposal(id : Int, vote : SharedTypes.Vote) : async ?SharedTypes.ProposalPublicData {
     assert(not Principal.isAnonymous(caller));
     Proposal.vote_proposal(state, caller, id, vote)
+  };
+
+  public shared query ({ caller }) func get_my_vote(id: Nat): async ?SharedTypes.Vote{
+    switch (Proposal.get_proposal(state, id)){
+      case null null;
+      case ( ?proposal ) {
+        for (vote in proposal.votes.vals()){
+          if(vote.0 == caller) {
+            return ?vote.1
+          }
+        };
+        null
+      }
+    }
+  };
+
+  public shared query ({ caller }) func get_my_proposals(): async [SharedTypes.ProposalPublicData]{
+    let all_proposals = Iter.toArray(Map.vals(state.proposals));
+    Array.filter<SharedTypes.Proposal>(all_proposals, func p = p.creator == caller)
+  };
+
+  public shared query ({ caller }) func get_incomplete_entries(): async [SharedTypes.ProposalPublicData]{
+    assert(Member.is_admin(state, caller));
+    let proposalArray = Iter.toArray(Map.vals<Int, SharedTypes.Proposal>(state.proposals));
+    Array.filter<SharedTypes.Proposal>(proposalArray, func p = p.status == #UploadFileRequired)
   };
 
   // get_proposals_by_member : shared query Principal -> async [Proposal];
   public query func get_proposals_by_member(principal : Principal) : async [SharedTypes.ProposalPublicData] {
     let all_proposals = Iter.toArray(Map.vals(state.proposals));
     Array.filter<SharedTypes.Proposal>(all_proposals, func p = p.creator == principal)
+  };
+
+  public query func get_all_taongas(): async [(Principal, SharedTypes.TaongaMetadata)]{
+    Map.toArray<Principal, SharedTypes.TaongaMetadata>(state.taongas);
   };
 
   // check_proposal_status : shared Nat -> async Result_2;
@@ -133,7 +209,9 @@ persistent actor {
     }
   };
 
-  public func refresh_all_proposals() {
+  public func refresh_all_proposals(): async () {
+    if updatingProposals return;
+    updatingProposals := true;
     let proposalsId: [Int] = Array.map<SharedTypes.ProposalPublicData, Int>(
       Proposal.get_all_proposals(state),
       func p = p.id
@@ -145,6 +223,7 @@ persistent actor {
         callbackRemoveTempFile
       )
     };
+    updatingProposals := false
   };
 
   public query ({ caller })  func has_voted(id : Int) : async Bool {
@@ -159,16 +238,69 @@ persistent actor {
   };
 
   // like_proposal : shared (Nat, LikeProposal) -> async ();
-  public shared ({ caller }) func like_proposal(id : Nat, like : SharedTypes.LikeProposal) : async ?SharedTypes.ProposalPublicData {
+  type ProposalPublicDataExtended = SharedTypes.ProposalPublicData and {creatorName: Text};
+
+  public shared ({ caller }) func like_proposal(id : Nat, like : SharedTypes.LikeProposal) : async ?ProposalPublicDataExtended{
     assert(not Principal.isAnonymous(caller));
-    Proposal.like_proposal(state, caller, id, ?like)
+    switch (Proposal.like_proposal(state, caller, id, ?like)) {
+      case null null;
+      case (?proposal) {
+        ?{proposal with creatorName = Member.get_member_name(state, proposal.creator)}
+      }
+    }
   };
 
   // new_comment_proposal : shared (Nat, Text) -> async ();
-  public shared ({ caller }) func new_comment_proposal(id : Nat, comment : Text) : async () {
 
+  ////////////////   En la proxima migracion incluir la lista de comments en cada proposal...  /////////////////////////////////////
+
+
+
+  public type CommentList = List.List<Comment.Comment>;
+
+  let comments = Map.new<Int, CommentList>();
+
+  func canComment(p: Principal): Bool {
+    switch (Member.get_role_member(state, p)) {
+      case ( ?#Admin or ?#Guardian) { return true };
+      case _ false;
+    }
   };
 
+  public shared ({ caller }) func new_comment_proposal({proposalId : Int; msg : Text; path: [Int]}) : async CommentList {
+    switch(Map.get<Int, SharedTypes.Proposal>(state.proposals, ihash, proposalId)) {
+      case null { return null };
+      case _ { 
+        var currentList = switch (Map.get<Int, CommentList>(comments, ihash, proposalId)) {
+          case null { List.nil<Comment.Comment>() };
+          case ( ?list ) { list }
+        };
+        if (not canComment(caller)){
+          return null;
+        };
+
+        let newComment: Comment.Comment = {
+          msg;
+          creator = caller;
+          created_at = now();
+          likes = [];
+          dislikes = [];
+          subComments = List.nil<Comment.Comment>()
+        };
+
+        currentList := Comment.push(currentList, newComment, path);
+        ignore Map.put<Int, CommentList>(comments, ihash, proposalId, currentList);
+        currentList;
+      }
+    } 
+  };
+
+  public query func loadComments( id: Int ): async CommentList {
+    switch(Map.get<Int, CommentList>(comments, ihash, id)){
+      case null { null };
+      case ( ?list ) { list }
+    }
+  };
 
   //////////////////////////////////////////////////////////////////
 
@@ -188,61 +320,4 @@ persistent actor {
     print(Nat.toText(recoveredBytes * limit_payload_per_call - 1024) # " Bytes temporary file successfully deleted");
   };
   
-
-  /////////////////////// TODO ////////////////////////////
-
-  
-  // accept_member_invitation : shared () -> async Result;
-  public shared ({ caller }) func accept_member_invitation() : async () {
-    // return Result{};
-  };
-
-  // add_owner : shared Principal -> async ();
-  public shared ({ caller }) func add_owner(principal : Principal) : async () {
-
-  };
-
-
-
-
-
-  // reject_member_invitation : shared () -> async Result;
-  public shared ({ caller }) func reject_member_invitation() : async () {
-    // return Result{};
-  };
-
-  // remove_owner : shared Principal -> async ();
-  public shared ({ caller }) func remove_owner(principal : Principal) : async () {
-
-  };
-
-  // set_last_activity_member : shared () -> async ();
-  public shared ({ caller }) func set_last_activity_member() : async () {
-
-  };
-
-  // test_approve_proposal : shared Nat -> async ();
-  public shared ({ caller }) func test_approve_proposal(id : Nat) : async () {
-
-  };
-
-  // test_mint_asset_digital : shared (Principal, Principal, Text, Text, Text, Text, Text, ?Text,) -> async ();
-  // public shared ({ caller }) func test_mint_asset_digital(
-  //   principal1 : Principal,
-  //   principal2 : Principal,
-  //   text1 : Text,
-  //   text2 : Text,
-  //   text3 : Text,
-  //   text4 : Text,
-  //   text5 : Text,
-  //   text6 : ?Text,
-  // ) : async () {
-
-  // };
-
-  // test_reject_proposal : shared Nat -> async Result_2;
-  public shared ({ caller }) func test_reject_proposal(id : Nat) : async () {
-    // return Result_2{};
-  };
-
 }

@@ -5,14 +5,22 @@
       "package": "dao",
       "type": "rust"
     },
-    "taonga_factory": {
-      "main": "src/dao/taongaCanisterFactory.mo",
-      "type": "motoko"
-    },
-
+ 
     "motokoDao": {
       "main": "src/dao/main.mo",
-      "type": "motoko"
+      "type": "motoko",
+      "declarations": {
+        "output": "./src/frontend/declarations/backend/dao"
+      },
+      "specified_id": "m42ja-nqaaa-aaaap-qqdoa-cai"
+    },
+
+    "taonga" : {
+      "main": "src/dao/taonga/taonga.mo",
+      "type": "motoko",
+      "declarations": {
+        "output": "./src/frontend/declarations/backend/taonga"
+      }
     },
 
     "digital_asset": {
@@ -25,7 +33,8 @@
         "src/frontend/dist"
       ],
       "type": "assets",
-      "workspace": "frontend"
+      "workspace": "frontend",
+      "specified_id": "m33pu-aiaaa-aaaap-qqdoq-cai"
     },
     "frontend-dev": {
       "source": [

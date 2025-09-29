@@ -79,16 +79,17 @@ module {
     deadline : Int;
     status : ProposalStatus;
     title : Text;
-    votes : [(Principal, Vote)];
     kind : ProposalType;
     description : Text;
     active_members : Nat;
     comments : List.List<ProposalComment>;
+    likes: [(Principal, LikeProposal)];
+    partialResults: {approving: Nat; disapproving: Nat; abstentions: Nat};
+    creator : Principal;
   };
 
   public type Proposal = ProposalPublicData and {
-    creator : Principal;
-    likes: [(Principal, LikeProposal)];
+    votes : [(Principal, Vote)];
   };
 
   public type Vote = { #Approve; #Abstain; #Disapprove };
@@ -99,7 +100,8 @@ module {
     created_at : Nat64;
     likes : Nat64;
     comment : Text;
-    thread : [ProposalComment]; //
+    // thread : List.List<ProposalComment>; // TODO Incorporar en proxima migracions y quitar hashMap<Int,Comment> comments
+    thread: [ProposalComment];
     dislikes : Nat64;
   };
 
@@ -133,6 +135,9 @@ module {
     canisterId : Principal;
     remoteActorReference : Taonga.Taonga;
     name : Text;
+    history : Text;
+    description : Text;
     thumbnail: Blob;
+    date: Int;
   };
 }

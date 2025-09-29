@@ -9,9 +9,15 @@
     "ic": "3og7u-miaaa-aaaal-qsrzq-cai"
   },
   "frontend": {
-    "ic": "ep6bk-xaaaa-aaaal-qsmxq-cai"
+    "ic": "m33pu-aiaaa-aaaap-qqdoq-cai"
   },
   "frontend-dev": {
     "ic": "m2irv-mqaaa-aaaal-qssha-cai"
+  },
+  "frontend_old": {
+    "ic": "ep6bk-xaaaa-aaaal-qsmxq-cai"
+  },
+  "motokoDao": {
+    "ic": "m42ja-nqaaa-aaaap-qqdoa-cai"
   }
 }

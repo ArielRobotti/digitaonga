@@ -4,7 +4,7 @@ import "@nfid/identitykit/react/styles.css";
 import { BrowserRouter, Route, Routes } from "react-router";
 import { IdentityKitAuthType, InternetIdentity, NFIDW, OISY } from "@nfid/identitykit";
 
-import ActionProposalCreation from "./pages/proposals/create/action proposal/page";
+import MotionProposalCreation from "./pages/proposals/create/motion proposal/page";
 import { Buffer } from "buffer";
 import Community from "./pages/community/page";
 import CreateNft from "./pages/digital taonga/create/page";
@@ -28,10 +28,12 @@ import ProfileProposals from "./pages/profile/proposals/page";
 import ProfileSettings from "./pages/profile/settings/page";
 import ProposalDetail from "./pages/proposals/[id]/page";
 import Proposals from "./pages/proposals/page";
+import Calendar from "./pages/calendar/page"
 import React from "react";
 import ReactDOM from "react-dom/client";
 import Support from "./pages/profile/help/support/page";
 import AssignRole from "./pages/assign role/page";
+import InviteNewMemberPage from "./pages/invite new member/page";
 
 global.Buffer = Buffer;
 
@@ -55,7 +57,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               <Route index element={<Proposals />} />
               <Route path="create">
                 <Route index element={<CreateProposal />} />
-                <Route path="Action proposal" element={<ActionProposalCreation />} />
+                <Route path="Motion proposal" element={<MotionProposalCreation />} />
                 <Route path="Digital Taonga proposal" element={<DigitalTaongaProposalCreation />} />
                 <Route path="Guardian proposal" element={<GuardianProposalCreation />} />
               </Route>
@@ -64,6 +66,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             <Route path="on_boarding" element={<OnBoarding />} />
             <Route path="first_steps" element={<FirstSteps />} />
             <Route path="assign-role" element={<AssignRole />} />
+            <Route path="invite-new-member" element={<InviteNewMemberPage />} />
             <Route path="digital-taonga">
               <Route index element={<Nfts />} />
               <Route path="create" element={<CreateNft />} />
@@ -71,6 +74,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             </Route>
             <Route path="notifications" element={<Notifications />} />
             <Route path="community" element={<Community />} />
+            <Route path="calendar" element={<Calendar />}/> 
             <Route path="profile">
               <Route index element={<Profile />} />
               <Route path="settings" element={<ProfileSettings />} />

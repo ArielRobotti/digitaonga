@@ -12,9 +12,22 @@ import dayjs from "dayjs";
 import { guardianProposalActions } from "../../../../utils/data";
 import { str2p } from "../../../../utils/functions";
 import useProposal from "../../../../hooks/useProposal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import useCanister from "../../../../hooks/useCanister"
+import { useAuth } from "@nfid/identitykit/react";
+import { Principal } from "@dfinity/principal";
+import { useNavigate } from "react-router";
 
 const GuardianProposalCreation = () => {
+
+  const { user } = useAuth();
+  const [dao] = useCanister()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!user) { navigate("/") }
+  }, [user])
+
   const [form, setForm] = useState({
     principal: "",
     deadline: dayjs(new Date().toDateString()),
@@ -36,22 +49,36 @@ const GuardianProposalCreation = () => {
 
   const handleSubmit = async () => {
     try {
+      const deadline = BigInt(form.deadline?.unix() * 1_000_000_000)
       const guardianSelectedAction =
-        selectedValue === "Assign as Observer" ? "AssignAsObserver" : "RemoveFromDao";
+        selectedValue === "Assign as Observer"
+          ? {AssignAsObserver: [Principal.fromText(form.principal), deadline ]}
+          : { RemoveFromDao: [Principal.fromText(form.principal), deadline ]}
 
-      await createProposal({
-        title: selectedValue,
-        description: `${selectedValue} ${form.principal}`,
+      const proposalArgs = {
+        title: "Guardian proposal",
+        description: "Proposal for role assignment or user remove",
         kind: {
-          Guardian: {
-            [guardianSelectedAction]: [
-              str2p(form.principal),
-              form.deadline?.unix() * 1_000_000_000,
-            ],
-          },
+          Guardian: guardianSelectedAction
         },
-        deadline: form.deadline?.unix() * 1_000_000_000,
-      });
+        deadline
+      }
+      const response = await dao.create_proposal(proposalArgs)
+      console.log(response)
+
+      // await createProposal({
+      //   title: selectedValue,
+      //   description: `${selectedValue} ${form.principal}`,
+      //   kind: {
+      //     Guardian: {
+      //       [guardianSelectedAction]: [
+      //         str2p(form.principal),
+      //         form.deadline?.unix() * 1_000_000_000,
+      //       ],
+      //     },
+      //   },
+      //   deadline: form.deadline?.unix() * 1_000_000_000,
+      // });
       toggleDialog();
       handleResponseSuccess();
     } catch (err) {

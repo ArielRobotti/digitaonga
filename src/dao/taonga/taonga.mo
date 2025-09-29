@@ -6,6 +6,7 @@ import Array "mo:base/Array";
 import { print } "mo:base/Debug";
 import Nat "mo:base/Nat";
 import Cycles "mo:base/ExperimentalCycles";
+import { now } "mo:base/Time";
 
   shared ({ caller = DEPLOYER }) persistent actor class Taonga(initArgs : Types.InitArgs, callback: shared Int -> ()) {
     let admins = Set.fromIter<Principal>([DEPLOYER, initArgs.admin].vals(), phash); // Los administradores iniciales son el canister principal y el admin pasado como parametro
@@ -15,6 +16,8 @@ import Cycles "mo:base/ExperimentalCycles";
     };
 
     var taongaIsReady = false;
+    var creation_date = now(): Int;
+    var chunkQty = initArgs.chunksQty;
 
     var assetData = Array.init<Blob>(initArgs.chunksQty, "" : Blob); // Array mut para guardar los chuncks del asset
 
@@ -25,10 +28,9 @@ import Cycles "mo:base/ExperimentalCycles";
       name : Text = initArgs.name;
       symbol : Text = ""; 
       token_uri : ?Text = null; //
+      creation_date;
+      chunkQty;
     };
-
-    // type callback = shared (Nat) -> async { chunk : Blob; next : ?callback };
-
 
     public shared ({ caller }) func uploadTaonga({ chunk : Blob; index : Nat }) : async {
       #Ok;

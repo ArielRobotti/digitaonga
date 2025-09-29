@@ -1,41 +1,122 @@
+import { useEffect, useRef, useState } from "react";
 import { CircularProgress } from "@mui/material";
 import ProposalCard from "../../../components/shared/ProposalCard";
-import { p2str } from "../../../utils/functions";
 import { useAuth } from "@nfid/identitykit/react";
-import useProposal from "../../../hooks/useProposal";
+import useCanister from "../../../hooks/useCanister";
+import { Style } from "@mui/icons-material";
+import { proposalsArrayParser } from "../../../utils/parsers";
 
 const ProfileProposals = () => {
   const { user } = useAuth();
-  const { getProposalsByMember, loading } = useProposal();
-  const proposals = user?.principal && getProposalsByMember(p2str(user.principal));
 
-  const array = [
-    { n: 1, s: "Active proposals" },
-    { n: 2, s: "Approved proposals" },
-    { n: 3, s: "Rejected proposals" },
-  ];
+  const [dao] = useCanister()
+
+  const proposalsShown = useRef([])
+  const [approved, setApproved] = useState([])
+  const [rejected, setRejected] = useState([])
+  const [active, setActive] = useState([])
+
+  const [filter, setFilter] = useState(null)
+
+  useEffect(() => {
+    const fetchProposals = async () => {
+      if (dao) {
+        const response = await dao.get_my_proposals();
+        if (response) {
+          proposalsShown.current = proposalsArrayParser(response)
+
+          setApproved(proposalsArrayParser(response.filter(p => 'Approved' in p.status)))
+          setRejected(proposalsArrayParser(response.filter(p => 'Rejected' in p.status)))
+          setActive(proposalsArrayParser(response.filter(p => 'Open' in p.status)))
+        }
+      }
+    };
+    fetchProposals()
+  }, [dao])
+
+  const handleFilter = (f) => {
+    if (filter === f) {
+      setFilter(null);
+
+      proposalsShown.current = [...approved, ...rejected, ...active];
+    } else {
+      setFilter(f);
+      // Apply the new filter and update proposalsShown.
+      if (f === 'Approved') {
+        proposalsShown.current = approved;
+      } else if (f === 'Rejected') {
+        proposalsShown.current = rejected;
+      } else if (f === 'Active') {
+        proposalsShown.current = active;
+      }
+    }
+    // The console.log here will show the old `filter` value due to closures,
+    // so it's better to log the `f` value directly.
+  };
 
   return (
     <main>
-      <section className="grid grid-cols-3 gap-4 mt-4">
-        {array.map((item) => (
-          <article
-            key={item.n}
-            className="bg-gray-200 grid place-items-center max-w-[139px] h-[101px]"
-          >
-            <h1>{item.n}</h1>
-            <p>{item.s}</p>
-          </article>
+      <div
+        className="flex justify-around p-4 w-full flex-nowrap mt-2 select-none" 
+      >
+        <div
+          className={`flex-1 text-center rounded-sm max-w-20 md:max-w-100 py-2 cursor-pointer transform relative z-10
+            transition duration-300 ease-in-out
+            hover:scale-[1.03] ${filter === 'Active' ? 
+              'bg-gray-500' : 'bg-gray-300'
+            }`
+          }
+          onClick={() => { handleFilter("Active") }}
+        >
+          <h3 className="text-[14px] md:text-xl font-bold text-black">Active</h3>
+          <p className="text-xl md:text-2xl text-black">{active.length}</p>
+        </div>
+
+        <div
+          className={`flex-1 text-center rounded-sm max-w-20 md:max-w-100 py-2 cursor-pointer transform relative z-10
+            transition duration-300 ease-in-out
+            hover:scale-[1.03] ${filter === 'Approved' ? 
+              'bg-gray-500' : 'bg-gray-300'
+            }`
+          }
+          onClick={() => { handleFilter("Approved") }}
+        >
+          <h3 className="text-[14px] md:text-xl font-bold text-black">Approved</h3>
+          <p className="text-xl md:text-2xl text-black ">{approved.length}</p>
+        </div>
+
+        <div
+          className={`flex-1 text-center rounded-sm max-w-20 md:max-w-100 py-2 cursor-pointer transform relative z-10
+            transition duration-300 ease-in-out
+            hover:scale-[1.03] ${filter === 'Rejected' ? 
+              'bg-gray-500' : 'bg-gray-300'
+            }`
+          }
+          onClick={() => { handleFilter("Rejected") }}
+        >
+          <h3 className="text-[14px] md:text-xl font-bold text-black">Rejected</h3>
+          <p className="text-xl md:text-2xl text-black">{rejected.length}</p>
+        </div>
+      </div>
+
+      <section className="grid 
+                    grid-cols-[repeat(auto-fill,minmax(300px,1fr))] 
+                    gap-4 mt-4 px-4">
+        {proposalsShown.current.map((item) => (
+          <ProposalCard
+            // key={Number(item.id)}
+            {...item = item}
+          />
         ))}
       </section>
 
-      <div className="flex gap-4 overflow-x-auto py-2 xl:flex-wrap">
-        {loading ? (
+      {/* <div className="flex gap-4 overflow-x-auto py-2 xl:flex-wrap">
+        {false ? (
           <CircularProgress />
         ) : (
-          proposals.map((proposal) => <ProposalCard key={proposal.id} {...proposal} />)
+          proposals.current.map((proposal) => <ProposalCard key={proposal.canisterId} {...proposal} />)
         )}
-      </div>
+      </div> */}
     </main>
   );
 };

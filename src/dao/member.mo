@@ -1,7 +1,7 @@
 import Types "./types";
 import Map "mo:map/Map";
 import Buffer "mo:base/Buffer";
-import { phash; ihash } "mo:map/Map";
+import { phash } "mo:map/Map";
 import { now } "mo:base/Time";
 import Array "mo:base/Array";
 import Iter "mo:base/Iter";
@@ -28,7 +28,7 @@ module {
           created_at = now();
           last_activity = now();
           liked_proposals = [];
-          role = if (Map.size(state.members) == 0) { #Admin } else { #Viewer }; // Lógica heredada de la version Rust. Revisar
+          role = if (Map.size(state.members) == 0) { #Admin } else { #Observer }; // Lógica heredada de la version Rust. Revisar
         };
         ignore Map.put<Principal, Member>(state.members, phash, caller, newMember);
         newMember;
@@ -46,6 +46,18 @@ module {
         #Ok(updatedMember);
       };
     };
+  };
+
+  public func get_member_name(state: Types.State, p: Principal): Text {
+    switch (Map.get<Principal, Member>(state.members, phash, p)) {
+      case null "";
+      case (?member) {
+        switch (member.name) {
+          case null { "No Name" };
+          case ( ?name ) { name}
+        }
+      }
+    }
   };
 
   public func is_admin(s: Types.State, p: Principal): Bool{
@@ -118,7 +130,7 @@ module {
     let membersArray = Iter.toArray(Map.vals<Principal, Member>(s.members));
     Array.map<Member, Member>(
       membersArray, 
-      func x = {x with cover_img = null; profile_pic = null} // Omitimos las imagenes
+      func x = {x with cover_img = null} // Omitimos las imagenes
     ); 
   };
 

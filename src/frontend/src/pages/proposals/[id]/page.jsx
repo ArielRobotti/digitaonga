@@ -19,197 +19,297 @@ import {
 } from "@mui/material";
 
 import Button from "../../../components/shared/Button";
-import ProposalComment from "../../../components/proposals/ProposalComment";
+import { CommentSection } from "../../../components/CommentSection"
 import StatusBallProposal from "../../../components/shared/StatusBallProposal";
-import { p2str } from "../../../utils/functions";
 import { useAuth } from "@nfid/identitykit/react";
 import { useParams } from "react-router";
-import useProposal from "../../../hooks/useProposal";
-import { useState } from "react";
+import useCanister from "../../../hooks/useCanister";
+import { useState, useEffect, useRef } from "react";
+// import { useNavigate } from "react-router";
+// import ProposalComment from "../../../components/proposals/ProposalComment";
+// import { Principal } from "@dfinity/principal";
+// import useProposal from "../../../hooks/useProposal";
+// import { p2str } from "../../../utils/functions";
 
 const ProposalDetail = () => {
   const { id } = useParams();
   const [vote, setVote] = useState({ value: "", loading: false });
   const [open, setOpen] = useState(false);
   const [newComment, setNewComment] = useState({ want: false, text: "" });
+  const [comments, setComments] = useState([]);
+  const [commentsQty, setCommentsQty] = useState(0)
+  const [proposal, setProposal] = useState([]);
+  const [likes, setLikes] = useState(0);
+  const [dislikes, setDislikes] = useState(0);
+  const [userVote, setUserVote] = useState(null)
+  const loading = useRef(true)
   const { user, connect } = useAuth();
 
-  const { getProposal, loading, voteProposal, likeProposal } = useProposal();
 
-  const proposal = getProposal(parseInt(id));
+  const [dao] = useCanister()
 
-  if (loading) return <CircularProgress className="absolute top-1/2 left-1/2 " />;
+  const updateData = (response) => {
+    setLikes(response[0].likes.filter(item => 'Like' in item[1]).length)
+    setDislikes(response[0].likes.filter(item => 'Dislike' in item[1]).length)
+  }
 
-  if (!proposal) {
-    return (
-      <main className="flex flex-col items-center justify-center h-screen">
+  const countTotalComments = (list) => {
+    let count = 0;
+    let currentList = list;
+    // Iteramos sobre el nivel actual de la lista vinculada (head, tail)
+    while (currentList.length > 0) {
+      // La estructura es: [[headComment, tailList]]
+      const [[headComment, tailList]] = currentList;
+      // 1. Contar el comentario actual (el head)
+      count += 1;
+      // 2. Sumar los subcomentarios recursivamente
+      // Nota: Asegúrate que subComments es de tipo CommentList antes de la recursión.
+      if (headComment.subComments && headComment.subComments.length > 0) {
+        count += countTotalComments(headComment.subComments);
+      }
+      // 3. Mover al siguiente elemento de la lista (el tail)
+      currentList = tailList;
+    }
+    return count;
+  }
+
+  const shortPrincipal = (p) => {
+    return p.slice(0, 5) + "..." + p.slice(p.length - 5, p.length )
+  }
+
+  useEffect(() => {
+    const fetchProposal = async () => {
+      loading.current = true
+      /// Por ahora los comentarios y los proposals estan en Maps diferentes para no romper la compatibilidad tras la ultima
+      /// actualización de Comment. En la siguiente migracion van a estar incluidos dentro de la estructura del proposal
+      const responseComments = await dao.loadComments(BigInt(id))
+      setComments(responseComments)
+      setCommentsQty(countTotalComments(responseComments))
+
+      // agregar un campo para mostrar el voto del que llama
+      const response = await dao.get_proposal(BigInt(id))
+      setProposal(response);
+      updateData(response);
+
+      const myVote = (await dao.get_my_vote(BigInt(id)))[0]
+      setUserVote(myVote)
+
+      loading.current = false
+    }
+    if (dao) { fetchProposal() }
+  }, [dao])
+
+
+  if (!proposal[0]) {
+    return loading.current
+      ? <CircularProgress className="absolute top-1/2 left-1/2 " />
+      : (<main className="flex flex-col items-center justify-center h-screen">
         <h1 className="text-2xl font-bold">Proposal not found</h1>
         <p className="text-lg">Please check the proposal ID and try again.</p>
-      </main>
-    );
+      </main>)
+      ;
   }
 
   const handleChange = (e) => setVote({ ...vote, value: e.target.value });
   const toggleOpen = () => setOpen(!open);
-  const handleComment = (e) =>
-    proposal.status === "Open" && setNewComment({ ...newComment, text: e.target.value });
+
 
   const handleVote = async () => {
-    if (proposal.status !== "Open") return;
+    if (!("Open" in proposal[0].status)) return;
     if (!user) return connect();
     setVote({ ...vote, loading: true });
 
-    try {
-      const res = await voteProposal(parseInt(id), vote.value);
-      console.log({ res });
-      toggleOpen();
-    } catch (err) {
-      console.log("voteProposal error:", err);
+    const options = {
+      Approve: { Approve: null },
+      Abstain: { Abstain: null },
+      Disapprove: { Disapprove: null },
     }
+
+    const response = await dao.vote_proposal(BigInt(id), options[vote.value])
+    console.log(response)
 
     setVote({ ...vote, loading: false });
   };
 
+  const onNewComment = async (msg, path) => {
+    /* {proposalId : Int; msg : Text; path: [Int]} */
+    const newComment = {
+      proposalId: BigInt(id),
+      msg,
+      path
+    };
+    const response = await dao.new_comment_proposal(newComment)
+    if (response) {
+      setComments(response)
+      setCommentsQty(countTotalComments(response))
+    }
+  }
+
   const handleLike = async (type) => {
-    if (proposal.status !== "Open") return;
+    if (!("Open" in proposal[0].status)) return;
     if (!user) return connect();
     console.log({ type });
-    if (proposal.likers.find((l) => l.principal === p2str(user.principal) && l.type === type))
-      return;
-    await likeProposal(parseInt(id), type);
+
+    const options = {
+      Like: { Like: null },
+      Dislike: { Dislike: null },
+    };
+    const response = await dao.like_proposal(BigInt(id), options[type])
+    setProposal(response)
+    updateData(response)
+    console.log(response)
+
   };
 
   return (
-    <main>
-      <section className="flex justify-between items-center p-6 overflow-hidden">
-        <div>
-          {/* TODO (fran): ver tema de si el nombre de la proposal es muy largo */}
-          <h3 className="uppercase text-clip">{proposal.title}</h3>
-          <h4 className="uppercase">REF {id}</h4> {/* FIXME (fran): cambiar por proposal.id */}
-          <p>Delegate: {proposal.creator}</p>
-        </div>
+    <main className="">
+      {proposal[0] &&
+        <div className="h-full flex flex-col">
+          <section className="flex justify-around items-center px-2 md:p-6 overflow-hidden">
+            <div className="space-y-1">
+              {/* Título Principal */}
+              <h3 className="uppercase text-clip text-[18px] md:text-[28px] font-bold">
+                {proposal[0].title}
+              </h3>
 
-        <div className="flex flex-col items-center gap-4">
-          <span className="flex items-center gap-1">
-            <StatusBallProposal status={proposal.status} />
-            {proposal.status}
-          </span>
-          <section className="flex items-center gap-4">
-            <h5 className="flex items-center cursor-pointer" onClick={() => handleLike("Like")}>
-              {proposal.likes} <LikeIcon />
-            </h5>
-            <h5 className="flex items-center cursor-pointer" onClick={() => handleLike("Dislike")}>
-              {proposal.dislikes} <DislikeIcon />
-            </h5>
-            <h5
-              className="flex items-center"
-              onClick={() => {
-                if (proposal.status !== "Open") return;
+              {/* Contenedor de Metadatos Alineados */}
+              <div className="mt-4 space-y-1 text-sm text-gray-700">
 
-                setNewComment({ ...newComment, want: true }) ||
-                  document.getElementById("comments").scrollIntoView({ behavior: "smooth" });
-              }}
-            >
-              {proposal.comments.length} <CommentIcon />
-            </h5>
-          </section>
-        </div>
-      </section>
-      <p className="px-6 py-2.5">{proposal.description}</p>
-      <section className="p-6">
-        <h4 className="pb-2.5">IMPACT</h4>
-        {/* TODO (fran): ver aca que seria impact */}
-        <p>{proposal.description}</p>
-      </section>
-      <section className="p-6" id="comments">
-        <h4 className="pb-2.5">COMMENTS</h4>
-        <div className="flex gap-4 overflow-x-auto">
-          {proposal.comments.map((c) => (
-            <ProposalComment key={c.created_at} {...c} />
-          ))}
-        </div>
+                {/* Campo 1: ID */}
+                <div className="flex flex-col md:flex-row">
+                  <p className="font-semibold uppercase w-30 flex-shrink-0">ID:</p>
+                  <span className="font-mono ml-2">{id}</span>
+                </div>
 
-        {newComment.want && (
-          <>
-            <TextField
-              placeholder="Comment..."
-              multiline
-              onChange={handleComment}
-              value={newComment.text}
-            />
+                {/* Campo 2: GUARDIAN ID */}
+                <div className="flex flex-col md:flex-row">
+                  <span className="font-semibold uppercase w-30 flex-shrink-0">GUARDIAN ID:</span>
+                  <span className="truncate ml-2">{shortPrincipal(proposal[0].creator.toString())}</span>
+                </div>
 
-            {newComment.text?.trim()?.length > 0 && (
-              <div className="flex justify-end mt-2">
-                <Button
-                  size="small"
-                  variant="kokowai"
-                  onClick={() => (user ? console.log("comment") : connect())}
-                >
-                  {user ? "Comment" : "Log in"}
-                </Button>
+                {/* Campo 3: Guardian Name */}
+                <div className="flex flex-col md:flex-row">
+                  <span className="font-semibold uppercase flex-shrink-0">Guardian Name:</span>
+                  <span className="font-medium">{proposal[0].creatorName}</span>
+                </div>
+
+                {/* Opcional: Proposal Type (Descomentar si lo usas) */}
+                {/* <div className="flex">
+                    <span className="font-semibold uppercase w-40 flex-shrink-0">Proposal Type:</span>
+                    <span>{proposal[0].kind}</span>
+                  </div> */}
               </div>
-            )}
-          </>
-        )}
-      </section>
+            </div>
 
-      {proposal.status === "Open" && (
-        <section className="grid place-items-center gap-4 p-6">
-          <div className="bg-kokowai p-2 max-w-[302px] rounded-[5px]">
-            <p className="text-white">
-              10 votes required to have a quorum and 6 positive votes for passage
-            </p>
-          </div>
 
-          <FormControl className="max-w-[302px] w-full !mb-12">
-            <InputLabel id="vote-select-label">Your vote</InputLabel>
-            <Select
-              labelId="vote-select-label"
-              id="vote-select"
-              value={vote.value}
-              label="Your vote"
-              onChange={handleChange}
-              className="material_select"
-            >
-              <MenuItem value={"Approve"} className="material_menu-item">
-                Approve
-              </MenuItem>
-              <MenuItem value={"Disapprove"} className="material_menu-item">
-                Disapprove
-              </MenuItem>
-              <MenuItem value={"Abstain"} className="material_menu-item">
-                Abstain
-              </MenuItem>
-            </Select>
-          </FormControl>
+            <div className="flex flex-col items-center gap-2 md:gap-4">
+              <span className="flex items-center gap-1">
+                <StatusBallProposal status={Object.keys(proposal[0].status)[0]} />
+                {Object.keys(proposal[0].status)[0]}
+              </span>
+              <section className="flex items-center gap-2 md:gap-4">
+                <h5 className="flex items-center cursor-pointer" onClick={() => handleLike("Like")}>
+                  {likes} <LikeIcon />
+                </h5>
+                <h5 className="flex items-center cursor-pointer" onClick={() => handleLike("Dislike")}>
+                  {dislikes} <DislikeIcon />
+                </h5>
+                <h5
+                  className="flex items-center"
+                  onClick={() => {
+                    if (proposal[0].status !== "Open") return;
 
-          <Button variant="kokowai" disabled={!vote.value || vote.loading} onClick={handleVote}>
-            {!user ? "Log in" : vote.loading ? "Voting..." : "Confirm my vote"}
-          </Button>
-        </section>
-      )}
-      <Dialog
-        open={open}
-        onClose={toggleOpen}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-        className="material_dialog"
-      >
-        <DialogTitle id="alert-dialog-title" className="flex justify-center items-center !pb-0">
-          <CheckIcon className="mt-4" />
-        </DialogTitle>
+                    setNewComment({ ...newComment, want: true }) ||
+                      document.getElementById("comments").scrollIntoView({ behavior: "smooth" });
+                  }}
+                >
+                  {commentsQty} <CommentIcon />
+                </h5>
+              </section>
+              {userVote &&
+                <div className="flex flex-col items-center">
+                  <p className="text-[14px]"> Your vote was:</p>
+                  <p className="text-"> {Object.keys(userVote)[0]} </p>
+                </div>
+              }
 
-        <CloseIcon className="absolute top-2 right-2 cursor-pointer" onClick={toggleOpen} />
+            </div>
+          </section>
 
-        <DialogContent>
-          <h5 className="">Proposal voted successfully!</h5>
-        </DialogContent>
-        <DialogActions className="flex !justify-center">
-          <Button size="small" variant="kokowai" onClick={toggleOpen}>
-            Accept
-          </Button>
-        </DialogActions>
-      </Dialog>
+          <section className="p-6 text-center">
+            <h4 className="pb-2">DESCRIPTION</h4>
+            <p className="text-center">{proposal[0].description}</p>
+
+            <h4 className="py-2">IMPACT</h4>
+            {/* TODO (fran): ver aca que seria impact */}
+            <p>{proposal[0].description}</p>
+          </section>
+
+          {/* --- Comments section --- */}
+
+          <section className="mt-auto">
+            <CommentSection rawICComments={comments} currentPath={[]} onNewComment={onNewComment} />
+          </section>
+
+          {"Open" in proposal[0].status && !userVote && (
+            <section className="grid place-items-center gap-4 p-6">
+              <div className="bg-kokowai p-2 max-w-[302px] rounded-[5px]">
+                <p className="text-white">
+                  10 votes required to have a quorum and 6 positive votes for passage
+                </p>
+              </div>
+
+              <FormControl className="max-w-[302px] w-full !mb-12">
+                {/* <InputLabel id="vote-select-label">Your vote</InputLabel> */}
+                <Select
+                  labelId="vote-select-label"
+                  id="vote-select"
+                  value={vote.value}
+                  label="Your vote"
+                  onChange={handleChange}
+                  className="material_select"
+                >
+                  <MenuItem value={"Approve"} className="material_menu-item">
+                    Approve
+                  </MenuItem>
+                  <MenuItem value={"Disapprove"} className="material_menu-item">
+                    Disapprove
+                  </MenuItem>
+                  <MenuItem value={"Abstain"} className="material_menu-item">
+                    Abstain
+                  </MenuItem>
+                </Select>
+              </FormControl>
+
+              <Button variant="kokowai" disabled={!vote.value || vote.loading} onClick={handleVote}>
+                {!user ? "Log in" : vote.loading ? "Voting..." : "Confirm my vote"}
+              </Button>
+            </section>
+          )}
+          <Dialog
+            open={open}
+            onClose={toggleOpen}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+            className="material_dialog"
+          >
+            <DialogTitle id="alert-dialog-title" className="flex justify-center items-center !pb-0">
+              <CheckIcon className="mt-4" />
+            </DialogTitle>
+
+            <CloseIcon className="absolute top-2 right-2 cursor-pointer" onClick={toggleOpen} />
+
+            <DialogContent>
+              <h5 className="">Proposal voted successfully!</h5>
+            </DialogContent>
+            <DialogActions className="flex !justify-center">
+              <Button size="small" variant="kokowai" onClick={toggleOpen}>
+                Accept
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </div>
+      }
     </main>
   );
 };

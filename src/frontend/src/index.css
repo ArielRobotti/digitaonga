@@ -272,3 +272,35 @@ ul.MuiMenu-list li:hover {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Safari and Chrome */
 }
+
+/*
+  ESTILOS PARA EL SCROLLBAR
+*/
+.custom-scrollbar {
+  overflow-y: auto; /* Habilita el desplazamiento vertical */
+}
+
+/* Para navegadores basados en WebKit (Chrome, Safari, Edge) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px; /* Ancho del scrollbar */
+  background-color: transparent; /* Fondo transparente del track */
+}
+
+/* Estilo del "pulgar" o thumb del scrollbar */
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #6b7280; /* Un gris oscuro (puedes usar tus colores de tema) */
+  border-radius: 4px; /* Bordes redondeados */
+  border: 2px solid transparent; /* Separación y estilo del borde */
+  background-clip: padding-box; /* Asegura que el borde no afecte el color del thumb */
+}
+
+/* Opcional: Estilo para el hover */
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #4b5563; /* Color más oscuro al pasar el cursor */
+}
+
+/* Para navegadores Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin; /* Deshabilita el scrollbar por defecto */
+  scrollbar-color: #6b7280 transparent; /* Color del thumb y del track */
+}

@@ -10,9 +10,20 @@ import ProgressBar from "../../../../components/shared/ProgressBar";
 import TextField from "@mui/material/TextField";
 import dayjs from "dayjs";
 import useProposal from "../../../../hooks/useProposal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import useCanister from "../../../../hooks/useCanister"
+import { useAuth } from "@nfid/identitykit/react";
+import { useNavigate } from "react-router";
 
-const ActionProposalCreation = () => {
+const MotionProposalCreation = () => {
+  
+  const navigate = useNavigate()
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if( !user ) { navigate("/") }
+  }, [user])
+
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -20,29 +31,40 @@ const ActionProposalCreation = () => {
   });
   const [open, setOpen] = useState(false);
   const [responseDialog, setResponseDialog] = useState({ success: false, error: false });
-  const { createProposal, creating } = useProposal();
+  const [disabledButtons, setDisableButtons] = useState(false)
+  // const { createProposal, creating } = useProposal();
 
   // TODO (fran): validar datos de form antes de seguir
+  
+
+  const [ dao ] = useCanister()
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
   const handleResponseError = () => setResponseDialog({ success: false, error: true });
   const handleResponseSuccess = () => setResponseDialog({ success: true, error: false });
   const handleCloseResponseDialog = () => setResponseDialog({ success: false, error: false });
-  const toggleDialog = () => setOpen(!open);
+  const toggleDialog = () => setOpen(!open); 
 
   const handleSubmit = async () => {
-    try {
-      await createProposal({
-        title: form.title,
-        description: form.description,
-        kind: { Action: [form.title, form.description, form.deadline?.unix() * 1_000_000_000] },
-        deadline: form.deadline?.unix() * 1_000_000_000,
-      });
-      toggleDialog();
-      handleResponseSuccess();
-    } catch (err) {
-      console.log("createProposal error:", err);
-      handleResponseError();
+    setDisableButtons(true)
+    
+    if ( dao ) {
+      const deadline = form.deadline?.unix() * 1_000_000_000
+      console.log({deadline})
+      try {
+        const response = await dao.create_proposal({
+          title: form.title,
+          description: form.description,
+          kind: {Action: [form.title, form.description, form.deadline?.unix() * 1_000_000_000]},
+          deadline: form.deadline?.unix() * 1_000_000_000,
+        })
+        if(response) {
+          navigate("/proposals")
+        }
+      } catch (e) {
+        console.log(e)
+      }
+
     }
   };
 
@@ -115,10 +137,10 @@ const ActionProposalCreation = () => {
         </DialogContent>
 
         <section className="w-full flex justify-center gap-4 p-4 pb-6">
-          <Button size="small" onClick={toggleDialog}>
+          <Button size="small" onClick={toggleDialog} disabled={disabledButtons}>
             Cancel
           </Button>
-          <Button size="small" variant="kokowai" onClick={handleSubmit} disabled={creating}>
+          <Button size="small" variant="kokowai" onClick={handleSubmit} disabled={disabledButtons}>
             Submit
           </Button>
         </section>
@@ -162,7 +184,7 @@ const ActionProposalCreation = () => {
           className="shadow-[0px_4px_8px_0px_#00000026,0px_1px_3px_0px_#0000004c] border-none"
           variant="kokowai"
           onClick={() => setOpen(true)}
-          disabled={!form.title || !form.description || !form.deadline}
+          disabled={!form.title || !form.description || !form.deadline }
         >
           Create proposal
         </Button>
@@ -172,4 +194,4 @@ const ActionProposalCreation = () => {
   );
 };
 
-export default ActionProposalCreation;
+export default MotionProposalCreation;

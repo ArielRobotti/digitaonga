@@ -1,3 +1,4 @@
+/*
 import Taonga "./taonga/taonga";
 import TaongaTypes "./taonga/types";
 import DaoTypes "./types";
@@ -131,3 +132,4 @@ persistent actor {
   };
 
 };
+*/

@@ -3,7 +3,6 @@ import SharedTypes "./sharedTypes";
 import Taonga "./taonga/taonga";
 import TaongaTypes "./taonga/types";
 import Map "mo:map/Map";
-import Buffer "mo:base/Buffer";
 import Member "member";
 import { phash; ihash } "mo:map/Map";
 import { now } "mo:base/Time";
@@ -75,9 +74,14 @@ module {
       };
       case _ {}
     };
-
+    let deadline = if(proposal.deadline < id) { // Consultar reglas relacionadas a establecer deadline en tiempo pasado
+      id + 48 * 24 * 60 * 60 * 1000000000
+    } else {
+      proposal.deadline
+    };
     let newProposal: Proposal = {
       proposal with
+      deadline; 
       active_members : Nat = Map.size(s.members);
       comments = List.fromArray<SharedTypes.ProposalComment>([]);
       created_at : Int = id;
@@ -85,6 +89,7 @@ module {
       id ;
       likes = [];
       status;
+      partialResults = {approving = 0; disapproving = 0; abstentions = 0};
       votes : [(Principal, SharedTypes.Vote)] = [(caller, #Approve)] // Agregamos el voto positivo del creador
     };
     ignore Map.put<Int, Proposal>(s.proposals, ihash, id, newProposal);
@@ -124,12 +129,25 @@ module {
     };
   };
   
-  public func get_proposal(s: Types.State, id: Int) :?Proposal{
-    Map.get<Int, Proposal>(s.proposals, ihash, id)
+  public func get_proposal(s: Types.State, id: Int) : ?Proposal{
+    switch (Map.get<Int, Proposal>(s.proposals, ihash, id)) {
+      case null null;
+      case ( ?proposal ){
+        let partialResults = getPartialResults(proposal.votes);
+        ?{ proposal with partialResults }
+      }
+    }
   };
 
-  public func get_all_proposals(s: Types.State) : [ProposalPublicData] {
-    Iter.toArray(Map.vals<Int, Proposal>(s.proposals))
+  /// Eliminar esto e incluir creatorName directamente en ProposalPublicData en la proxima migración
+  public type ExtendedProposalPublicData = ProposalPublicData and {creatorName: Text};
+
+  public func get_all_proposals(s: Types.State) : [ExtendedProposalPublicData] {
+    let proposals = Iter.toArray(Map.vals<Int, Proposal>(s.proposals));
+    Array.map<ProposalPublicData, ExtendedProposalPublicData>(
+      proposals,
+      func p = {p with creatorName = Member.get_member_name(s, p.creator)} // esto ya no sería necesario luego de la proxima migracion
+    )
   };
 
   public func edit_proposal(s: Types.State, caller: Principal, id: Int, data: ProposalEditableData ): ?Proposal {
@@ -175,16 +193,17 @@ module {
       case ( ?proposal ) {
         if (canVote(s, caller)) {
           for (vote in proposal.votes.vals()){
-            if(vote.0 == caller){ // Si ya voto retornamos null sin hacer nada
-              return null
+            if(vote.0 == caller){ // Si ya voto retornamos el proposal sin hacer nada
+              return ?proposal
             };
           };
-          let update_votes = Array.tabulate<(Principal, SharedTypes.Vote)>(
-            s.proposals.size() + 1,
-            func i = if (i < s.proposals.size()){proposal.votes[i]} else ((caller, vote))
+          let votes = Array.tabulate<(Principal, SharedTypes.Vote)>(
+            proposal.votes.size() + 1,
+            func i = if (i < proposal.votes.size()){proposal.votes[i]} else ((caller, vote))
           );
-          ignore Map.put<Int, Proposal>(s.proposals, ihash, id, {proposal with votes = update_votes});
-          ?proposal
+          let partialResults = getPartialResults(votes); 
+          ignore Map.put<Int, Proposal>(s.proposals, ihash, id, {proposal with votes; partialResults });
+          ?{proposal with partialResults }
         } else {
           null
         }
@@ -194,9 +213,9 @@ module {
   
   public func like_proposal(s: Types.State, caller: Principal, id: Int, like: ?LikeProposal): ?Proposal {
 
-    if(not can_give_like(Member.get_role_member(s, caller))) { 
-      return null 
-    };
+    // if(not can_give_like(Member.get_role_member(s, caller))) { 
+    //   return null 
+    // };
 
     switch (get_proposal(s, id)){
       case null { return null };
@@ -253,6 +272,20 @@ module {
       }
     }
   };
+
+  public func getPartialResults(votes: [(Principal, SharedTypes.Vote)]): {approving: Nat; disapproving: Nat; abstentions: Nat} {
+    var approving = 0;
+    var disapproving = 0;
+    var abstentions = 0;
+    for ( vote in votes.vals() ) {
+      switch( vote.1 ) {
+        case ( #Approve) { approving += 1 };
+        case ( #Disapprove ) { disapproving +=1 };
+        case ( #Abstain ) { abstentions += 1 };
+      }
+    };
+    {approving; disapproving; abstentions}
+  };
   
   func checkUploadFile(file: Types.File): Bool {
     var counter = 0;
@@ -286,6 +319,8 @@ module {
     }
   };
 
+  
+  /*
   func can_comment_proposal(roleMember: ?SharedTypes.MemberRole): Bool {
     switch roleMember {
       case ( ?#Admin or ?#Guardian ) {
@@ -301,6 +336,8 @@ module {
     };
     return null
   };
+
+  */
   
   func didProposalPass(pr: Proposal): Bool {
     var yes = 0;
@@ -334,7 +371,10 @@ module {
       canisterId;
       remoteActorReference = newTaonga;
       name : Text = init.name;
-      thumbnail = init.thumbnail
+      thumbnail = init.thumbnail;
+      history = init.history;
+      description = init.description;
+      date = now()
     };
     ignore Map.put<Principal, SharedTypes.TaongaMetadata>(s.taongas, phash, canisterId, metadata);
     // Esperar todos los responses juntos
@@ -405,10 +445,25 @@ module {
                 #Err("Member not Found");
               };
               case ( ?member ) {
-                ignore Map.put<Principal, SharedTypes.Member>(s.members, phash, p , { member with role });
+                ignore Member.set_member_role(s, p,role);
                 #Ok(#Guardian({}));
               }
             }
+          };
+          case (#AssignAsObserver((user, _dedline))) {
+            switch (Member.get_member(s, user)) {
+              case (#Ok(_)){
+                ignore Member.set_member_role(s, user, #Observer );
+                #Ok(#Guardian({}));
+              };
+              case (#Err(e)) {
+                #Err("Is Not a Member")
+              }
+            };       
+          };
+          case ( #RemoveFromDao((user, _deadline)) ) {
+            ignore Map.remove<Principal, SharedTypes.Member>(s.members, phash, user );
+            #Ok(#Guardian({}));
           };
           case _ {
             #Ok(#Void);
@@ -424,15 +479,5 @@ module {
     }
   };
 
-  /*
-    deadline : Int;
-    imageID : Nat;
-
-    ->
-    
-    admin : Principal;
-    controller : Principal;
-    tempFileId : Int;
-  */
 
 };

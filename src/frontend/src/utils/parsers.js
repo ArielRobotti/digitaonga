@@ -1,14 +1,15 @@
 import { p2str } from "./functions";
+// import { ProposalPublicData } from "../../declarations/backend/motokoDao.did"
 
 export const proposalsArrayParser = (proposals) => proposals.map(proposalParser);
 
 export const proposalParser = (proposal) => ({
   ...proposal,
-  id: Number(proposal.id),
+  // id: BigInt(proposal.id), // Ya es BigInt
   // title: String,
   // description: String,
   // kind: ProposalType,
-  created_at: Number(proposal.created_at),
+  // created_at: BigInt(proposal.created_at), // Ya es BigInt
   creator: p2str(proposal.creator),
   status: Object.keys(proposal.status)[0],
   // thread: Vec<ProposalComment>,
@@ -19,7 +20,7 @@ export const proposalParser = (proposal) => ({
   likes: proposal.likes.filter((like) => Object.keys(like[1])[0] === "Like").length,
   dislikes: proposal.likes.filter((like) => Object.keys(like[1])[0] === "Dislike").length,
   // votes: HashMap<Principal, Vote>,
-  deadline: Number(proposal.deadline),
+  // deadline: Number(proposal.deadline), // Lo dejamos como BigInt
   active_members: Number(proposal.active_members),
 });
 
