@@ -36,6 +36,26 @@ const ProposalCard = ({
     return progress;
   };
 
+  const countTotalComments = (list) => {
+    let count = 0;
+    let currentList = list;
+    // Iteramos sobre el nivel actual de la lista vinculada (head, tail)
+    while (currentList.length > 0) {
+      // La estructura es: [[headComment, tailList]]
+      const [[headComment, tailList]] = currentList;
+      // 1. Contar el comentario actual (el head)
+      count += 1;
+      // 2. Sumar los subcomentarios recursivamente
+      // Nota: Asegúrate que subComments es de tipo CommentList antes de la recursión.
+      if (headComment.subComments && headComment.subComments.length > 0) {
+        count += countTotalComments(headComment.subComments);
+      }
+      // 3. Mover al siguiente elemento de la lista (el tail)
+      currentList = tailList;
+    }
+    return count;
+  }
+
   const progressPercentage = calculateProgress(startDate, deadlineDate, today);
 
   return (
@@ -132,7 +152,7 @@ const ProposalCard = ({
           </div>
           <div>
             <CommentIcon />
-            <span>{comments.length}</span>
+            <span>{countTotalComments(comments)}</span>
           </div>
         </div>
 

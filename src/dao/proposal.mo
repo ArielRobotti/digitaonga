@@ -75,7 +75,7 @@ module {
       case _ {}
     };
     let deadline = if(proposal.deadline < id) { // Consultar reglas relacionadas a establecer deadline en tiempo pasado
-      id + 48 * 24 * 60 * 60 * 1000000000
+      id + 3 * 24 * 60 * 60 * 1000000000
     } else {
       proposal.deadline
     };
