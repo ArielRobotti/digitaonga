@@ -9,7 +9,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import ProgressBar from "../../../../components/shared/ProgressBar";
 import TextField from "@mui/material/TextField";
 import dayjs from "dayjs";
-import useProposal from "../../../../hooks/useProposal";
+// import useProposal from "../../../../hooks/useProposal";
 import { useState, useEffect } from "react";
 import useCanister from "../../../../hooks/useCanister"
 import { useAuth } from "@nfid/identitykit/react";
@@ -35,14 +35,12 @@ const MotionProposalCreation = () => {
   const [disabledButtons, setDisableButtons] = useState(false)
   // const { createProposal, creating } = useProposal();
 
-  // TODO (fran): validar datos de form antes de seguir
-  
 
   const [ dao ] = useCanister()
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-  const handleResponseError = () => setResponseDialog({ success: false, error: true });
-  const handleResponseSuccess = () => setResponseDialog({ success: true, error: false });
+  // const handleResponseError = () => setResponseDialog({ success: false, error: true });
+  // const handleResponseSuccess = () => setResponseDialog({ success: true, error: false });
   const handleCloseResponseDialog = () => setResponseDialog({ success: false, error: false });
   const toggleDialog = () => setOpen(!open); 
 

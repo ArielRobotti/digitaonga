@@ -71,8 +71,6 @@ module {
     #Array : [Value];
   };
 
-  
-
   public type DigitalTaongaProposal = {
     #UpdateDigitalTaonga : UpdateDigitalTaongaProposal;
     #DeleteDigitalTaonga : Nat64;

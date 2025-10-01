@@ -9,6 +9,7 @@ import useMember from "../../hooks/useMember";
 import useMemberStore from "../../store/useMemberStore"
 import useNotification from "../../store/useNotifications";
 import { useState } from "react";
+import ThemeToggle from "../../components/ThemeToggle"
 
 
 const Header = () => {
@@ -61,7 +62,7 @@ const Header = () => {
       >
         <BellIcon className="cursor-pointer" onClick={() => navigate("/notifications")} />
       </Badge>
-
+      
       {/* Mobile menu */}
       <motion.aside
         initial={{ x: "-100%" }}
@@ -109,6 +110,8 @@ const Header = () => {
           ))}
         </ul>
       </nav>
+
+      <ThemeToggle className="mx-6"/>
 
       <Button
         className="hidden xl:flex w-[173px]! justify-center items-center gap-2"

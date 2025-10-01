@@ -48,6 +48,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       //   targets: [], // **IMPORTANT**: these are *your* canisters, not ledger canisters
       // }}
     >
+      <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] transition-colors">
       <BrowserRouter>
         <Layout>
           <Routes>
@@ -89,6 +90,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           </Routes>
         </Layout>
       </BrowserRouter>
+      </div>
     </IdentityKitProvider>
   </React.StrictMode>
 );

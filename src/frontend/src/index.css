@@ -1,19 +1,59 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap");
 @import "tailwindcss";
 
-@theme {
-  --color-kokowai: #2c131a; /* Dark Red */
-  --color-wheua: #f8f2e2; /* Light Yellow */
-  --color-digitaonga-orange: #9e590a; /* Orange */
-  --color-light-green: #d0ded4; /* Light Green */
-  --color-light-red: #f6dcb9; /* Light Red */
-  --color-gray-100: #f8f8f8; /* Light Gray */
-  --color-gray-200: #e4e4e4; /* Gray */
-  --color-gray-300: #b3b3b3; /* Gray */
-  --color-gray-500: #767676; /* Gray */
-  --color-gray-900: #252525; /* Dark Gray */
+@custom-variant dark (&:where(.dark, .dark *));
 
-  --shadow-digitaonga: 0px 4px 8px 0px rgba(0, 0, 0, 0.15), 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
+/* 2) define tokens (tu @theme ya lo usabas; aquí lo mantenemos claro) */
+@theme {
+  --color-kokowai: #2c131a;
+  --color-wheua: #f8f2e2;
+  --color-digitaonga-orange: #9e590a;
+  --color-light-green: #d0ded4;
+  --color-light-red: #f6dcb9;
+  --color-gray-100: #f8f8f8;
+  --color-gray-200: #e4e4e4;
+  --color-gray-300: #b3b3b3;
+  --color-gray-500: #767676;
+  --color-gray-900: #252525;
+  --shadow-digitaonga: 0px 4px 8px 0px rgba(0,0,0,0.15), 0px 1px 3px 0px rgba(0,0,0,0.3);
+}
+
+/* 3) define variables para light por defecto y overrides para .dark */
+@layer theme {
+  :root {
+    --background: var(--color-gray-100);
+    --foreground: #171717;
+    font-family: "Poppins", serif;
+  }
+
+  /* overrides cuando la clase .dark está activa */
+  .dark {
+    --background: #0a0a0a;
+    --foreground: var(--color-gray-100);
+  }
+}
+
+/* 4) aplica por defecto el background/text usando base layer (evita tener que ponerlo everywhere) */
+@layer base {
+  html, body {
+    background: var(--background);
+    color: var(--foreground);
+    box-sizing: border-box;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+:root {
+  --background: #ffffff !important;
+  --foreground: #171717 !important;
+}
+
+.dark {
+  --background: #110d0d !important;
+  --foreground: #f5f5f5 !important;
+    color: var(--foreground)
 }
 
 :root {
@@ -22,16 +62,17 @@
   font-family: "Poppins", serif;
 }
 
-@media (prefers-color-scheme: light) {
+/* @media (prefers-color-scheme: light) {
   :root {
     --background: #0a0a0a;
     --foreground: var(--color-gray-100);
   }
-}
+} */
+
 
 body {
+  background-color: var(--background);
   color: var(--foreground);
-  background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
   margin: 0;
   padding: 0;
@@ -76,7 +117,7 @@ body {
 
 ul.MuiMenu-list {
   background-color: var(--color-kokowai) !important;
-  color: white !important;
+  /* color: white !important; */
 }
 
 ul.MuiMenu-list li.Mui-selected {
@@ -111,7 +152,7 @@ ul.MuiMenu-list li:hover {
       font-size: 14px;
       line-height: 16px;
       font-weight: normal;
-      color: var(--color-gray-900);
+      /* color: var(--color-gray-900); */
     }
 
     button {
@@ -124,7 +165,7 @@ ul.MuiMenu-list li:hover {
       font-size: 18px;
       line-height: 20px;
       font-weight: normal;
-      color: var(--color-gray-900);
+      /* color: var(--color-gray-900); */
     }
 
     h5 {
@@ -163,7 +204,7 @@ ul.MuiMenu-list li:hover {
       font-size: 14px;
       line-height: 16px;
       font-weight: normal;
-      color: var(--color-gray-900);
+      /* color: var(--color-gray-900); */
     }
 
     button {
@@ -176,7 +217,7 @@ ul.MuiMenu-list li:hover {
       font-size: 16px;
       line-height: 20px;
       font-weight: normal;
-      color: var(--color-gray-900);
+      /* color: var(--color-gray-900); */
     }
 
     h5 {
@@ -215,14 +256,14 @@ ul.MuiMenu-list li:hover {
       font-size: 12px;
       line-height: 16px;
       font-weight: normal;
-      color: var(--color-gray-900);
+      /* color: var(--color-gray-900); */
     }
 
     p {
       font-size: 14px;
       line-height: 16px;
       font-weight: normal;
-      color: var(--color-gray-900);
+      /* color: var(--color-gray-900); */
     }
 
     button {

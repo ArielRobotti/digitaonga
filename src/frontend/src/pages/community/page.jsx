@@ -32,15 +32,6 @@ const Community = () => {
   const { member } = useMemberStore();
   const admin = member.data?.role
 
-  // console.log({ member });
-
-  // if (!member.data || member.data?.role === "Admin")
-  //   return (
-  //     <main className="p-8">
-  //       <h1 className="text-center text-2xl mt-10">404 - Page Not Found</h1>
-  //       <p className="text-center mt-4">Sorry, the page you are looking for does not exist.</p>
-  //     </main>
-  //   );
 
   // Dialog
   const toggleDialog = () => setOpen(!open);
