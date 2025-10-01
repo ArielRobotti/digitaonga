@@ -9,15 +9,8 @@ module {
     dataSize : Nat;
     chunksQty : Nat;
     thumbnail: Blob;
+    // standardMetadata: Metadata //Compatibilidad con standars icrc7
   };
-
-  // public type TaongaMetadata = {
-  //   id: Nat;
-  //   canisterId: Principal;
-  //   remoteActorReference: Taonga; // Referencia circular
-  //   name: Text;
-  //   // image: ?Blob;
-  // };
 
   public type AssetMetadata = {
     name : Text;
@@ -27,8 +20,20 @@ module {
     image : ?Blob;
     chunkQty: Nat;
     symbol : Text;
-    creation_date: Int
+    creation_date: Int;
+    // standardMetadata: Metadata;  //Compatibilidad con standars icrc7
   };
+
+  type Value = {
+    #Int : Int;
+    #Metadata : Metadata;
+    #Nat : Nat;
+    #Blob : Blob;
+    #Text : Text;
+    #Array : [Value];
+  };
+
+  public type Metadata = [(Text, Value)] ;
   
 
   public type GetAssetResponse = {

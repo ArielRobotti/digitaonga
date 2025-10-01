@@ -50,32 +50,6 @@ fi
 
 dfx identity use 000Admin
 
-dfx canister call motokoDao create_proposal "(
-  record {
-    title = \"From CLI. Admin push GuardianProposal\";
-    kind = variant {
-      Guardian = variant {
-        AssignRole = record {
-          member = principal \"$PrincipalGuardian01\";
-          role = variant { Guardian };
-          deadline = 0 : int;
-        }
-      }
-    };
-    description = \"Test Admin proposal without Guardians then proposal is automaticaly approved\";
-    deadline = 0 : int;
-  },
-)"
-
-echo "... Refreshing the status of the proposals and performing the corresponding executions"
-dfx canister call motokoDao refresh_all_proposals
-
-updatedRoleSecondMember=$(dfx canister call motokoDao get_member "(principal \"$PrincipalGuardian01\")")
-if echo "$updatedRoleSecondMember" | grep -q 'role = variant { Guardian }'; then
-    echo "✅ Successful update role test: The Admin successfully granted the Guardian role to the second member via proposal."
-else
-    echo "❌ Update Role test failed: The second member's role is not Guardian."
-fi
 
 # echo "Test push proposal to create taonga from admin whitout votation instance"
 
@@ -102,7 +76,7 @@ fi
 # )")
 # echo "Response from create_proposal: $CreateTaongaProposal"
 
-# # Corrected variable assignment
+# Corrected variable assignment
 # FileId=$(echo "$CreateTaongaProposal" | grep -o 'id = [0-9_]\+' | head -n 1 | awk '{print $NF}' | tr -d '_')
 # echo "Extracted ID: $FileId"
 
@@ -118,7 +92,7 @@ fi
 #   },
 # )"
 
-# echo "... Refreshing the status of the proposals and performing the corresponding executions"
+echo "... Refreshing the status of the proposals and performing the corresponding executions"
 # echo "⏳ Waiting for 10 seconds before uploading file chunk..."
 # sleep 10
 
@@ -151,52 +125,52 @@ dfx identity use 000Guardian6
 export PrincipalGuardian06=$(dfx identity get-principal)
 dfx canister call motokoDao create_member
 
-# dfx identity list | grep -q "^000Guardian7$" || dfx identity new 000Guardian7
-# dfx identity use 000Guardian7
-# export PrincipalGuardian07=$(dfx identity get-principal)
-# dfx canister call motokoDao create_member
+dfx identity list | grep -q "^000Guardian7$" || dfx identity new 000Guardian7
+dfx identity use 000Guardian7
+export PrincipalGuardian07=$(dfx identity get-principal)
+dfx canister call motokoDao create_member
 
-# dfx identity list | grep -q "^000Guardian8$" || dfx identity new 000Guardian8
-# dfx identity use 000Guardian8
-# export PrincipalGuardian08=$(dfx identity get-principal)
-# dfx canister call motokoDao create_member
+dfx identity list | grep -q "^000Guardian8$" || dfx identity new 000Guardian8
+dfx identity use 000Guardian8
+export PrincipalGuardian08=$(dfx identity get-principal)
+dfx canister call motokoDao create_member
 
-# dfx identity list | grep -q "^000Guardian9$" || dfx identity new 000Guardian9
-# dfx identity use 000Guardian9
-# export PrincipalGuardian09=$(dfx identity get-principal)
-# dfx canister call motokoDao create_member
+dfx identity list | grep -q "^000Guardian9$" || dfx identity new 000Guardian9
+dfx identity use 000Guardian9
+export PrincipalGuardian09=$(dfx identity get-principal)
+dfx canister call motokoDao create_member
 
-# dfx identity list | grep -q "^000Guardian10$" || dfx identity new 000Guardian10
-# dfx identity use 000Guardian10
-# export PrincipalGuardian10=$(dfx identity get-principal)
-# dfx canister call motokoDao create_member
+dfx identity list | grep -q "^000Guardian10$" || dfx identity new 000Guardian10
+dfx identity use 000Guardian10
+export PrincipalGuardian10=$(dfx identity get-principal)
+dfx canister call motokoDao create_member
 
-# dfx identity list | grep -q "^000Guardian11$" || dfx identity new 000Guardian11
-# dfx identity use 000Guardian11
-# export PrincipalGuardian11=$(dfx identity get-principal)
-# dfx canister call motokoDao create_member
+dfx identity list | grep -q "^000Guardian11$" || dfx identity new 000Guardian11
+dfx identity use 000Guardian11
+export PrincipalGuardian11=$(dfx identity get-principal)
+dfx canister call motokoDao create_member
 
-# dfx identity use 000Admin
+dfx identity use 000Admin
 
-# echo " Admin 👉 granting them 🛡 Guardian 🛡 role to activate the consensus mechanism"
+echo " Admin 👉 granting them 🛡 Guardian 🛡 role to activate the consensus mechanism"
 
-# fallos=$(dfx canister call motokoDao batch_update_member_role "(
-#   vec {
-#     principal \"$PrincipalGuardian02\";
-#     principal \"$PrincipalGuardian03\";
-#     principal \"$PrincipalGuardian04\";
-#     principal \"$PrincipalGuardian05\";
-#     principal \"$PrincipalGuardian06\";
-#     principal \"$PrincipalGuardian07\";
-#     principal \"$PrincipalGuardian08\";
-#     principal \"$PrincipalGuardian09\";
-#     principal \"$PrincipalGuardian10\";
-#     principal \"$PrincipalGuardian11\";
-#   },
-#   variant { Guardian },
-# )")
+fallos=$(dfx canister call motokoDao batch_update_member_role "(
+  vec {
+    principal \"$PrincipalGuardian02\";
+    principal \"$PrincipalGuardian03\";
+    principal \"$PrincipalGuardian04\";
+    principal \"$PrincipalGuardian05\";
+    principal \"$PrincipalGuardian06\";
+    principal \"$PrincipalGuardian07\";
+    principal \"$PrincipalGuardian08\";
+    principal \"$PrincipalGuardian09\";
+    principal \"$PrincipalGuardian10\";
+    principal \"$PrincipalGuardian11\";
+  },
+  variant { Guardian },
+)")
 
-# echo "👌 Cantidad de fallos: $fallos "
+echo "👌 Cantidad de fallos: $fallos "
 
 # echo " Admin creates a new proposal  "
 # now=$(echo $(dfx canister call motokoDao time) | awk '{print $1}' | tr -d '()_')

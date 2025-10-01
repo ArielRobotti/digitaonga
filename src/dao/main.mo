@@ -13,6 +13,7 @@ import Nat "mo:base/Nat";
 import Principal "mo:base/Principal";
 import { now } "mo:base/Time";
 import List "mo:base/List";
+import Error "mo:base/Error";
 
 
 persistent actor {
@@ -45,9 +46,7 @@ persistent actor {
     }
   };
 
-     
-  ////////////////////// Migracion de funciones existentes /////////
-  //////////////////////////////// Done ////////////////////////////
+  ////////////////////////// Member functions CRUD and roles managment ////////////////////////////////
 
   public shared ({ caller }) func create_member() : async SharedTypes.Member {
     assert(not Principal.isAnonymous(caller));
@@ -90,7 +89,7 @@ persistent actor {
   public shared ({ caller }) func batch_update_member_role(principals : [Principal], role : SharedTypes.MemberRole) : async [(Principal, SharedTypes.MemberError)] {
     assert(Member.is_admin(state, caller));
     print(debug_show(caller));
-    //TODO. Regla: los admin pueden otorgar roles solo cuando no hay la cantidad suficiente de guardians en la DAO
+    // TODO. Regla: los admin pueden otorgar roles solo cuando no hay la cantidad suficiente de guardians en la DAO
     // En caso de que haya la cantidad de guardians requerida, generar una proposal (Nueva variante #Guardian{#BatchUpdateRoles})
     Member.batch_update_member_role(state, principals, role);
     // TODO. Registrar Fecha, Cambio y autor del autor del cambio?
@@ -113,16 +112,17 @@ persistent actor {
   ///////////////////////////// CRUD Proposals ///////////
 
   public shared ({ caller }) func create_proposal(args: Proposal.NewProposalArgs) : async SharedTypes.Proposal {
-    print("Proposal request from " # debug_show(caller));
-    assert(not Principal.isAnonymous(caller));
-    let callerRole = Member.get_role_member(state, caller);
-    assert(callerRole == ?#Admin or callerRole == ?#Guardian); //
-    Proposal.new_proposal(state, caller, args)
+    let member = Member.get_member(state, caller);
+    switch member {
+      case (#Err(e)) { throw Error.reject("Member not found or invalid: " # debug_show(e)); };
+      case (#Ok(member)) {
+        assert(member.role == #Admin or member.role== #Guardian);
+        Proposal.new_proposal(state, member, args)
+      }
+    }
   };
 
   public shared ({ caller }) func uploadFileChunk({fileId: Int; chunk: Blob; index: Nat; retry: Bool}): async {#Ok; #Err}{
-    print("recibiendo chunk nro: " # debug_show(index));
-    assert(not Principal.isAnonymous(caller));
     Proposal.addChunk({
       s = state;
       caller;
@@ -133,14 +133,24 @@ persistent actor {
     })
   };
 
-  public query ({ caller}) func get_proposal(id: Int): async ?SharedTypes.Proposal { // En ProposalPublicData se omiten los votos y el creador
+  type ProposalResponse = {
+    #Ok: {
+      proposal: SharedTypes.Proposal;
+      callerVote: ?SharedTypes.Vote;
+    };
+    #Err: Text;
+  };
+
+  public query ({ caller}) func get_proposal(id: Int): async ProposalResponse { // En ProposalPublicData se omiten los votos y el creador
     // assert(not Principal.isAnonymous(caller));
-    let proposal = Proposal.get_proposal(state, id);
-    switch proposal {
-      case null { null};
+    let proposalOpt = Proposal.get_proposal(state, id);
+    switch proposalOpt {
+      case null { 
+        #Err("Proposal not found")
+      };
       case (?proposal) {
-        let partialResults = Proposal.getPartialResults(proposal.votes);
-        ?{ proposal with votes = []; partialResults }
+        let callerVote = getMemberVote(proposal.votes, caller);
+        #Ok({ callerVote; proposal});
       }
     }
   };
@@ -155,13 +165,22 @@ persistent actor {
     Proposal.delete_proposal(state, caller, id);
   };
   
-  public query func get_all_proposals() : async [Proposal.ExtendedProposalPublicData] {
+  public query func get_all_proposals() : async [SharedTypes.ProposalPublicData] {
     Proposal.get_all_proposals(state);
   };
   
   public shared ({ caller }) func vote_proposal(id : Int, vote : SharedTypes.Vote) : async ?SharedTypes.ProposalPublicData {
     assert(not Principal.isAnonymous(caller));
     Proposal.vote_proposal(state, caller, id, vote)
+  };
+
+  func getMemberVote(votes: [(Principal, SharedTypes.Vote)], p: Principal): ?SharedTypes.Vote {
+    for (vote in votes.vals()){
+          if(vote.0 == p) {
+            return ?vote.1
+          }
+        };
+        null
   };
 
   public shared query ({ caller }) func get_my_vote(id: Nat): async ?SharedTypes.Vote{
@@ -237,20 +256,11 @@ persistent actor {
     return false
   };
 
-  // like_proposal : shared (Nat, LikeProposal) -> async ();
-  type ProposalPublicDataExtended = SharedTypes.ProposalPublicData and {creatorName: Text};
-
-  public shared ({ caller }) func like_proposal(id : Nat, like : SharedTypes.LikeProposal) : async ?ProposalPublicDataExtended{
+  public shared ({ caller }) func like_proposal(id : Nat, like : SharedTypes.LikeProposal) : async ?SharedTypes.Proposal{
     assert(not Principal.isAnonymous(caller));
-    switch (Proposal.like_proposal(state, caller, id, ?like)) {
-      case null null;
-      case (?proposal) {
-        ?{proposal with creatorName = Member.get_member_name(state, proposal.creator)}
-      }
-    }
+    Proposal.like_proposal(state, caller, id, ?like)
   };
 
-  // new_comment_proposal : shared (Nat, Text) -> async ();
 
   ////////////////   En la proxima migracion incluir la lista de comments en cada proposal...  /////////////////////////////////////
 
@@ -262,22 +272,23 @@ persistent actor {
 
   func canComment(p: Principal): Bool {
     switch (Member.get_role_member(state, p)) {
-      case ( ?#Admin or ?#Guardian) { return true };
+      case ( ?#Admin or ?#Guardian or ?#Observer) { return true };
       case _ false;
     }
   };
 
   public shared ({ caller }) func new_comment_proposal({proposalId : Int; msg : Text; path: [Int]}) : async CommentList {
-    switch(Map.get<Int, SharedTypes.Proposal>(state.proposals, ihash, proposalId)) {
+    switch(Proposal.get_proposal(state, proposalId)) {
       case null { return null };
-      case _ { 
-        var currentList = switch (Map.get<Int, CommentList>(comments, ihash, proposalId)) {
-          case null { List.nil<Comment.Comment>() };
-          case ( ?list ) { list }
-        };
+      case (?proposal) {
         if (not canComment(caller)){
-          return null;
+          return proposal.comments;
         };
+        // var currentList = switch (Map.get<Int, CommentList>(comments, ihash, proposalId)) {
+        //   case null { List.nil<Comment.Comment>() };
+        //   case ( ?list ) { list }
+        // };
+        var comments = proposal.comments;
 
         let newComment: Comment.Comment = {
           msg;
@@ -288,12 +299,28 @@ persistent actor {
           subComments = List.nil<Comment.Comment>()
         };
 
-        currentList := Comment.push(currentList, newComment, path);
-        ignore Map.put<Int, CommentList>(comments, ihash, proposalId, currentList);
-        currentList;
+        comments := Comment.push(comments, newComment, path);
+        ignore Map.put<Int, SharedTypes.Proposal>(state.proposals, ihash, proposalId, { proposal with comments});
+
+        // ignore Map.put<Int, CommentList>(comments, ihash, proposalId, currentList);
+        comments;
       }
     } 
   };
+
+  // public shared ({ caller }) func new_comment_proposal({proposalId : Int; msg : Text; path: [Int]}): async CommentList {
+  //   switch(Proposal.get_proposal(state, proposalId)) {
+  //     case null null;
+  //     case ( ?proposal ){
+  //       if (canComment(caller)){ 
+
+  //       } else {
+  //         return proposal.comments
+  //       }
+        
+  //     }
+  //   }
+  // };
 
   public query func loadComments( id: Int ): async CommentList {
     switch(Map.get<Int, CommentList>(comments, ihash, id)){
