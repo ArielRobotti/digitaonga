@@ -31,6 +31,8 @@ const GuardianProposalCreation = () => {
   const [form, setForm] = useState({
     principal: "",
     deadline: dayjs(new Date().toDateString()),
+    impact: "",
+    description:"",
   });
   const [open, setOpen] = useState(false);
   const [responseDialog, setResponseDialog] = useState({ success: false, error: false });
@@ -56,8 +58,11 @@ const GuardianProposalCreation = () => {
           : { RemoveFromDao: [Principal.fromText(form.principal), deadline ]}
 
       const proposalArgs = {
-        title: "Guardian proposal",
-        description: "Proposal for role assignment or user remove",
+        title: selectedValue,
+        description: form.description,
+        extendedData: [],
+        impact: form.impact,
+        extendedData: [],
         kind: {
           Guardian: guardianSelectedAction
         },
@@ -89,20 +94,40 @@ const GuardianProposalCreation = () => {
 
   return (
     <main>
-      <section className="p-6">
-        <h4 className="uppercase">Guardian proposal</h4>
+      <section className="grid md:place-items-center p-6">
+        <h4 className="uppercase mb-4">Guardian proposal</h4>
         <p>
           Used to add, update, or remove a Guardian. Requires an approved vote before execution.
         </p>
       </section>
 
-      <section className="grid md:place-items-center gap-8 p-12">
+      <section className="grid md:place-items-center gap-8 p-6">
         <TextField
           label="Principal ID"
           variant="outlined"
           onChange={handleChange}
           value={form.principal}
           name="principal"
+          required
+          className="material_input md:max-w-[500px] md:w-full"
+        />
+
+        <TextField
+          label="Foundations"
+          variant="outlined"
+          onChange={handleChange}
+          value={form.description}
+          name="description"
+          required
+          className="material_input md:max-w-[500px] md:w-full"
+        />
+
+        <TextField
+          label="Impact"
+          variant="outlined"
+          onChange={handleChange}
+          value={form.impact}
+          name="impact"
           required
           className="material_input md:max-w-[500px] md:w-full"
         />
@@ -120,9 +145,9 @@ const GuardianProposalCreation = () => {
         </LocalizationProvider>
       </section>
 
-      <section className="grid gap-4 p-10 mb-40">
+      <section className="grid place-items-center gap-4 p-10 ">
         <h4 className="uppercase">What action should be proposed?</h4>
-        <p>Choose the type of role change you want to propose.</p>
+        {/* <p className="text-red-900">Choose the type of role change you want to propose.</p> */}
 
         <div className="flex flex-col md:flex-row md:flex-wrap justify-center gap-4">
           {guardianProposalActions.map((p) => (
@@ -212,7 +237,7 @@ const GuardianProposalCreation = () => {
         </section>
       </Dialog>
 
-      <div className="fixed bottom-[72px] inset-x-0 grid gap-8 z-0 place-items-center">
+      <div className="grid place-items-center">
         <Button
           className="shadow-[0px_4px_8px_0px_#00000026,0px_1px_3px_0px_#0000004c] border-none"
           variant="kokowai"

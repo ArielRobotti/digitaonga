@@ -35,7 +35,7 @@ const DaoCalendar = () => {
   const parseProposals = (proposalArray) => {
     return proposalArray.map(pr => {
 
-      const startMs = Number(pr.created_at) / 1000000;
+      const startMs = Number(pr.id) / 1000000;
       const endMs = Number(pr.deadline) / 1000000;
       return {
         start: new Date(startMs),
@@ -60,11 +60,11 @@ const DaoCalendar = () => {
         style: {
           backgroundColor: '#6f92a08a', 
           color: 'white',
-          borderRadius: "10px"
+          borderRadius: "10px",
         },
       };
     } else {
-      return {};
+      return {  };
     }
   };
 

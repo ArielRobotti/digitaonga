@@ -12,10 +12,11 @@ interface CommentListProps {
   commentList: CommentList; // Lista vinculada
   currentPath: bigint[]; // Path acumulado hasta el padre de esta lista
   onNewComment: OnNewCommentHandler;
+  canComment: Boolean
 }
 
 // --- Componente para un solo comentario y su botón de respuesta ---
-const CommentThread: React.FC<{ comment: Comment, path: bigint[], onNewComment: OnNewCommentHandler }> = ({ comment, path, onNewComment }) => {
+const CommentThread: React.FC<{ comment: Comment, path: bigint[], onNewComment: OnNewCommentHandler, canComment: Boolean }> = ({ comment, path, onNewComment, canComment }) => {
 
     const commentId = (comment as any).created_at; // Uso 'as any' solo si el 'id' no está tipado pero sabes que existe.
     
@@ -81,6 +82,7 @@ const CommentThread: React.FC<{ comment: Comment, path: bigint[], onNewComment: 
                 <span className="text-gray-500 text-xs ml-auto">{formatDate(comment.created_at)}</span>
             </div>
             <p className="ml-4 text-gray-800 text-base mb-0 max-h-20 overflow-y-scroll max-h-40">{comment.msg}</p>
+            {canComment && <>
             {isReplying && (
                 <div className="">
                     <textarea
@@ -89,7 +91,7 @@ const CommentThread: React.FC<{ comment: Comment, path: bigint[], onNewComment: 
                         value={replyText}
                         onChange={(e) => setReplyText(e.target.value)}
                         placeholder={`Reply to ${cretorPrincipalShort}`}
-                    />
+                        />
                     <div className='flex justify-end'>
                         <button className="w-16 bg-blue-300 p-2 rounded-md cursor-pointer" onClick={handleCancel}>cancel</button>
                         <button className="w-16 bg-blue-300 p-2 mx-2 rounded-md cursor-pointer" onClick={handleReplySubmit}>send</button>
@@ -100,6 +102,7 @@ const CommentThread: React.FC<{ comment: Comment, path: bigint[], onNewComment: 
             {!isReplying && <button className=" m-2 mt-0 rounded-md ml-auto cursor-pointer" onClick={() => setIsReplying(!isReplying)}>
                 Reply
             </button>}
+            </>}
             
             
 
@@ -110,7 +113,8 @@ const CommentThread: React.FC<{ comment: Comment, path: bigint[], onNewComment: 
                     <CommentListRenderer 
                       commentList={comment.subComments} 
                       currentPath={replyPath} // El path de los hijos incluye el ID del padre
-                      onNewComment={onNewComment} 
+                      onNewComment={onNewComment}
+                      canComment={canComment}
                     />
                 </div>
             )}
@@ -119,7 +123,7 @@ const CommentThread: React.FC<{ comment: Comment, path: bigint[], onNewComment: 
 }
 
 // --- Componente de Renderizado de Lista (Iterador Recursivo) ---
-export const CommentListRenderer: React.FC<CommentListProps> = ({ commentList, currentPath, onNewComment }) => {
+export const CommentListRenderer: React.FC<CommentListProps> = ({ commentList, currentPath, onNewComment, canComment }) => {
     // Caso base: La lista es el array vacío '[]' (fin de la lista)
     if (commentList && commentList.length === 0) {
         return null;
@@ -132,14 +136,16 @@ export const CommentListRenderer: React.FC<CommentListProps> = ({ commentList, c
             <CommentThread 
                 comment={headComment} 
                 path={currentPath} 
-                onNewComment={onNewComment} 
+                onNewComment={onNewComment}
+                canComment={canComment}
             />
 
             {/* 2. Llama recursivamente para renderizar el resto de la lista (tailList) */}
             <CommentListRenderer 
                 commentList={tailList} // tailList es la siguiente CommentList
                 currentPath={currentPath} // El path se mantiene para los comentarios del MISMO nivel
-                onNewComment={onNewComment} 
+                onNewComment={onNewComment}
+                canComment={canComment}
             />
         </>
     );

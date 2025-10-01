@@ -8,22 +8,13 @@ import { useNavigate } from "react-router";
 import { useAuth } from "@nfid/identitykit/react";
 
 const ProposalCard = ({
-  title = "Proposal name",
-  status = "Open",
-  id = 1,
-  creator = "akdfa...cai",
-  deadline,
-  creatorName,
-  likes,
-  dislikes,
-  comments,
-  description = "This is a proposal description",
-  className = "",
+  title, status, id, creator, deadline, creatorName,
+  likes, dislikes, comments, description, className = "",
 } = {}) => {
   const navigate = useNavigate();
   const { user } = useAuth()
 
-  const startDate = new Date(Number(id / 1000000n))
+  const startDate = new Date(Number(id / 1000000n)) // El id es el timestamp de creacion del proposal
   const deadlineDate = new Date(Number(deadline / 1000000n))
   const today = new Date()
   
@@ -136,7 +127,7 @@ const ProposalCard = ({
       </section>
 
       <section className="hidden sm:block py-4 px-6">
-        <h5>Impact</h5>
+        <h5>Description</h5>
         <p>{description}</p>
       </section>
 
