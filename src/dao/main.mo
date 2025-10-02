@@ -14,6 +14,7 @@ import Principal "mo:base/Principal";
 import { now } "mo:base/Time";
 import List "mo:base/List";
 import Error "mo:base/Error";
+import ManagerCanister "./interfaces/ic-management-interface";
 
 
 persistent actor {
@@ -23,11 +24,27 @@ persistent actor {
   
   let state: Types.State = Types.initState({cyclesForTaongaDeploy});
 
+  // Registro de eventos y cambios DAO
+
+
   public query func time(): async Int {
     now()
   };
 
   var updatingProposals: Bool = false;
+
+
+  ///// Admin functions /////////////
+
+  public shared ({ caller }) func addControllerToTaongasCanisterClass(p: Principal): async [Principal]{
+    assert (Member.is_admin(state, caller));
+    let canistersId = Iter.toArray(Map.keys<Principal, SharedTypes.TaongaMetadata>(state.taongas));
+    for (tcanisterId in canistersId.vals()) {
+      await ManagerCanister.addController(tcanisterId, p)
+    };
+    canistersId
+  };
+  
 
   //////////// Clean functions ////////////
   public shared ({ caller }) func removeFailedProposals(id: Int): async {#Ok; #Err}{
