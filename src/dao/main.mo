@@ -44,6 +44,17 @@ persistent actor {
     };
     canistersId
   };
+
+  public shared ({ caller }) func pushMembers(members: [SharedTypes.Member]): async (){
+    assert(Member.is_admin(state, caller));
+    for(member in members.vals()) {
+      ignore Map.put<Principal, SharedTypes.Member>(
+        state.members, 
+        phash, 
+        member.principal, 
+        member)
+    }
+  };
   
 
   //////////// Clean functions ////////////
