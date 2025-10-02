@@ -80,6 +80,10 @@ body {
   min-height: 100vh;
 }
 
+textarea {
+  background-color: var(--background);
+  color: var(--foreground);
+}
 /* Removed main margin-top as it's now handled by Layout component */
 
 .custom__button:disabled {
@@ -89,6 +93,7 @@ body {
 .shadow__digitaonga {
   box-shadow: var(--shadow-digitaonga);
 }
+
 
 /* material ui */
 

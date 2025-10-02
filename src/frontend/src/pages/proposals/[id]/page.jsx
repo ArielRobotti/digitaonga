@@ -25,6 +25,7 @@ import { useAuth } from "@nfid/identitykit/react";
 import { useParams } from "react-router";
 import useCanister from "../../../hooks/useCanister";
 import { useState, useEffect, useRef } from "react";
+import ProposalVotingStatus from "../../../components/ProposalVotingStatus";
 // import { useNavigate } from "react-router";
 // import ProposalComment from "../../../components/proposals/ProposalComment";
 // import { Principal } from "@dfinity/principal";
@@ -188,6 +189,14 @@ const ProposalDetail = () => {
                   </div> */}
               </div>
             </div>
+            <ProposalVotingStatus 
+              activeMembers={proposal.active_members}
+              partialResults = {proposal.partialResults}
+              deadline={proposal.deadline}
+              // participationRequired={20}
+              status={Object.keys(proposal.status)[0]}
+              majorityRequired={50}
+            />
 
 
             <div className="flex flex-col items-center gap-2 md:gap-4">

@@ -435,7 +435,7 @@ const DigitalTaongaProposalCreation = () => {
       ) : action ? (
         SelectedProposal()
       ) : (
-        <section className="flex flex-col md:flex-row md:flex-wrap md:justify-center gap-4 p-10 md:p-0 md:max-w-[800px] md:mx-auto mb-40">
+        <section className="flex flex-col md:flex-row md:flex-wrap md:justify-center gap-4 p-10 md:p-0 md:max-w-[800px] md:mx-auto mb-10">
           {digitalTaongaProposals.map((p) => (
             <ActionCard
               key={p.title}

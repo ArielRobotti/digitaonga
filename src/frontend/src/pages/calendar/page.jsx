@@ -35,7 +35,7 @@ const DaoCalendar = () => {
   const parseProposals = (proposalArray) => {
     return proposalArray.map(pr => {
 
-      const startMs = Number(pr.id) / 1000000;
+      const startMs = Number(pr.id) / 1000000 ;
       const endMs = Number(pr.deadline) / 1000000;
       return {
         start: new Date(startMs),
