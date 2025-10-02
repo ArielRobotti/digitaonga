@@ -4,16 +4,8 @@ import Array "mo:base/Array";
 // import Nat64 "mo:base/Nat64";
 
 module {
-  type ProposalComment = SharedTypes.ProposalComment; // Obsoleto.
 
-  public type Comment = {
-    msg : Text;
-    creator : Principal;
-    created_at : Int; // Funciona como id
-    likes : [Principal];
-    dislikes : [Principal];
-    subComments : List.List<Comment>;
-  };
+  public type Comment = SharedTypes.Comment; 
 
   func pushBack<T>(input : T, list : List.List<T>) : List.List<T> {
     switch list {

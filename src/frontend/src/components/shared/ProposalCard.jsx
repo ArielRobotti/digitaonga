@@ -8,22 +8,13 @@ import { useNavigate } from "react-router";
 import { useAuth } from "@nfid/identitykit/react";
 
 const ProposalCard = ({
-  title = "Proposal name",
-  status = "Open",
-  id = 1,
-  creator = "akdfa...cai",
-  deadline,
-  creatorName,
-  likes,
-  dislikes,
-  comments,
-  description = "This is a proposal description",
-  className = "",
+  title, status, id, creator, deadline, creatorName,
+  likes, dislikes, comments, description, className = "",
 } = {}) => {
   const navigate = useNavigate();
   const { user } = useAuth()
 
-  const startDate = new Date(Number(id / 1000000n))
+  const startDate = new Date(Number(id / 1000000n)) // El id es el timestamp de creacion del proposal
   const deadlineDate = new Date(Number(deadline / 1000000n))
   const today = new Date()
   
@@ -35,6 +26,26 @@ const ProposalCard = ({
     const progress = Math.min(100, Math.max(0, (elapsedDuration / totalDuration) * 100));
     return progress;
   };
+
+  const countTotalComments = (list) => {
+    let count = 0;
+    let currentList = list;
+    // Iteramos sobre el nivel actual de la lista vinculada (head, tail)
+    while (currentList.length > 0) {
+      // La estructura es: [[headComment, tailList]]
+      const [[headComment, tailList]] = currentList;
+      // 1. Contar el comentario actual (el head)
+      count += 1;
+      // 2. Sumar los subcomentarios recursivamente
+      // Nota: Asegúrate que subComments es de tipo CommentList antes de la recursión.
+      if (headComment.subComments && headComment.subComments.length > 0) {
+        count += countTotalComments(headComment.subComments);
+      }
+      // 3. Mover al siguiente elemento de la lista (el tail)
+      currentList = tailList;
+    }
+    return count;
+  }
 
   const progressPercentage = calculateProgress(startDate, deadlineDate, today);
 
@@ -116,7 +127,7 @@ const ProposalCard = ({
       </section>
 
       <section className="hidden sm:block py-4 px-6">
-        <h5>Impact</h5>
+        <h5>Description</h5>
         <p>{description}</p>
       </section>
 
@@ -132,7 +143,7 @@ const ProposalCard = ({
           </div>
           <div>
             <CommentIcon />
-            <span>{comments.length}</span>
+            <span>{countTotalComments(comments)}</span>
           </div>
         </div>
 

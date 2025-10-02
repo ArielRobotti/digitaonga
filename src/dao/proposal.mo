@@ -29,8 +29,10 @@ module {
   public type NewProposalArgs = {
     title: Text;
     description: Text;
+    impact: Text;
     kind: SharedTypes.ProposalType;
     deadline: Int;
+    extendedData: SharedTypes.Metadata;
   };
 
   public type ProposalEditableData = {
@@ -50,7 +52,6 @@ module {
         //TODO otros datos
       };
       #UpdatedTaonga: { /*TODO*/ };
-
       #Action: { /*TODO*/ };
       #Guardian: { /*TODO*/ };
       #Motion: { /*TODO*/ };
@@ -60,37 +61,39 @@ module {
 
   /////////////////////// Public Functions ////////////////////////////
 
-  public func new_proposal(s: Types.State, caller: Principal, proposal: NewProposalArgs) : Proposal {
-    let id = now(); // TODO Validar este cambio
+  public func new_proposal(s: Types.State, member: SharedTypes.Member, proposal: NewProposalArgs) : Proposal {
+    let id = now();
     var status: SharedTypes.ProposalStatus = #Open;
 
     // Si el proposal es para crear un Taonga, inicializar un archivo de volcado en el state con el mismo id
     switch (proposal.kind) {
       case (#DigitalTaonga(#CreateDigitalTaonga(args))) {
         let data = Array.init<Blob>(args.chunksQty, "");
-        let newFile: Types.File = {owner = caller; data; size = args.dataSize};
+        let newFile: Types.File = {owner = member.principal; data; size = args.dataSize};
         ignore Map.put<Int, Types.File>(s.tempFiles, ihash, id, newFile);
         status := #UploadFileRequired;
       };
       case _ {}
     };
+
     let deadline = if(proposal.deadline < id) { // Consultar reglas relacionadas a establecer deadline en tiempo pasado
-      id + 48 * 24 * 60 * 60 * 1000000000
+      id + 3 * 24 * 60 * 60 * 1000000000
     } else {
       proposal.deadline
     };
+
     let newProposal: Proposal = {
       proposal with
-      deadline; 
-      active_members : Nat = Map.size(s.members);
-      comments = List.fromArray<SharedTypes.ProposalComment>([]);
-      created_at : Int = id;
-      creator : Principal = caller;
       id ;
+      deadline ; 
+      active_members = Map.size(s.members);
+      comments = List.fromArray<SharedTypes.Comment>([]);
+      creator = member.principal;
+      creatorName = member.name;
       likes = [];
-      status;
+      status ;
       partialResults = {approving = 0; disapproving = 0; abstentions = 0};
-      votes : [(Principal, SharedTypes.Vote)] = [(caller, #Approve)] // Agregamos el voto positivo del creador
+      votes = [(member.principal, #Approve)] // Agregamos el voto positivo del creador
     };
     ignore Map.put<Int, Proposal>(s.proposals, ihash, id, newProposal);
 
@@ -103,7 +106,7 @@ module {
       case ( ?file ) {
         if (caller == file.owner) {
           file.data[index] := chunk;
-          //----------- TODO revisar y refinar esta comprobacion simulando un caso de fallo: (omitiendo el envio de un chunk)
+          
           if(retry or index + 1 == file.data.size()){ // Verificamos la completitud cuando se recibe el ultimo chunk o cuando se manda un chunk en un reintento
             let complet = checkUploadFile(file);
             print("checkUploadFile -> " # debug_show(complet));
@@ -140,14 +143,10 @@ module {
   };
 
   /// Eliminar esto e incluir creatorName directamente en ProposalPublicData en la proxima migración
-  public type ExtendedProposalPublicData = ProposalPublicData and {creatorName: Text};
+  // public type ExtendedProposalPublicData = ProposalPublicData and {creatorName: Text};
 
-  public func get_all_proposals(s: Types.State) : [ExtendedProposalPublicData] {
-    let proposals = Iter.toArray(Map.vals<Int, Proposal>(s.proposals));
-    Array.map<ProposalPublicData, ExtendedProposalPublicData>(
-      proposals,
-      func p = {p with creatorName = Member.get_member_name(s, p.creator)} // esto ya no sería necesario luego de la proxima migracion
-    )
+  public func get_all_proposals(s: Types.State) : [ProposalPublicData] {
+    Iter.toArray(Map.vals<Int, Proposal>(s.proposals));
   };
 
   public func edit_proposal(s: Types.State, caller: Principal, id: Int, data: ProposalEditableData ): ?Proposal {

@@ -61,6 +61,16 @@ module {
     dataSize : Nat;
   };
 
+  public type Metadata = [(Text, Value)] ;
+  type Value = {
+    #Int : Int;
+    #Metadata : Metadata;
+    #Nat : Nat;
+    #Blob : Blob;
+    #Text : Text;
+    #Array : [Value];
+  };
+
   public type DigitalTaongaProposal = {
     #UpdateDigitalTaonga : UpdateDigitalTaongaProposal;
     #DeleteDigitalTaonga : Nat64;
@@ -74,18 +84,20 @@ module {
   };
 
   public type ProposalPublicData = {
-    id : Int; // Cambio de Nat a Int, podemos definir el ID con el Timestamp de ingreso del proposal en lugar de con la cnatidad actual de proposals
-    created_at : Int; // Informacion duplicada por el cambio en el ID
+    id : Int; 
     deadline : Int;
     status : ProposalStatus;
     title : Text;
-    kind : ProposalType;
     description : Text;
+    impact: Text;
+    kind : ProposalType;
     active_members : Nat;
-    comments : List.List<ProposalComment>;
+    comments : List.List<Comment>;
     likes: [(Principal, LikeProposal)];
     partialResults: {approving: Nat; disapproving: Nat; abstentions: Nat};
     creator : Principal;
+    creatorName: ?Text;
+    extendedData: Metadata;
   };
 
   public type Proposal = ProposalPublicData and {
@@ -95,14 +107,13 @@ module {
   public type Vote = { #Approve; #Abstain; #Disapprove };
 
 
-  public type ProposalComment = {
+  public type Comment = {
+    msg : Text;
     creator : Principal;
-    created_at : Nat64;
-    likes : Nat64;
-    comment : Text;
-    // thread : List.List<ProposalComment>; // TODO Incorporar en proxima migracions y quitar hashMap<Int,Comment> comments
-    thread: [ProposalComment];
-    dislikes : Nat64;
+    created_at : Int; // Funciona como id
+    likes : [Principal];
+    dislikes : [Principal];
+    subComments : List.List<Comment>;
   };
 
   public type ProposalError = { 
@@ -116,7 +127,7 @@ module {
     #Action : (Text, Text, Nat64);
     #Guardian : GuardianProposal;
     #DigitalTaonga : DigitalTaongaProposal;
-    #Motion : MotionProposal;
+    #Motion;
   };
 
   public type MotionProposal = { # }; // Consultar

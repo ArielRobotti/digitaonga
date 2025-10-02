@@ -16,10 +16,10 @@ const DaoCalendar = () => {
   const navigate = useNavigate()
 
   const { proposals, setProposals } = useProposalStore()
-  const [ , dao] = useCanister();
+  const [, dao] = useCanister();
 
   const [currentView, setCurrentView] = useState('month');
-  const [currentDate, setCurrentDate] = useState(new Date()); 
+  const [currentDate, setCurrentDate] = useState(new Date());
 
 
   useEffect(() => {
@@ -29,15 +29,15 @@ const DaoCalendar = () => {
         setProposals(response)
       }
     }
-    if(!proposals[0]){ fetchProposals() }
+    if (!proposals[0]) { fetchProposals() }
   }, [])
 
-  const parseProposals = (proposalArray) => {  
+  const parseProposals = (proposalArray) => {
     return proposalArray.map(pr => {
-      
-      const startMs = Number(pr.created_at) / 1000000;
+
+      const startMs = Number(pr.id) / 1000000 ;
       const endMs = Number(pr.deadline) / 1000000;
-      return { 
+      return {
         start: new Date(startMs),
         end: new Date(endMs),
         title: pr.title,
@@ -45,49 +45,55 @@ const DaoCalendar = () => {
         resourceId: pr.id,
       };
     });
-};
+  };
 
-  // const proposals = [
-  //   {
-  //     start: dayjs('2025-09-30T12:00:00').toDate(),
-  //     end: dayjs('2025-09-30T15:00:00').toDate(),
-  //     title: "Propuesta Proyecto Alpha (Deadline)",
-  //   },
-  //   {
-  //     start: dayjs('2025-10-05T00:00:00').toDate(),
-  //     end: dayjs('2025-10-08T23:59:59').toDate(),
-  //     title: "Propuesta Marketing (Rango)",
-  //     allDay: true // Usar allDay para que se muestre en la parte superior del mes
-  //   }
-  // ];
+  const dayPropGetter = (date) => {
+    const today = new Date();
 
-  return ( 
-  // Usa una altura fija. Tu clase h-{50vh} no es válida en Tailwind. 
-  // Usa una sintaxis de CSS correcta o una clase de utilidad válida (como h-[50vh]).
-  <div style={{ height: '90vh' }} className='w-full'>
-    <Calendar
-      localizer={localizer}
-      events={parseProposals(proposals)}
-      // **¡Aquí está la clave!** Define las vistas y la vista inicial.
-      views={['month', 'week', 'day', 'agenda']}
-      view={currentView}
-      onView={setCurrentView}
-      onSelectEvent={(e) => {navigate("/proposals/" + e.resourceId)}}
-      
-      defaultView="month" 
-      
-      // Opcional: Define el día que aparecerá al cargar
-      date={currentDate} 
-      defaultDate={currentDate}
-      onNavigate={setCurrentDate}
+    const isToday =
+      date.getFullYear() === today.getFullYear() &&
+      date.getMonth() === today.getMonth() &&
+      date.getDate() === today.getDate();
 
-      // Opcional: Habilita el arrastre y redimensionamiento (necesitas importar el componente con el wrapper)
-      // selectable={true}
-      
-      // Para mostrar eventos de un día completo en la parte superior (como en la vista de mes)
-      allDayAccessor="allDay" 
-    />
-  </div>
+    if (isToday) {
+      return {
+        style: {
+          backgroundColor: '#6f92a08a', 
+          color: 'white',
+          borderRadius: "10px",
+        },
+      };
+    } else {
+      return {  };
+    }
+  };
+
+  return (
+    <div className='h-[90vh] w-full flex flex-col items-center mb-10'>
+      <Calendar
+        className="w-full md:w-[90vw] mt-1 md:mt-4"
+        localizer={localizer}
+        events={parseProposals(proposals)}
+
+        views={['month', 'week', 'day', 'agenda']}
+        view={currentView}
+        onView={setCurrentView}
+        onSelectEvent={(e) => { navigate("/proposals/" + e.resourceId) }}
+
+        defaultView="month"
+        dayPropGetter={dayPropGetter}
+
+        date={currentDate}
+        defaultDate={currentDate}
+        onNavigate={setCurrentDate}
+
+        // Opcional: Habilita el arrastre y redimensionamiento (necesitas importar el componente con el wrapper)
+        // selectable={true}
+
+        // Para mostrar eventos de un día completo en la parte superior (como en la vista de mes)
+        allDayAccessor="allDay"
+      />
+    </div>
   );
 }
 

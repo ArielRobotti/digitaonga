@@ -10,9 +10,10 @@ interface OnNewCommentHandler {
 interface CommentSectionProps {
   rawICComments: CommentList; // Recibe la lista vinculada generada
   onNewComment: OnNewCommentHandler;
+  canComment: Boolean
 }
 
-export const CommentSection: React.FC<CommentSectionProps> = ({ rawICComments, onNewComment }) => {
+export const CommentSection: React.FC<CommentSectionProps> = ({ rawICComments, onNewComment, canComment }) => {
   const [rootCommentText, setRootCommentText] = useState('');
 
   const commentsContainerRef = useRef<HTMLDivElement>(null);
@@ -78,6 +79,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ rawICComments, o
             commentList={rawICComments}
             currentPath={[]}
             onNewComment={onNewComment}
+            canComment={canComment}
           />
         )}
       </div>
@@ -90,12 +92,12 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ rawICComments, o
           className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3 resize-y"
           rows={3}
         />
-        <button
+        { canComment && <button
           onClick={handleRootSubmit}
           className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           Comment
-        </button>
+        </button>}
       </div>
     </div>
   );

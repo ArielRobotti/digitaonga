@@ -25,6 +25,7 @@ import { useAuth } from "@nfid/identitykit/react";
 import { useParams } from "react-router";
 import useCanister from "../../../hooks/useCanister";
 import { useState, useEffect, useRef } from "react";
+import ProposalVotingStatus from "../../../components/ProposalVotingStatus";
 // import { useNavigate } from "react-router";
 // import ProposalComment from "../../../components/proposals/ProposalComment";
 // import { Principal } from "@dfinity/principal";
@@ -38,20 +39,13 @@ const ProposalDetail = () => {
   const [newComment, setNewComment] = useState({ want: false, text: "" });
   const [comments, setComments] = useState([]);
   const [commentsQty, setCommentsQty] = useState(0)
-  const [proposal, setProposal] = useState([]);
+  const [proposal, setProposal] = useState(null);
   const [likes, setLikes] = useState(0);
   const [dislikes, setDislikes] = useState(0);
   const [userVote, setUserVote] = useState(null)
   const loading = useRef(true)
   const { user, connect } = useAuth();
-
-
   const [dao] = useCanister()
-
-  const updateData = (response) => {
-    setLikes(response[0].likes.filter(item => 'Like' in item[1]).length)
-    setDislikes(response[0].likes.filter(item => 'Dislike' in item[1]).length)
-  }
 
   const countTotalComments = (list) => {
     let count = 0;
@@ -63,7 +57,6 @@ const ProposalDetail = () => {
       // 1. Contar el comentario actual (el head)
       count += 1;
       // 2. Sumar los subcomentarios recursivamente
-      // Nota: Asegúrate que subComments es de tipo CommentList antes de la recursión.
       if (headComment.subComments && headComment.subComments.length > 0) {
         count += countTotalComments(headComment.subComments);
       }
@@ -80,19 +73,16 @@ const ProposalDetail = () => {
   useEffect(() => {
     const fetchProposal = async () => {
       loading.current = true
-      /// Por ahora los comentarios y los proposals estan en Maps diferentes para no romper la compatibilidad tras la ultima
-      /// actualización de Comment. En la siguiente migracion van a estar incluidos dentro de la estructura del proposal
-      const responseComments = await dao.loadComments(BigInt(id))
-      setComments(responseComments)
-      setCommentsQty(countTotalComments(responseComments))
 
-      // agregar un campo para mostrar el voto del que llama
       const response = await dao.get_proposal(BigInt(id))
-      setProposal(response);
-      updateData(response);
-
-      const myVote = (await dao.get_my_vote(BigInt(id)))[0]
-      setUserVote(myVote)
+      if("Ok" in response){
+        setUserVote(response.Ok.callerVote[0])
+        setProposal(response.Ok.proposal);
+        setComments(response.Ok.proposal.comments)
+        setLikes(response.Ok.proposal.likes.filter(item => 'Like' in item[1]).length)
+        setDislikes(response.Ok.proposal.likes.filter(item => 'Dislike' in item[1]).length)
+        setCommentsQty(countTotalComments(response.Ok.proposal.comments))
+      } 
 
       loading.current = false
     }
@@ -100,7 +90,7 @@ const ProposalDetail = () => {
   }, [dao])
 
 
-  if (!proposal[0]) {
+  if (!proposal) {
     return loading.current
       ? <CircularProgress className="absolute top-1/2 left-1/2 " />
       : (<main className="flex flex-col items-center justify-center h-screen">
@@ -113,9 +103,8 @@ const ProposalDetail = () => {
   const handleChange = (e) => setVote({ ...vote, value: e.target.value });
   const toggleOpen = () => setOpen(!open);
 
-
   const handleVote = async () => {
-    if (!("Open" in proposal[0].status)) return;
+    if (!("Open" in proposal.status)) return;
     if (!user) return connect();
     setVote({ ...vote, loading: true });
 
@@ -132,7 +121,6 @@ const ProposalDetail = () => {
   };
 
   const onNewComment = async (msg, path) => {
-    /* {proposalId : Int; msg : Text; path: [Int]} */
     const newComment = {
       proposalId: BigInt(id),
       msg,
@@ -146,66 +134,75 @@ const ProposalDetail = () => {
   }
 
   const handleLike = async (type) => {
-    if (!("Open" in proposal[0].status)) return;
+    if (!("Open" in proposal.status)) return;
     if (!user) return connect();
-    console.log({ type });
 
     const options = {
       Like: { Like: null },
       Dislike: { Dislike: null },
     };
     const response = await dao.like_proposal(BigInt(id), options[type])
-    setProposal(response)
-    updateData(response)
-    console.log(response)
-
+    if (response[0]){
+      console.log(response[0])
+      setProposal(response[0])
+      setLikes(response[0].likes.filter(item => 'Like' in item[1]).length)
+      setDislikes(response[0].likes.filter(item => 'Dislike' in item[1]).length)
+    }
   };
 
   return (
     <main className="">
-      {proposal[0] &&
+      {proposal &&
         <div className="h-full flex flex-col">
           <section className="flex justify-around items-center px-2 md:p-6 overflow-hidden">
             <div className="space-y-1">
               {/* Título Principal */}
               <h3 className="uppercase text-clip text-[18px] md:text-[28px] font-bold">
-                {proposal[0].title}
+                {proposal.title}
               </h3>
 
               {/* Contenedor de Metadatos Alineados */}
-              <div className="mt-4 space-y-1 text-sm text-gray-700">
+              <div className="mt-4 space-y-1">
 
                 {/* Campo 1: ID */}
                 <div className="flex flex-col md:flex-row">
-                  <p className="font-semibold uppercase w-30 flex-shrink-0">ID:</p>
-                  <span className="font-mono ml-2">{id}</span>
+                  <p className="w-30 flex-shrink-0">ID:</p>
+                  <span className="font-semibold  ml-2 md:ml-6">{id}</span>
                 </div>
 
                 {/* Campo 2: GUARDIAN ID */}
                 <div className="flex flex-col md:flex-row">
-                  <span className="font-semibold uppercase w-30 flex-shrink-0">GUARDIAN ID:</span>
-                  <span className="truncate ml-2">{shortPrincipal(proposal[0].creator.toString())}</span>
+                  <span className="w-30 flex-shrink-0">GUARDIAN ID:</span>
+                  <span className="font-semibold ml-2 md:ml-6">{shortPrincipal(proposal.creator.toString())}</span>
                 </div>
 
                 {/* Campo 3: Guardian Name */}
                 <div className="flex flex-col md:flex-row">
-                  <span className="font-semibold uppercase flex-shrink-0">Guardian Name:</span>
-                  <span className="font-medium">{proposal[0].creatorName}</span>
+                  <span className="flex-shrink-0">GUARDIAN NAME:</span>
+                  <span className="font-semibold  ml-2 md:ml-6">{proposal.creatorName[0]? proposal.creatorName[0] : "No Name"}</span>
                 </div>
 
                 {/* Opcional: Proposal Type (Descomentar si lo usas) */}
                 {/* <div className="flex">
                     <span className="font-semibold uppercase w-40 flex-shrink-0">Proposal Type:</span>
-                    <span>{proposal[0].kind}</span>
+                    <span>{proposal.kind}</span>
                   </div> */}
               </div>
             </div>
+            <ProposalVotingStatus 
+              activeMembers={proposal.active_members}
+              partialResults = {proposal.partialResults}
+              deadline={proposal.deadline}
+              // participationRequired={20}
+              status={Object.keys(proposal.status)[0]}
+              majorityRequired={50}
+            />
 
 
             <div className="flex flex-col items-center gap-2 md:gap-4">
               <span className="flex items-center gap-1">
-                <StatusBallProposal status={Object.keys(proposal[0].status)[0]} />
-                {Object.keys(proposal[0].status)[0]}
+                <StatusBallProposal status={Object.keys(proposal.status)[0]} />
+                {Object.keys(proposal.status)[0]}
               </span>
               <section className="flex items-center gap-2 md:gap-4">
                 <h5 className="flex items-center cursor-pointer" onClick={() => handleLike("Like")}>
@@ -217,7 +214,7 @@ const ProposalDetail = () => {
                 <h5
                   className="flex items-center"
                   onClick={() => {
-                    if (proposal[0].status !== "Open") return;
+                    if (proposal.status !== "Open") return;
 
                     setNewComment({ ...newComment, want: true }) ||
                       document.getElementById("comments").scrollIntoView({ behavior: "smooth" });
@@ -238,20 +235,23 @@ const ProposalDetail = () => {
 
           <section className="p-6 text-center">
             <h4 className="pb-2">DESCRIPTION</h4>
-            <p className="text-center">{proposal[0].description}</p>
-
+            <p className="text-center">{proposal.description}</p>
             <h4 className="py-2">IMPACT</h4>
-            {/* TODO (fran): ver aca que seria impact */}
-            <p>{proposal[0].description}</p>
+            <p>{proposal.impact}</p>
           </section>
 
           {/* --- Comments section --- */}
 
           <section className="mt-auto">
-            <CommentSection rawICComments={comments} currentPath={[]} onNewComment={onNewComment} />
+            <CommentSection 
+              rawICComments={comments} 
+              currentPath={[]} 
+              canComment={user? true: false} 
+              onNewComment={onNewComment} 
+            />
           </section>
 
-          {"Open" in proposal[0].status && !userVote && (
+          {"Open" in proposal.status && !userVote && (
             <section className="grid place-items-center gap-4 p-6">
               <div className="bg-kokowai p-2 max-w-[302px] rounded-[5px]">
                 <p className="text-white">
