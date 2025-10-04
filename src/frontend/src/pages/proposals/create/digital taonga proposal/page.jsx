@@ -20,6 +20,7 @@ import dayjs from "dayjs";
 import useCanister from "../../../../hooks/useCanister";
 // import useProposal from "../../../../hooks/useProposal";
 import { useState, useRef } from "react";
+import { uploadFile } from "../../../../utils/fileManager"
 
 
 const DigitalTaongaProposalCreation = () => {
@@ -174,61 +175,9 @@ const DigitalTaongaProposalCreation = () => {
           console.log(newProposalArgs)
           const proposalResponse = await dao.create_proposal(newProposalArgs);
           const fileId =  proposalResponse.id;
-          
-          console.log({response: proposalResponse.id})
-          
-          let chunksProcessed = 0;
-          const promises = [];
-
-          // Chunking process
-
-          // for (let i = 0; i < chunksQty; i++) {
-          //   let start = i * chunkSize;
-          //   const slice = rawGLBFile.slice(start, start +chunkSize);
-
-          //   const arrayBuffer = await slice.arrayBuffer();
-          //   const chunk = new Uint8Array(arrayBuffer);
-          //   console.log("Subiendo ", chunk.length, " Bytes from Chunck Nro ", i);
-
-          //   if(i == chunksQty - 1 ) { await Promise.all(promises) } // si es el ultimo chunk esperamos los promises anteriores
-
-          //   const chunkPromise = dao.uploadFileChunk({
-          //     fileId,
-          //     chunk,
-          //     index: BigInt(i),
-          //     retry: false,
-          //   }).then(() => {
-          //     // Este .then se ejecuta cuando la promesa de subida se resuelve
-          //     chunksProcessed++;
-          //     // Actualizamos el progreso en base al número de chunks que el backend procesó
-          //     setUploadProgress(chunksProcessed);
-          //   });
-
-          //   promises.push(chunkPromise);
-          //   // bloquear los botones de submit y cancell
-          // }
-
-          for (let i = 0; i < chunksQty; i++) {
-            let start = i * chunkSize;
-            const slice = rawGLBFile.slice(start, start +chunkSize);
-
-            const arrayBuffer = await slice.arrayBuffer();
-            const chunk = new Uint8Array(arrayBuffer);
-            console.log("Subiendo ", chunk.length, " Bytes from Chunck Nro ", i);
-            const response = await dao.uploadFileChunk({
-              fileId,
-              chunk,
-              index: BigInt(i),
-              retry: false,
-            })
-            chunksProcessed++;
-            setUploadProgress(chunksProcessed);
-          }
-
-          /// Opcion tres probar con web workers
+          await uploadFile(dao, fileId, rawGLBFile, chunksQty, chunkSize, setUploadProgress)
 
           dao.refresh_all_proposals()
-          
           break;
         case "":
           digitalTaongaProposalAction = "UpdateDigitalTaonga";
