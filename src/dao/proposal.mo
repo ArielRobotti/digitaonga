@@ -86,7 +86,12 @@ module {
       proposal with
       id ;
       deadline ; 
-      active_members = Map.size(s.members);
+      active_members = 
+        Array.filter<(Principal, SharedTypes.Member)>(
+          Map.toArray<Principal, SharedTypes.Member>(s.members), 
+          func entrie = entrie.1.role == #Guardian or  entrie.1.role == #Admin
+        ).size()
+      ;
       comments = List.fromArray<SharedTypes.Comment>([]);
       creator = member.principal;
       creatorName = member.name;
@@ -99,6 +104,7 @@ module {
 
     newProposal
   };
+
 
   public func addChunk({s: Types.State; caller: Principal; fileId: Int; chunk: Blob; index: Nat; retry: Bool}): {#Ok; #Err} {
     switch (Map.get<Int, Types.File>(s.tempFiles, ihash, fileId)) {
@@ -455,7 +461,7 @@ module {
                 ignore Member.set_member_role(s, user, #Observer );
                 #Ok(#Guardian({}));
               };
-              case (#Err(e)) {
+              case (#Err(_e)) {
                 #Err("Is Not a Member")
               }
             };       

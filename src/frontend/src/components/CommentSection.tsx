@@ -61,7 +61,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ rawICComments, o
   };
 
   return (
-    <div className="container mx-auto px-0 md:px-3 py-4 mb-10 max-w-7xl bg-gray-400 shadow-lg rounded-lg ">
+    <div className="container mx-auto px-0 md:px-3 py-4 mb-10 w-full bg-gray-400 shadow-lg rounded-lg ">
       <h4>Comments</h4>
       {/* <h2 className="text-3xl font-bold text-gray-800 mb-6"></h2> */}
 

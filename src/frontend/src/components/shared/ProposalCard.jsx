@@ -9,10 +9,21 @@ import { useAuth } from "@nfid/identitykit/react";
 
 const ProposalCard = ({
   title, status, id, creator, deadline, creatorName,
-  likes, dislikes, comments, description, className = "",
+  likes, dislikes, comments, description, className = "", kind
 } = {}) => {
+
   const navigate = useNavigate();
   const { user } = useAuth()
+  
+  let kindProposal = "";
+
+  if ("Guardian" in kind ) {
+    kindProposal = Object.keys(kind.Guardian)[0]
+  } else if("Action" in kind) {
+    kindProposal = "Motion"
+  } else if ("DigitalTaonga" in kind) {
+    kindProposal = Object.keys(kind.DigitalTaonga)[0]
+  }
 
   const startDate = new Date(Number(id / 1000000n)) // El id es el timestamp de creacion del proposal
   const deadlineDate = new Date(Number(deadline / 1000000n))
@@ -120,7 +131,9 @@ const ProposalCard = ({
         
       </section>
 
+
       <section className="py-4 px-6 text-gray-900">
+        <div className="text-[20px] font-semibold pb-2 text-center">{kindProposal} Proposal</div>
         <p>Proposal ID: {id}</p>
         <p>Delegate ID: {creator.slice(0,7)}...{creator.slice(creator.length -7, creator.length)}</p>
         <p>Delagate Name: {creatorName}</p>

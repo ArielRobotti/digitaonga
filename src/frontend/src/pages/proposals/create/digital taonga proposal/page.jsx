@@ -84,7 +84,9 @@ const DigitalTaongaProposalCreation = () => {
 
   const [ dao ] = useCanister();
 
-  const chunkSize = 1024 * 2047 // 2 MiB - 1 KB
+  // const chunkSize = 1024 * 2047 // 2 MiB - 1 KB
+  const chunkSize = 1024 * 1023 // 1 MiB - 1 KB
+
 
   // Nueva función para manejar la captura de pantalla
   const handleCapture = async () => {
@@ -143,7 +145,7 @@ const DigitalTaongaProposalCreation = () => {
           // Usamos la captura del estado en lugar de un array vacío
           const thumbnail = new Uint8Array(await form.screenshot.arrayBuffer()); 
           const dataSize = rawGLBFile.size;
-          // const dataSize = 1023;
+
           const chunksQty = Math.ceil(dataSize / chunkSize)
           console.log({chunksQty})
 
@@ -159,7 +161,7 @@ const DigitalTaongaProposalCreation = () => {
                   history,
                   deadline,
                   imageID: BigInt(0),
-                  thumbnail, // Ahora pasamos el thumbnail capturado
+                  thumbnail, 
                   chunksQty,
                   dataSize,
                 }

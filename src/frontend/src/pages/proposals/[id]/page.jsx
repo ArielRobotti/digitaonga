@@ -67,7 +67,7 @@ const ProposalDetail = () => {
   }
 
   const shortPrincipal = (p) => {
-    return p.slice(0, 5) + "..." + p.slice(p.length - 5, p.length )
+    return p.slice(0, 5) + "..." + p.slice(p.length - 5, p.length)
   }
 
   useEffect(() => {
@@ -75,14 +75,14 @@ const ProposalDetail = () => {
       loading.current = true
 
       const response = await dao.get_proposal(BigInt(id))
-      if("Ok" in response){
+      if ("Ok" in response) {
         setUserVote(response.Ok.callerVote[0])
         setProposal(response.Ok.proposal);
         setComments(response.Ok.proposal.comments)
         setLikes(response.Ok.proposal.likes.filter(item => 'Like' in item[1]).length)
         setDislikes(response.Ok.proposal.likes.filter(item => 'Dislike' in item[1]).length)
         setCommentsQty(countTotalComments(response.Ok.proposal.comments))
-      } 
+      }
 
       loading.current = false
     }
@@ -142,7 +142,7 @@ const ProposalDetail = () => {
       Dislike: { Dislike: null },
     };
     const response = await dao.like_proposal(BigInt(id), options[type])
-    if (response[0]){
+    if (response[0]) {
       console.log(response[0])
       setProposal(response[0])
       setLikes(response[0].likes.filter(item => 'Like' in item[1]).length)
@@ -154,6 +154,17 @@ const ProposalDetail = () => {
     <main className="">
       {proposal &&
         <div className="h-full flex flex-col">
+          <div className="h-full flex flex-col items-center">
+            <ProposalVotingStatus
+              className={"center w-full md:w-[80vw] md:px-20"}
+              activeMembers={proposal.active_members}
+              partialResults={proposal.partialResults}
+              deadline={proposal.deadline}
+              // participationRequired={20}
+              status={Object.keys(proposal.status)[0]}
+              majorityRequired={50}
+            />
+          </div>
           <section className="flex justify-around items-center px-2 md:p-6 overflow-hidden">
             <div className="space-y-1">
               {/* Título Principal */}
@@ -179,7 +190,7 @@ const ProposalDetail = () => {
                 {/* Campo 3: Guardian Name */}
                 <div className="flex flex-col md:flex-row">
                   <span className="flex-shrink-0">GUARDIAN NAME:</span>
-                  <span className="font-semibold  ml-2 md:ml-6">{proposal.creatorName[0]? proposal.creatorName[0] : "No Name"}</span>
+                  <span className="font-semibold  ml-2 md:ml-6">{proposal.creatorName[0] ? proposal.creatorName[0] : "No Name"}</span>
                 </div>
 
                 {/* Opcional: Proposal Type (Descomentar si lo usas) */}
@@ -189,14 +200,6 @@ const ProposalDetail = () => {
                   </div> */}
               </div>
             </div>
-            <ProposalVotingStatus 
-              activeMembers={proposal.active_members}
-              partialResults = {proposal.partialResults}
-              deadline={proposal.deadline}
-              // participationRequired={20}
-              status={Object.keys(proposal.status)[0]}
-              majorityRequired={50}
-            />
 
 
             <div className="flex flex-col items-center gap-2 md:gap-4">
@@ -232,26 +235,33 @@ const ProposalDetail = () => {
 
             </div>
           </section>
+            
+          <div className="flex flex-col items-center">
+            <section className="p-6 flex md:w-[80vw] gap-4">
+              <div>
+                <h4 className="mb-2">DESCRIPTION</h4>
+                <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.description}</p>
+              </div>
 
-          <section className="p-6 text-center">
-            <h4 className="pb-2">DESCRIPTION</h4>
-            <p className="text-center">{proposal.description}</p>
-            <h4 className="py-2">IMPACT</h4>
-            <p>{proposal.impact}</p>
-          </section>
+              <div>
+                <h4 className="mb-2">IMPACT</h4>
+                <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.impact}</p>
+              </div>
+            </section>
+          </div>
 
           {/* --- Comments section --- */}
 
           <section className="mt-auto">
-            <CommentSection 
-              rawICComments={comments} 
-              currentPath={[]} 
-              canComment={user? true: false} 
-              onNewComment={onNewComment} 
+            <CommentSection
+              rawICComments={comments}
+              currentPath={[]}
+              canComment={user ? true : false}
+              onNewComment={onNewComment}
             />
           </section>
 
-          {"Open" in proposal.status && !userVote && (
+          {"Open" in proposal.status && user && !userVote && (
             <section className="grid place-items-center gap-4 p-6">
               <div className="bg-kokowai p-2 max-w-[302px] rounded-[5px]">
                 <p className="text-white">
@@ -260,22 +270,31 @@ const ProposalDetail = () => {
               </div>
 
               <FormControl className="max-w-[302px] w-full !mb-12">
-                {/* <InputLabel id="vote-select-label">Your vote</InputLabel> */}
                 <Select
                   labelId="vote-select-label"
                   id="vote-select"
                   value={vote.value}
-                  label="Your vote"
                   onChange={handleChange}
+                  displayEmpty
                   className="material_select"
+                  sx={{
+                    color: "white", // texto seleccionado en blanco
+                    "& .MuiSvgIcon-root": { color: "white" }, // icono dropdown en blanco
+                  }}
                 >
-                  <MenuItem value={"Approve"} className="material_menu-item">
+                  {/* Placeholder */}
+                  <MenuItem value="" disabled>
+                    <span className="text-gray-400">Select your vote</span>
+                  </MenuItem>
+
+                  {/* Opciones */}
+                  <MenuItem value="Approve" sx={{ color: "white" }}>
                     Approve
                   </MenuItem>
-                  <MenuItem value={"Disapprove"} className="material_menu-item">
+                  <MenuItem value="Disapprove" sx={{ color: "white" }}>
                     Disapprove
                   </MenuItem>
-                  <MenuItem value={"Abstain"} className="material_menu-item">
+                  <MenuItem value="Abstain" sx={{ color: "white" }}>
                     Abstain
                   </MenuItem>
                 </Select>
