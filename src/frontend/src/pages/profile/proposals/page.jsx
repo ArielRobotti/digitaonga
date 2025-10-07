@@ -60,7 +60,7 @@ const ProfileProposals = () => {
         className="flex justify-around p-4 w-full flex-nowrap mt-2 select-none" 
       >
         <div
-          className={`flex-1 text-center rounded-sm max-w-20 md:max-w-100 py-2 cursor-pointer transform relative z-10
+          className={`flex-1 text-center rounded-sm max-w-20 md:max-w-[28%] py-2 cursor-pointer transform relative z-10
             transition duration-300 ease-in-out
             hover:scale-[1.03] ${filter === 'Active' ? 
               'bg-gray-500' : 'bg-gray-300'
@@ -73,7 +73,7 @@ const ProfileProposals = () => {
         </div>
 
         <div
-          className={`flex-1 text-center rounded-sm max-w-20 md:max-w-100 py-2 cursor-pointer transform relative z-10
+          className={`flex-1 text-center rounded-sm max-w-20 md:max-w-[25%] py-2 cursor-pointer transform relative z-10
             transition duration-300 ease-in-out
             hover:scale-[1.03] ${filter === 'Approved' ? 
               'bg-gray-500' : 'bg-gray-300'
@@ -86,7 +86,7 @@ const ProfileProposals = () => {
         </div>
 
         <div
-          className={`flex-1 text-center rounded-sm max-w-20 md:max-w-100 py-2 cursor-pointer transform relative z-10
+          className={`flex-1 text-center rounded-sm max-w-20 md:max-w-[25%] py-2 cursor-pointer transform relative z-10
             transition duration-300 ease-in-out
             hover:scale-[1.03] ${filter === 'Rejected' ? 
               'bg-gray-500' : 'bg-gray-300'
@@ -95,12 +95,12 @@ const ProfileProposals = () => {
           onClick={() => { handleFilter("Rejected") }}
         >
           <h3 className="text-[14px] md:text-xl font-bold text-black">Rejected</h3>
-          <p className="text-xl md:text-2xl text-black">{rejected.length}</p>
+          <p className="text-xl md:text-2xl text-black ">{rejected.length}</p>
         </div>
       </div>
 
       <section className="grid 
-                    grid-cols-[repeat(auto-fill,minmax(300px,1fr))] 
+                    grid-cols-[repeat(auto-fill,minmax(450px,1fr))] 
                     gap-4 mt-4 px-4">
         {proposalsShown.current.map((item) => (
           <ProposalCard

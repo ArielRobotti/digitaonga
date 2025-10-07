@@ -1,5 +1,6 @@
 import { BellIcon, BurgerMenu, UserIcon } from "../ui/icons";
 import { NavLink, useNavigate } from "react-router";
+import { blobToImageUrl } from "../../utils/imageManager";
 import { p2str, shortP } from "../../utils/functions";
 
 import Badge from "@mui/material/Badge";
@@ -9,7 +10,7 @@ import useMember from "../../hooks/useMember";
 import useMemberStore from "../../store/useMemberStore"
 import useNotification from "../../store/useNotifications";
 import { useState } from "react";
-import ThemeToggle from "../../components/ThemeToggle"
+// import ThemeToggle from "../../components/ThemeToggle"
 
 
 const Header = () => {
@@ -18,51 +19,64 @@ const Header = () => {
   const { notifications } = useNotification();
   const { connect, disconnect, user } = useMember();
   const { member } = useMemberStore()
-  
+  console.log(member)
+
   const links = [
-    { title: "Taonga Gallery", link: "/digital-taonga" },
+    { title: "Digital Taonga", link: "/digital-taonga" },
     { title: "Proposals", link: "/proposals" },
     { title: "Community", link: "/community" },
-    { title: "Calendar", link: "/calendar" },
-    { title: "Profile", link:  user? "/profile": "/"},
+    { title: "Profile", link: user ? "/profile" : "/" },
     { title: "FAQ", link: "/faqs" },
+    // { title: "Calendar", link: "/calendar" },
     // { title: "Log In", link: "/login" },
   ];
-  
+
   const desktopLinks = [
-    { title: "Taonga Gallery", link: "/digital-taonga" },
-    { title: "Community", link: "/community" },
-    { title: "Calendar", link: "/calendar" },
+    { title: "Digital Taonga", link: "/digital-taonga" },
     { title: "Proposals", link: "/proposals" },
-    { title: "Profile", link: user? "/profile": "/" },
+    { title: "Community", link: "/community" },
+    { title: "Profile", link: user ? "/profile" : "/" },
     { title: "FAQ", link: "/faqs" },
+    // { title: "Calendar", link: "/calendar" },
   ];
 
   // State
   const [open, setOpen] = useState(false); // Menu open/close state (view mobile)
+  const [headline, setHeadline] = useState("")
 
   // Handlers
-  const toggleMenu = () => setOpen(!open);
+  const toggleMenu = (title = headline) => {
+    setOpen(!open);
+  }
+
+  const handleSelectContent = (title) => {
+    setHeadline(title.toUpperCase())
+    setOpen(false)
+
+  }
   const handleLogin = () => (user ? disconnect() : connect());
 
   return (
     <header className="h-[60px] xl:h-[70px] w-screen bg-kokowai text-white flex xl:justify-between items-center fixed top-0 xl:px-4 z-10">
       {/* Burger menu for mobile view */}
-      <div className="basis-1/3 pl-4 xl:hidden">
-        <BurgerMenu className="cursor-pointer" onClick={toggleMenu} />
+      <div className="xl:hidden w-full flex flex-row justify-between items-center">
+        <div className=" pl-4 ">
+          <BurgerMenu className="cursor-pointer" onClick={() => toggleMenu()} />
+        </div>
+
+        <h3 className="  text-center ">{headline}</h3>
+
+        {/* Notifications */}
+        <Badge
+          badgeContent={notifications?.length || 0}
+          color="primary"
+          className="flex justify-end mr-4 !"
+          onClick={() => handleSelectContent("notifications")}
+        >
+          <BellIcon className="cursor-pointer" onClick={() => navigate("/notifications")} />
+        </Badge>
       </div>
 
-      <h2 className="basis-1/3 text-center xl:hidden">HEADLINE</h2>
-
-      {/* Notifications */}
-      <Badge
-        badgeContent={notifications?.length || 0}
-        color="primary"
-        className="basis-1/3 flex justify-end mr-4 xl:hidden!"
-      >
-        <BellIcon className="cursor-pointer" onClick={() => navigate("/notifications")} />
-      </Badge>
-      
       {/* Mobile menu */}
       <motion.aside
         initial={{ x: "-100%" }}
@@ -75,7 +89,7 @@ const Header = () => {
           <ul className=" grid gap-6 ">
             {links.map(({ title, link }) => (
               <li key={title}>
-                <h2 className="text-[18px]" onClick={toggleMenu}>
+                <h2 className="text-[18px]" onClick={() => handleSelectContent(title)}>
                   <NavLink to={link}>{title}</NavLink>
                 </h2>
               </li>
@@ -99,10 +113,12 @@ const Header = () => {
       />
 
       <nav className="hidden xl:block w-full">
-        <ul className="flex gap-6 justify-center items-center w-full ">
+        <ul className="flex gap-6 justify-around items-center w-full px-[8vw]">
           {desktopLinks.map(({ title, link }) => (
             <li key={title} className="transition duration-300 ease-in-out
-            hover:scale-[1.1]">
+              hover:scale-[1.1]"
+              onClick={() => handleSelectContent(title)}
+            >
               <NavLink to={link} className="text-lg ">
                 {title}
               </NavLink>
@@ -111,17 +127,28 @@ const Header = () => {
         </ul>
       </nav>
 
-      <ThemeToggle className="mx-6"/>
+      {/* <ThemeToggle className="mx-6"/> */}
 
       <Button
-        className="hidden xl:flex w-[173px]! justify-center items-center gap-2"
+        className="hidden xl:flex w-[173px] justify-center items-center p-0 h-12 xl:mr-2"
         onClick={handleLogin}
       >
         {user ? (
-          <>
-            {shortP(p2str(user.principal))}
-            <UserIcon />
-          </>
+          <div className="flex flex-row items-center justify-between w-full">
+            <span className="text-[20px] truncate">
+              {member.data?.name[0] ? member.data.name[0].slice(0, 16) : "No Name"}
+            </span>
+
+            {member.data?.profile_pic[0] ? (
+              <img
+                src={blobToImageUrl(member.data?.profile_pic[0])}
+                className="object-cover rounded-full w-10 h-10"
+                alt="Profile"
+              />
+            ) : (
+              <UserIcon className="w-8 h-8" />
+            )}
+          </div>
         ) : (
           "Log in"
         )}

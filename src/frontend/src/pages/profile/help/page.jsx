@@ -5,8 +5,8 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Link } from "react-router";
 
 const data = [
-  { description: "This is a sample description", title: "Request N°09123" },
-  { description: "This is a sample description 2", title: "Request N°09124" },
+//   { description: "This is a sample description", title: "Request N°09123" },
+//   { description: "This is a sample description 2", title: "Request N°09124" },
 ];
 
 const ProfileHelp = () => {

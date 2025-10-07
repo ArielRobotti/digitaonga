@@ -43,15 +43,8 @@ const MemberCommunityCard = ({
       <section className="w-full">
         <div className="relative group inline-block w-full">
           <div className="flex items-center justify-between">
-            {/* Parte izquierda */}
+            
             <div className="flex items-center">
-              <div className="flex flex-col items-center mr-4">
-                <span className="mr-1">Copy Id</span>
-                <CopyIcon
-                  className="cursor-pointer h-[14px] w-[14px] md:h-6 md:w-6"
-                  onClick={() => copyToClipboard(principal.toString())}
-                />
-              </div>
               <p className="flex flex-col text-[18px]">
                 {name[0] ? name[0] : "No Name"} 
                 <span className="">
@@ -63,11 +56,19 @@ const MemberCommunityCard = ({
             <span className="absolute w-max -translate-x-1/2 mt-2 -bottom-6 hidden group-hover:block bg-gray-700 text-white text-xs rounded px-2 py-1">
               {principal}
             </span>
+            
+              <div className="flex flex-col items-center mr-4">
+                <span className="mr-1">Copy Id</span>
+                <CopyIcon
+                  className="cursor-pointer h-[14px] w-[14px] md:h-6 md:w-6"
+                  onClick={() => copyToClipboard(principal.toString())}
+                />
+              </div>
 
-            <p className="flex flex-col md:flex-row text-sm text-gray-500 gap-2">
+            {/* <p className="flex flex-col md:flex-row text-sm text-gray-500 gap-2">
               <span>Joined at:</span>
               <span>{formattedDate}</span>
-            </p>
+            </p> */}
           </div>
 
         </div>

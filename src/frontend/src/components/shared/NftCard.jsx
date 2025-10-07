@@ -7,7 +7,7 @@ const NftCard = ({ asset }) => {
 
   return (
     <article
-      className="flex flex-col justify-between w-full md:h-[540px] h-[80vh] md:w-[330px] bg-kokowai rounded-[5px] 
+      className="flex flex-col justify-between w-full md:h-[560px] h-[80vh] md:w-[400px] bg-kokowai rounded-[5px] 
         p-2 text-white"
 
     >

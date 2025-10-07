@@ -151,7 +151,10 @@ const ProposalDetail = () => {
   };
 
   return (
-    <main className="">
+    <main
+      className=""
+      style={{ fontFamily: "poppins" }}
+    >
       {proposal &&
         <div className="h-full flex flex-col">
           <div className="h-full flex flex-col items-center">
@@ -165,101 +168,103 @@ const ProposalDetail = () => {
               majorityRequired={50}
             />
           </div>
-          <section className="flex justify-around items-center px-2 md:p-6 overflow-hidden">
-            <div className="space-y-1">
-              {/* Título Principal */}
-              <h3 className="uppercase text-clip text-[18px] md:text-[28px] font-bold">
-                {proposal.title}
-              </h3>
 
-              {/* Contenedor de Metadatos Alineados */}
-              <div className="mt-4 space-y-1">
+          <div className="h-full flex flex-col items-center">
 
-                {/* Campo 1: ID */}
-                <div className="flex flex-col md:flex-row">
-                  <p className="w-30 flex-shrink-0">ID:</p>
-                  <span className="font-semibold  ml-2 md:ml-6">{id}</span>
+            <section className="w-full md:w-[80vw] flex justify-between items-center px-4 md:px-40 overflow-hidden">
+              <div className="space-y-1">
+                {/* Título Principal */}
+                <h3 className="uppercase text-clip text-[18px] md:text-[28px] font-bold">
+                  {proposal.title}
+                </h3>
+
+                {/* Contenedor de Metadatos Alineados */}
+                <div className="mt-4 space-y-1">
+
+                  {/* Campo 1: ID */}
+                  <div className="flex flex-col md:flex-row">
+                    <p className="w-30 flex-shrink-0">ID:</p>
+                    <span className="font-semibold  ml-2 md:ml-6">{id}</span>
+                  </div>
+
+                  {/* Campo 2: GUARDIAN ID */}
+                  <div className="flex flex-col md:flex-row">
+                    <span className="w-30 flex-shrink-0">GUARDIAN ID:</span>
+                    <span className="font-semibold ml-2 md:ml-6">{shortPrincipal(proposal.creator.toString())}</span>
+                  </div>
+
+                  {/* Campo 3: Guardian Name */}
+                  <div className="flex flex-col md:flex-row">
+                    <span className="flex-shrink-0">GUARDIAN NAME:</span>
+                    <span className="font-semibold  ml-2 md:ml-6">{proposal.creatorName[0] ? proposal.creatorName[0] : "No Name"}</span>
+                  </div>
+
                 </div>
-
-                {/* Campo 2: GUARDIAN ID */}
-                <div className="flex flex-col md:flex-row">
-                  <span className="w-30 flex-shrink-0">GUARDIAN ID:</span>
-                  <span className="font-semibold ml-2 md:ml-6">{shortPrincipal(proposal.creator.toString())}</span>
-                </div>
-
-                {/* Campo 3: Guardian Name */}
-                <div className="flex flex-col md:flex-row">
-                  <span className="flex-shrink-0">GUARDIAN NAME:</span>
-                  <span className="font-semibold  ml-2 md:ml-6">{proposal.creatorName[0] ? proposal.creatorName[0] : "No Name"}</span>
-                </div>
-
-                {/* Opcional: Proposal Type (Descomentar si lo usas) */}
-                {/* <div className="flex">
-                    <span className="font-semibold uppercase w-40 flex-shrink-0">Proposal Type:</span>
-                    <span>{proposal.kind}</span>
-                  </div> */}
               </div>
-            </div>
 
 
-            <div className="flex flex-col items-center gap-2 md:gap-4">
-              <span className="flex items-center gap-1">
-                <StatusBallProposal status={Object.keys(proposal.status)[0]} />
-                {Object.keys(proposal.status)[0]}
-              </span>
-              <section className="flex items-center gap-2 md:gap-4">
-                <h5 className="flex items-center cursor-pointer" onClick={() => handleLike("Like")}>
-                  {likes} <LikeIcon />
-                </h5>
-                <h5 className="flex items-center cursor-pointer" onClick={() => handleLike("Dislike")}>
-                  {dislikes} <DislikeIcon />
-                </h5>
-                <h5
-                  className="flex items-center"
-                  onClick={() => {
-                    if (proposal.status !== "Open") return;
+              <div className="flex flex-col items-center gap-2 md:gap-4 my-20" >
+                <span className="flex items-center gap-1">
+                  <StatusBallProposal status={Object.keys(proposal.status)[0]} />
+                  {Object.keys(proposal.status)[0]}
+                </span>
+                <section
+                  className="flex items-center gap-2 md:gap-4"
 
-                    setNewComment({ ...newComment, want: true }) ||
-                      document.getElementById("comments").scrollIntoView({ behavior: "smooth" });
-                  }}
                 >
-                  {commentsQty} <CommentIcon />
-                </h5>
-              </section>
-              {userVote &&
-                <div className="flex flex-col items-center">
-                  <p className="text-[14px]"> Your vote was:</p>
-                  <p className="text-"> {Object.keys(userVote)[0]} </p>
-                </div>
-              }
+                  <h5 className="flex items-center cursor-pointer gap-2" onClick={() => handleLike("Like")}>
+                    {likes} <LikeIcon />
+                  </h5>
+                  <h5 className="flex items-center cursor-pointer gap-2" onClick={() => handleLike("Dislike")}>
+                    {dislikes} <DislikeIcon />
+                  </h5>
+                  <h5
+                    className="flex items-center gap-2 "
+                    onClick={() => {
+                      if (proposal.status !== "Open") return;
 
-            </div>
-          </section>
-            
+                      setNewComment({ ...newComment, want: true }) ||
+                        document.getElementById("comments").scrollIntoView({ behavior: "smooth" });
+                    }}
+                  >
+                    {commentsQty} <CommentIcon />
+                  </h5>
+                </section>
+                {userVote &&
+                  <div className="flex flex-col items-center">
+                    <p className="text-[14px]"> Your vote was:</p>
+                    <p className="text-"> {Object.keys(userVote)[0]} </p>
+                  </div>
+                }
+
+              </div>
+            </section>
+          </div>
           <div className="flex flex-col items-center">
-            <section className="p-6 flex md:w-[80vw] gap-4">
-              <div>
-                <h4 className="mb-2">DESCRIPTION</h4>
+            <section className="p-6 md:w-[80vw] gap-4">
+              <div className="md:w-full">
+                <h4 className="my-6 px-10">DESCRIPTION</h4>
                 <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.description}</p>
               </div>
 
-              <div>
-                <h4 className="mb-2">IMPACT</h4>
-                <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.impact}</p>
+              <div className=" md:w-full">
+                <h4 className="my-6 px-10">IMPACT</h4>
+                <p className="h-40 overflow-y-scroll custom-scrollbar">{proposal.impact}</p>
               </div>
             </section>
           </div>
 
           {/* --- Comments section --- */}
-
-          <section className="mt-auto">
-            <CommentSection
-              rawICComments={comments}
-              currentPath={[]}
-              canComment={user ? true : false}
-              onNewComment={onNewComment}
-            />
-          </section>
+          <div className="flex flex-col items-center w-full">
+            <section className="mt-auto w-full">
+              <CommentSection
+                rawICComments={comments}
+                currentPath={[]}
+                canComment={user ? true : false}
+                onNewComment={onNewComment}
+              />
+            </section>
+          </div>
 
           {"Open" in proposal.status && user && !userVote && (
             <section className="grid place-items-center gap-4 p-6">

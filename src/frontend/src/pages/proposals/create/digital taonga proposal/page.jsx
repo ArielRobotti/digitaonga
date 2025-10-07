@@ -246,7 +246,7 @@ const DigitalTaongaProposalCreation = () => {
               label="Impact"
               variant="outlined"
               onChange={handleChange}
-              value={form.impatc}
+              value={form.impact}
               name="impact"
               required
               className="material_input md:max-w-[500px] md:w-full"

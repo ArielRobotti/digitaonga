@@ -64,7 +64,7 @@ const ProposalCard = ({
     <article
       className={`flex flex-col justify-between 
             min-w-[200px]  /* Permitimos un encogimiento mayor en móviles */
-            sm:min-w-[250px] /* Establecemos un mínimo más razonable */
+            sm:min-w-[400px] /* Establecemos un mínimo más razonable */
             w-full /* Permitimos que ocupe todo el espacio de su columna */
             min-h-[246px] xl:min-h-[298px]
 

@@ -1,5 +1,6 @@
 import { DigitaongaCompleteIcon, NFIDIcon } from "../../components/ui/icons";
 import { p2str, shortP } from "../../utils/functions";
+import { useNavigate } from "react-router";
 
 import Button from "../../components/shared/Button";
 import useMember from "../../hooks/useMember";
@@ -7,6 +8,7 @@ import useMember from "../../hooks/useMember";
 const Login = () => {
   // Store
   const { user, connect, isConnecting } = useMember();
+  const navigate = useNavigate()
 
   return (
     <main>
@@ -19,20 +21,28 @@ const Login = () => {
             className="py-6"
           />
         ) : (
-          <DigitaongaCompleteIcon />
-        )}
+          <DigitaongaCompleteIcon/>
+          )}
       </section>
 
       <section className="flex flex-col items-center justify-between h-[calc(100vh-236px)] pt-[120px] pb-[60px] xl:h-full xl:pt-0">
+          <div 
+            className={`flex flex-col items-center ${
+              user ? " cursor-pointer hover:text-[#912424] duration-500" : ""
+            }`}
+
+            onClick={()=> {if(user) navigate("/")}}
+          >
         <img
           src="/images/png/primary_kokowaif.png"
           alt="digitaonga kokowaif"
           className="hidden xl:block"
-        />
+          />
 
         <h3 className="text-center max-w-[350px] xl:max-w-full xl:mb-14">
           PRESERVE. RECONNECT. REPATRIATE.
         </h3>
+          </div>
 
         {user ? (
           shortP(p2str(user.principal), 8)

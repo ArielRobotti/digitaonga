@@ -10,7 +10,7 @@ const ProposalContainer = ({
 
   return (
     <section className={className}>
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4 mt-4 px-4">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] md:grid-cols-[repeat(auto-fill,minmax(450px,1fr))] gap-4 mt-4 px-4">
         {loading ? (
           <CircularProgress />
         ) : (

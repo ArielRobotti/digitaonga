@@ -88,11 +88,11 @@ const ProposalVotingStatus = ({
 
     return (
         <div
-            className={`bg-gray-700 md:rounded-lg p-1 text-white md:mt-1 ${className}`}
+            className={`bg-[#382027]  p-1 text-white md:mt-1 ${className}`}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center mt-2">
                 <h2 className="text-xl font-semibold">Voting Results</h2>
             </div>
 
