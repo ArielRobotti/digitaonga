@@ -17,7 +17,7 @@ const Accordion = ({ data }) => {
             onClick={() => toggleAccordion(index)}
             className="w-full flex justify-between items-center py-4 text-left hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
           >
-            <span className="text-lg font-medium text-gray-900">
+            <span className="text-lg font-bold text-gray-900">
               {item.title}
             </span>
             <ExpandMoreIcon

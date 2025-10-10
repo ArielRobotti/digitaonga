@@ -19,7 +19,6 @@ const Header = () => {
   const { notifications } = useNotification();
   const { connect, disconnect, user } = useMember();
   const { member } = useMemberStore()
-  console.log(member)
 
   const links = [
     { title: "Digital Taonga", link: "/digital-taonga" },
