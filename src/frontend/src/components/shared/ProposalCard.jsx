@@ -66,7 +66,6 @@ const ProposalCard = ({
             h-[251px] md:h-[422px]
             w-full md:w-[528px]
             p-[24px]
-            
             transition duration-300 ease-in-out
             hover:scale-[1.03] 
             rounded-[5px] shadow-digitaonga cursor-pointer ${className} shadow__digitaonga ${status === "Approved"
