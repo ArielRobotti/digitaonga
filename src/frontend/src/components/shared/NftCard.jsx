@@ -18,9 +18,9 @@ const NftCard = ({ asset }) => {
           onClick={() => navigate(`/digital-taonga/${asset.canisterId.toString()}`)}
           priority="true"
         />
-        <h4 className="py-[24px] truncate w-74">{asset.name}</h4>
+        <h4 className="py-[24px]  pb-[16px] truncate w-74 select-none">{asset.name}</h4>
         {/* Info */}
-        <div className="hidden  md:flex flex-col gap-4">
+        <div className="hidden  md:flex flex-col gap-4 select-none">
           <div  className="flex flex-row items-center">
             <p className="mr-2">CID:</p>
             {/* <span className="text-gray-500 text-[12px]">{asset.canisterId.toString()}</span> */}
@@ -71,7 +71,7 @@ const NftCard = ({ asset }) => {
       <div className="flex justify-around">
         <div className="flex justify-end mt-2">
           <Button
-            className='w-fit px-8 bg-transparent text-[#777777]! border border-[#777777]!'
+            className='w-fit px-8 bg-transparent text-[#777777]! border border-[#777777]! cursor-default!'
             onClick={() => {}}
           >
             Download
