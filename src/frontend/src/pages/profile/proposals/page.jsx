@@ -99,9 +99,7 @@ const ProfileProposals = () => {
         </div>
       </div>
 
-      <section className="grid 
-                    grid-cols-[repeat(auto-fill,minmax(450px,1fr))] 
-                    gap-4 mt-4 px-4">
+      <section className="grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] ml-35 md:grid-cols-[repeat(auto-fill,minmax(530px,1fr))] gap-y-8 gap-x-4  mt-4 px-4">
         {proposalsShown.current.map((item) => (
           <ProposalCard
             // key={Number(item.id)}

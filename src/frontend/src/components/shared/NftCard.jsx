@@ -68,7 +68,7 @@ const NftCard = ({ asset }) => {
         </Button>
       </div>
 
-      <div className="flex justify-around">
+      <div className="hidden md:flex justify-around">
         <div className="flex justify-end mt-2">
           <Button
             className='w-fit px-8 bg-transparent text-[#777777]! border border-[#777777]! cursor-default!'

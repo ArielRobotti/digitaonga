@@ -32,7 +32,7 @@ const GuardianProposalCreation = () => {
     principal: "",
     deadline: dayjs(new Date().toDateString()),
     impact: "",
-    description:"",
+    description: "",
   });
   const [open, setOpen] = useState(false);
   const [responseDialog, setResponseDialog] = useState({ success: false, error: false });
@@ -54,8 +54,8 @@ const GuardianProposalCreation = () => {
       const deadline = BigInt(form.deadline?.unix() * 1_000_000_000)
       const guardianSelectedAction =
         selectedValue === "Assign as Observer"
-          ? {AssignAsObserver: [Principal.fromText(form.principal), deadline ]}
-          : { RemoveFromDao: [Principal.fromText(form.principal), deadline ]}
+          ? { AssignAsObserver: [Principal.fromText(form.principal), deadline] }
+          : { RemoveFromDao: [Principal.fromText(form.principal), deadline] }
 
       const proposalArgs = {
         title: selectedValue,
@@ -162,8 +162,8 @@ const GuardianProposalCreation = () => {
       </section>
 
       {/* TODO (fran): crear custom dialog */}
-      <Dialog onClose={toggleDialog} open={open} fullWidth maxWidth="xs">
-        <h3 className="text-[#525252] text-center p-4 pt-6">PROPOSAL SUMMARY</h3>
+      <Dialog onClose={toggleDialog} open={open} fullWidth maxWidth="xs" className="flex flex-col items-center">
+        <p className="text-[#525252] font-medium text-[22px]! p-6 ">Proposal summary</p>
         <IconButton
           aria-label="close"
           onClick={toggleDialog}
@@ -176,18 +176,19 @@ const GuardianProposalCreation = () => {
         >
           <CloseIcon />
         </IconButton>
-
-        <DialogContent className="grid gap-4">
-          <p>
-            <span className="font-bold">Principal:</span> {form.principal}
-          </p>
-          <p>
-            <span className="font-bold">Action:</span> {selectedValue}
-          </p>
-          <p>
-            <span className="font-bold">Deadline:</span> {form.deadline.format("DD/MM/YYYY")}
-          </p>
-        </DialogContent>
+        <div className="w-[392px] h-[236px] ">
+          <DialogContent className="flex flex-col gap-6 w-[344px] h-[173px] mt-6">
+            <p className="truncate w-68">
+              <span className="font-bold">Member ID:</span> {form.principal}
+            </p>
+            <p>
+              <span className="font-bold">Action:</span> {selectedValue}
+            </p>
+            <p>
+              <span className="font-bold">Voting eadline:</span> {form.deadline.format("DD/MM/YYYY")}
+            </p>
+          </DialogContent>
+        </div>
 
         <section className="w-full flex justify-center gap-4 p-4 pb-6">
           <Button size="small" onClick={toggleDialog}>
@@ -203,7 +204,6 @@ const GuardianProposalCreation = () => {
           </Button>
         </section>
       </Dialog>
-
       {/* TODO (fran): ver que cuando se cierre este dialog deberia mandarlo a la proposal o la lista de proposals */}
       <Dialog
         onClose={handleCloseResponseDialog}
