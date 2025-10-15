@@ -84,7 +84,7 @@ export const GlbUploaderAndViewer: React.FC<GlbUploaderAndViewerProps> = ({
             if (canvas) {
                 try {
                     // Obtener el blob del canvas
-                    const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+                    const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
 
                     if (!blob) throw new Error("No se pudo obtener el Blob del canvas.");
 
@@ -93,7 +93,7 @@ export const GlbUploaderAndViewer: React.FC<GlbUploaderAndViewerProps> = ({
                     const compressedUint8Array = await compressAndConvertImage(blob, 200, 1024, 1024);
                     
                     // Crear un nuevo Blob a partir del Uint8Array
-                    const compressedBlob = new Blob([new Uint8Array(compressedUint8Array)], { type: 'image/jpeg' });
+                    const compressedBlob = new Blob([new Uint8Array(compressedUint8Array)], { type: 'image/png' });
                     
                     // Guardar la imagen comprimida en el estado del formulario padre
                     setScreenshot(compressedBlob);
@@ -155,7 +155,7 @@ export const GlbUploaderAndViewer: React.FC<GlbUploaderAndViewerProps> = ({
                     flexDirection: 'column'
                 }}>
                     <div className="flex justify-between items-center mb-4">
-                        <h2 id="modal-modal-title" className="text-xl font-bold">Vista Previa del Modelo</h2>
+                        <h2 id="modal-modal-title" className="text-xl font-bold">Preview</h2>
                         <IconButton onClick={() => setIsModalOpen(false)}>
                             <CloseIcon />
                         </IconButton>

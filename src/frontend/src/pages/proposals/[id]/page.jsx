@@ -26,6 +26,7 @@ import { useParams } from "react-router";
 import useCanister from "../../../hooks/useCanister";
 import { useState, useEffect, useRef } from "react";
 import ProposalVotingStatus from "../../../components/ProposalVotingStatus";
+import { blobToImageUrl } from "../../../utils/imageManager";
 // import { useNavigate } from "react-router";
 // import ProposalComment from "../../../components/proposals/ProposalComment";
 // import { Principal } from "@dfinity/principal";
@@ -241,17 +242,31 @@ const ProposalDetail = () => {
             </section>
           </div>
           <div className="flex flex-col items-center">
-            <section className="p-6 md:w-[80vw] gap-4">
-              <div className="md:w-full">
-                <h4 className="my-6 px-10">DESCRIPTION</h4>
-                <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.description}</p>
-              </div>
+            <div className="flex flex-row">
+              <section 
+              className={`p-6 gap-4 ${
+                  "DigitalTaonga" in proposal.kind
+                    ? 'w-[50vw]' 
+                    : 'md:w-[80vw]' 
+                }`}
+              >
+                <div className="md:w-full">
+                  <h4 className="my-6 px-10">DESCRIPTION</h4>
+                  <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.description}</p>
+                </div>
 
-              <div className=" md:w-full">
-                <h4 className="my-6 px-10">IMPACT</h4>
-                <p className="h-40 overflow-y-scroll custom-scrollbar">{proposal.impact}</p>
-              </div>
-            </section>
+                <div className=" md:w-full">
+                  <h4 className="my-6 px-10">IMPACT</h4>
+                  <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.impact}</p>
+                </div>
+              </section>
+              {"DigitalTaonga" in proposal.kind && 
+                <div className="flex flex-col items-center p-6 md:w-[30vw] ">
+                  <h4 className="mb-4">New Digital Taonga Proposal</h4>
+                  <img className="max-h-140 rounded-[40px] " src={blobToImageUrl(proposal.kind.DigitalTaonga.CreateDigitalTaonga.thumbnail)} alt="" />
+                </div>
+              }
+            </div>
           </div>
 
           {/* --- Comments section --- */}

@@ -7,6 +7,8 @@ import PersonIcon from "@mui/icons-material/Person";
 import { useAuth } from "@nfid/identitykit/react";
 import useMemberStore from "../../store/useMemberStore";
 import { blobToImageUrl } from "../../utils/imageManager";
+import useCanister from "../../hooks/useCanister"
+import { proposalsArrayParser } from "../../utils/parsers";
 
 // Paginas
 import ProfileSettings from "../../pages/profile/settings/page";
@@ -46,11 +48,36 @@ const Profile = () => {
     }
   }, [user, navigate]);
 
+  // contadores de proposal fijos.
+
+  const [dao] = useCanister()
+  const [approved, setApproved] = useState([])
+  const [rejected, setRejected] = useState([])
+  const [active, setActive] = useState([])
+
+
+  useEffect(() => {
+    const fetchProposals = async () => {
+      if (dao) {
+        const response = await dao.get_my_proposals();
+        if (response) {
+          // proposalsShown.current = proposalsArrayParser(response)
+
+          setApproved(proposalsArrayParser(response.filter(p => 'Approved' in p.status)))
+          setRejected(proposalsArrayParser(response.filter(p => 'Rejected' in p.status)))
+          setActive(proposalsArrayParser(response.filter(p => 'Open' in p.status)))
+        }
+      }
+    };
+    fetchProposals()
+  }, [dao, user])
+
+
   return (
     <main className="xl:p-8">
       {/* --------- HEADER PERFIL --------- */}
-      <section className="xl:flex">
-        <section className="flex items-center justify-between p-4 xl:justify-start xl:gap-8 xl:w-1/3">
+      <section className="xl:flex xl:mt-4">
+        {activePage != "settings" && <section className="flex items-center justify-between p-4 xl:justify-start xl:gap-8 xl:w-2/3">
           <div className="flex items-center gap-4">
             {member.data?.profile_pic[0] ? (
               <img
@@ -87,14 +114,30 @@ const Profile = () => {
           >
             <EditIcon />
           </div>
-        </section>
+        </section>}
+        <div className="flex flex-col items-center justify-between w-full">
+          <div className="flex h-[133px] w-[630px] items-center justify-between px-[12px] gap-[10px]">
+            <div className="flex flex-col items-center justify-center h-[133px] w-[208px] bg-[#E4E4E4]">
+              <h1 className="text-center">{active.length}</h1>
+              <div>Active Proposal</div>
+            </div>
+            <div className="flex flex-col items-center justify-center h-[133px] w-[208px] bg-[#E4E4E4]">
+              <h1 className="text-center">{approved.length}</h1>
+              <div>Approved Proposal</div>
+            </div>
+            <div className="flex flex-col items-center justify-center h-[133px] w-[208px] bg-[#E4E4E4]">
+              <h1 className="text-center">{rejected.length}</h1>
+              <div>Rejected Proposal</div>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* --------- MENÚ LATERAL --------- */}
       <div className="xl:flex gap-6 mt-12">
 
         <section
-          className={`grid sm:mt-16 xl:max-w-[425px] xl:min-w-[320px] h-[370px]
+          className={`grid sm:mt-16 xl:w-[425px] xl:h-[360px]
           ${activePage !== null ? "hidden sm:grid" : "mobile:hidden"}`}
         >
           {links.map((link) => (

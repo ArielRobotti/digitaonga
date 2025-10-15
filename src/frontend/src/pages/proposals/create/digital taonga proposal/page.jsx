@@ -98,13 +98,13 @@ const DigitalTaongaProposalCreation = () => {
         console.log("Canva")
         try {
           // Obtener el blob del canvas
-          const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+          const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
           
           // Comprimir el blob y convertirlo a Uint8Array
-          const compressedUint8Array = await compressAndConvertImage(blob, 200, 1024, 1024); // 100 KB
+          const compressedUint8Array = await compressAndConvertImage(blob, 300, 1024, 1024); // 100 KB
           
           // Crear un nuevo Blob a partir del Uint8Array
-          const compressedBlob = new Blob([compressedUint8Array], { type: 'image/jpeg' });
+          const compressedBlob = new Blob([compressedUint8Array], { type: 'image/png' });
           
           // Guardar la imagen comprimida en el estado del formulario
           setForm(prevForm => ({ ...prevForm, screenshot: compressedBlob }));
@@ -476,7 +476,7 @@ const DigitalTaongaProposalCreation = () => {
           flexDirection: 'column'
         }}>
           <div className="flex justify-between items-center mb-4">
-            <h2 id="modal-modal-title" className="text-xl font-bold">Vista Previa del Modelo</h2>
+            <h2 id="modal-modal-title" className="text-xl font-bold">Preview</h2>
             <IconButton onClick={() => setIsModalOpen(false)}>
               <CloseIcon />
             </IconButton>
@@ -487,14 +487,14 @@ const DigitalTaongaProposalCreation = () => {
             )}
           </div>
           <div className="flex justify-center mt-4">
-            <Tooltip title="Tomar captura">
+            <Tooltip title="Screenshoot">
               <MUIButton
                 variant="contained"
                 onClick={handleCapture}
                 disabled={isCapturing}
                 startIcon={isCapturing ? <CircularProgress size={20} color="inherit" /> : <img src="/icons/camera.svg" alt="Tomar captura" className="w-5 h-5" />} // Reemplazamos PhotoCameraIcon con una imagen SVG
               >
-                {isCapturing ? 'Capturando...' : 'Tomar Captura'}
+                {isCapturing ? 'Capturing...' : 'Take screenshot'}
               </MUIButton>
             </Tooltip>
           </div>

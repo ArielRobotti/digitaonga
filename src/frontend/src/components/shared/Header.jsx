@@ -56,7 +56,7 @@ const Header = () => {
   const handleLogin = () => (user ? disconnect() : connect());
 
   return (
-    <header className="h-[60px] xl:h-[70px] w-screen bg-kokowai text-white flex xl:justify-between items-center fixed top-0 xl:px-4 z-10">
+    <header className="h-[60px] xl:h-[70px] w-screen bg-kokowai text-white flex xl:justify-between items-center fixed top-0 xl:px-4 z-10 select-none">
       {/* Burger menu for mobile view */}
       <div className="xl:hidden w-full flex flex-row justify-between items-center">
         <div className=" pl-4 ">
@@ -129,14 +129,15 @@ const Header = () => {
       {/* <ThemeToggle className="mx-6"/> */}
 
       <Button
-        className="hidden xl:flex w-[173px] justify-center items-center p-0 h-12 xl:mr-2"
+        className="hidden xl:flex w-[173px] justify-center items-center pr-2! h-12 xl:mr-2"
         onClick={handleLogin}
       >
         {user ? (
           <div className="flex flex-row items-center justify-between w-full">
-            <span className="text-[20px] truncate">
+            
+            <p className="text-[20px] truncate w-[132px] ">
               {member.data?.name[0] ? member.data.name[0].slice(0, 16) : "No Name"}
-            </span>
+            </p>
 
             {member.data?.profile_pic[0] ? (
               <img

@@ -56,7 +56,8 @@ const ProfileProposals = () => {
 
   return (
     <main>
-      <div
+      {/* Filtros/Contadores de proposal por estado*/}
+      {/* <div
         className="flex justify-around p-4 w-full flex-nowrap mt-2 select-none" 
       >
         <div
@@ -97,7 +98,7 @@ const ProfileProposals = () => {
           <h3 className="text-[14px] md:text-xl font-bold text-black">Rejected</h3>
           <p className="text-xl md:text-2xl text-black ">{rejected.length}</p>
         </div>
-      </div>
+      </div> */}
 
       <section className="grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] ml-35 md:grid-cols-[repeat(auto-fill,minmax(530px,1fr))] gap-y-8 gap-x-4  mt-4 px-4">
         {proposalsShown.current.map((item) => (

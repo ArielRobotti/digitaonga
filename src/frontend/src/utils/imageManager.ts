@@ -10,12 +10,12 @@ export const compressAndConvertImage = (
     let file: Blob
 
     if (input instanceof Uint8Array) {
-      file = new Blob([new Uint8Array(input)], { type: "image/jpeg" })
+      file = new Blob([new Uint8Array(input)], { type: "image/png" })
     } else if (input instanceof File || input instanceof Blob) {
       file = input
     } else if (Array.isArray(input)) {
       const uint8Array = new Uint8Array(input)
-      file = new Blob([uint8Array], { type: "image/jpeg" })
+      file = new Blob([uint8Array], { type: "image/png" })
     } else {
       return reject(new Error("Unsupported input type"))
     }
@@ -52,6 +52,10 @@ export const compressAndConvertImage = (
 
         canvas.width = width
         canvas.height = height
+
+        ctx.fillStyle = "#cccccc"
+        ctx.fillRect(0, 0, width, height)
+
         ctx.drawImage(img, 0, 0, width, height)
 
         let quality = 0.7
