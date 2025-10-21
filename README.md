@@ -3,7 +3,7 @@
 **DigitaOnga DAO** is a decentralized autonomous organization designed to **preserve, govern, and share cultural and digital heritage** (from the Māori word *taonga*, meaning treasures).  
 Built on the **Internet Computer (IC)**, DigitaOnga DAO empowers communities, NGOs, and cultural leaders to take part in transparent decision-making, policy creation, and collective ownership of their digital treasures.  
 
-🌐 **Live App:** [https://ep6bk-xaaaa-aaaal-qsmxq-cai.icp0.io/](https://ep6bk-xaaaa-aaaal-qsmxq-cai.icp0.io/)
+🌐 **Live App:** [https://ep6bk-xaaaa-aaaal-qsmxq-cai.icp0.io/](https://m33pu-aiaaa-aaaap-qqdoq-cai.icp0.io/)
 
 ---
 
