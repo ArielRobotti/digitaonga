@@ -51,46 +51,53 @@ fi
 dfx identity use 000Admin
 
 
-# echo "Test push proposal to create taonga from admin whitout votation instance"
+echo "Test push proposal to create taonga from admin whitout votation instance"
 
-# CreateTaongaProposal=$(dfx canister call motokoDao create_proposal "(
-#   record {
-#     title = \"From CLI. Admin push Create Taonga\";
-#     kind = variant {
-#       DigitalTaonga = variant {
-#         CreateDigitalTaonga = record {
-#           thumbnail = blob \"\\00\\11\\33\\99\";
-#           name = \"Test Create Taonga\";
-#           description = \"Test Description \";
-#           deadline = 0 : int;
-#           history = \"Test History Taonga\";
-#           dataSize = 4 : nat;
-#           chunksQty = 1 : nat;
-#           imageID = 0 : nat;
-#         }
-#       }
-#     };
-#     description = \"Test Proposal create taonga. Canister Taonga is automaticaly deploy\";
-#     deadline = 0 : int;
-#   },
-# )")
-# echo "Response from create_proposal: $CreateTaongaProposal"
+export timestamp=$(dfx canister call motokoDao time)
+timestamp_number=$(echo "$timestamp" | sed -E 's/^\((.*) : int\)$/\1/' | tr -d '_')
+incremento=120000000000
+export deadline=$(echo "$timestamp_number + $incremento" | bc)
+
+CreateTaongaProposal=$(dfx canister call motokoDao create_proposal '(
+  record {
+    impact = "Tets Impacto field";
+    title = "Test Title Field";
+    kind = variant {
+      DigitalTaonga = variant {
+        CreateDigitalTaonga = record {
+          thumbnail = blob "\00\11\22";
+          name = "Test Name Taonga Field";
+          description = "Test Description field";
+          deadline = '$deadline';
+          history = "Test History field";
+          dataSize = 4 : nat;
+          chunksQty = 1 : nat;
+          imageID = 0 : nat;
+        }
+      }
+    };
+    description = "Test Proposal Description Field";
+    deadline = '$deadline';
+    extendedData = vec {};
+  },
+)')
+echo "Response from create_proposal: $CreateTaongaProposal"
 
 # Corrected variable assignment
-# FileId=$(echo "$CreateTaongaProposal" | grep -o 'id = [0-9_]\+' | head -n 1 | awk '{print $NF}' | tr -d '_')
-# echo "Extracted ID: $FileId"
+FileId=$(echo "$CreateTaongaProposal" | grep -o 'id = [0-9_]\+' | head -n 1 | awk '{print $NF}' | tr -d '_')
+echo "Extracted ID: $FileId"
 
-# echo " ⬆️  uploading file chunk..."
+echo " ⬆️  uploading file chunk..."
 
 
-# dfx canister call motokoDao uploadFileChunk "(
-#   record {
-#     chunk = blob \"\\99\\99\\99\\77\";
-#     fileId = $FileId;
-#     index = 0 : nat;
-#     retry = false;
-#   },
-# )"
+dfx canister call motokoDao uploadFileChunk "(
+  record {
+    chunk = blob \"\\99\\99\\99\\77\";
+    fileId = $FileId;
+    index = 0 : nat;
+    retry = false;
+  },
+)"
 
 echo "... Refreshing the status of the proposals and performing the corresponding executions"
 # echo "⏳ Waiting for 10 seconds before uploading file chunk..."
