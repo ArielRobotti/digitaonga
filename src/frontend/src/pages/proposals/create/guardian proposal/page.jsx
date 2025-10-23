@@ -56,7 +56,10 @@ const GuardianProposalCreation = () => {
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
   const handleResponseError = () => setResponseDialog({ success: false, error: true });
   const handleResponseSuccess = () => setResponseDialog({ success: true, error: false });
-  const handleCloseResponseDialog = () => setResponseDialog({ success: false, error: false });
+  const handleCloseResponseDialog = () => {
+    setResponseDialog({ success: false, error: false });
+    navigate("/proposals")
+  }
   const toggleDialog = () => setOpen(!open);
 
   const handleSelectMember = (e) => {
@@ -79,6 +82,7 @@ const GuardianProposalCreation = () => {
       selectedValue={selectedValue}
       // className={selectedMember == null ?  "hidden": ""}
       handleRadioChange={handleRadioChange}
+      className={ "select-none"}
     />
     switch(currentRole) {
       case 'Observer':
@@ -93,6 +97,7 @@ const GuardianProposalCreation = () => {
               selectedValue={selectedValue}
               // className={selectedMember == null ?  "hidden": ""}
               handleRadioChange={handleRadioChange}
+              className={ "select-none"}
             />
             {removeMember}
           </div>
@@ -101,7 +106,7 @@ const GuardianProposalCreation = () => {
         return (
           <div className="flex flex-col md:flex-row md:flex-wrap justify-center gap-4">
             <ActionCard
-              key=""
+              key="assign-observer-action"
               title="Assign as Observer"
               subtitle="Limit this user's role to observer."
               description="The member will have the ability to create proposals and vote on third-party proposals."
@@ -109,6 +114,7 @@ const GuardianProposalCreation = () => {
               selectedValue={selectedValue}
               // className={selectedMember == null ?  "hidden": ""}
               handleRadioChange={handleRadioChange}
+              className={ "select-none"}
             />
             {removeMember}
           </div>
@@ -120,11 +126,22 @@ const GuardianProposalCreation = () => {
   const handleSubmit = async () => {
     try {
       const deadline = BigInt(form.deadline?.unix() * 1_000_000_000)
-      const guardianSelectedAction =
-        selectedValue === "Assign as Observer"
-          ? { AssignAsObserver: [form.principal, deadline] }
-          : { RemoveFromDao: [form.principal, deadline] }
-
+      let guardianSelectedAction = {}
+      switch (selectedValue) {
+        case "Assign as Observer":
+          guardianSelectedAction = { 
+            AssignRole: { member: form.principal, role: {Observer: null}, deadline }  
+          }
+          break
+        case "Assign as Guardian":
+          guardianSelectedAction = {
+            AssignRole: { member: form.principal, role: {Guardian: null}, deadline }
+          }
+          break
+        case "Remove from DAO":
+          guardianSelectedAction = { RemoveFromDao: [form.principal, deadline] }
+          break
+      }
       const proposalArgs = {
         title: form.title,
         description: form.description,
@@ -187,14 +204,14 @@ const GuardianProposalCreation = () => {
                 <img
                   src={blobToImageUrl(m.profile_pic[0])}
                   alt={m.name}
-                  className="w-14 h-14 rounded-full object-cover ml-4" 
+                  className="w-13 h-13 rounded-full object-cover" 
                 />
                 : 
-                <AvatarIcon className="w-14 h-14 rounded-full object-cover ml-4"/>;
+                <AvatarIcon className="w-13 h-13 rounded-full object-cover"/>;
 
               return (
                 <MenuItem key={principalText} value={principalText} className="">
-                  <Box className="flex items-center justify-between w-full pr-4">
+                  <Box className="flex items-center justify-between w-full pr-2">
                     <span className="text-gray-600 w-20">{m.name[0]? m.name[0]: "No name"}</span>
                     <span className="text-gray-600">({Object.keys(m.role)[0] })</span>
                     

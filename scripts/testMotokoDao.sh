@@ -111,51 +111,61 @@ dfx identity list | grep -q "^000Guardian2$" || dfx identity new 000Guardian2
 dfx identity use 000Guardian2
 export PrincipalGuardian02=$(dfx identity get-principal)
 dfx canister call motokoDao create_member
+dfx canister call motokoDao edit_member "(record { name = opt \"Member Dos\"; cover_img = null; profile_pic = null })"
 
 dfx identity list | grep -q "^000Guardian3$" || dfx identity new 000Guardian3
 dfx identity use 000Guardian3
 export PrincipalGuardian03=$(dfx identity get-principal)
 dfx canister call motokoDao create_member
+dfx canister call motokoDao edit_member "(record { name = opt \"Member Tres\"; cover_img = null; profile_pic = null })"
 
 dfx identity list | grep -q "^000Guardian4$" || dfx identity new 000Guardian4
 dfx identity use 000Guardian4
 export PrincipalGuardian04=$(dfx identity get-principal)
 dfx canister call motokoDao create_member
+dfx canister call motokoDao edit_member "(record { name = opt \"Member Cuatro\"; cover_img = null; profile_pic = null })"
 
 dfx identity list | grep -q "^000Guardian5$" || dfx identity new 000Guardian5
 dfx identity use 000Guardian5
 export PrincipalGuardian05=$(dfx identity get-principal)
 dfx canister call motokoDao create_member
+dfx canister call motokoDao edit_member "(record { name = opt \"Member Cinco\"; cover_img = null; profile_pic = null })"
 
 dfx identity list | grep -q "^000Guardian6$" || dfx identity new 000Guardian6
 dfx identity use 000Guardian6
 export PrincipalGuardian06=$(dfx identity get-principal)
 dfx canister call motokoDao create_member
+dfx canister call motokoDao edit_member "(record { name = opt \"Member Seis\"; cover_img = null; profile_pic = null })"
 
 dfx identity list | grep -q "^000Guardian7$" || dfx identity new 000Guardian7
 dfx identity use 000Guardian7
 export PrincipalGuardian07=$(dfx identity get-principal)
 dfx canister call motokoDao create_member
+dfx canister call motokoDao edit_member "(record { name = opt \"Member Siete\"; cover_img = null; profile_pic = null })"
 
 dfx identity list | grep -q "^000Guardian8$" || dfx identity new 000Guardian8
 dfx identity use 000Guardian8
 export PrincipalGuardian08=$(dfx identity get-principal)
 dfx canister call motokoDao create_member
+dfx canister call motokoDao edit_member "(record { name = opt \"Member Ocho\"; cover_img = null; profile_pic = null })"
 
 dfx identity list | grep -q "^000Guardian9$" || dfx identity new 000Guardian9
 dfx identity use 000Guardian9
 export PrincipalGuardian09=$(dfx identity get-principal)
 dfx canister call motokoDao create_member
+dfx canister call motokoDao edit_member "(record { name = opt \"Member Nueve\"; cover_img = null; profile_pic = null })"
 
 dfx identity list | grep -q "^000Guardian10$" || dfx identity new 000Guardian10
 dfx identity use 000Guardian10
 export PrincipalGuardian10=$(dfx identity get-principal)
 dfx canister call motokoDao create_member
+dfx canister call motokoDao edit_member "(record { name = opt \"Member Diez\"; cover_img = null; profile_pic = null })"
 
 dfx identity list | grep -q "^000Guardian11$" || dfx identity new 000Guardian11
 dfx identity use 000Guardian11
 export PrincipalGuardian11=$(dfx identity get-principal)
 dfx canister call motokoDao create_member
+dfx canister call motokoDao edit_member "(record { name = opt \"Member Once\"; cover_img = null; profile_pic = null })"
 
 dfx identity use 000Admin
 

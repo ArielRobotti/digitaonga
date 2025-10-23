@@ -448,7 +448,7 @@ module {
                 #Err("Member not Found");
               };
               case ( ?member ) {
-                ignore Member.set_member_role(s, p,role);
+                ignore Member.set_member_role(s, p, role);
                 #Ok(#Guardian({}));
               }
             }
