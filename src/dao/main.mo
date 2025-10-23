@@ -44,6 +44,20 @@ persistent actor {
     };
     canistersId
   };
+  public shared ({ caller }) func addControllerTo(p: Principal, canister: Principal): async [Principal]{
+    assert (Member.is_admin(state, caller));
+    await ManagerCanister.addController(canister, p);
+    [canister]
+  };
+
+  public shared func isUpdating(): async Bool {
+    updatingProposals
+  };
+
+  public shared ({ caller }) func killUpdating(): async (){
+    assert(Member.is_admin(state, caller));
+    updatingProposals := false
+  };
 
   ///////// Comentar luego de migración /////////
   // public shared ({ caller }) func pushMembers(members: [SharedTypes.Member]): async (){
