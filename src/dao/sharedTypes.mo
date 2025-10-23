@@ -73,7 +73,8 @@ module {
 
   public type DigitalTaongaProposal = {
     #UpdateDigitalTaonga : UpdateDigitalTaongaProposal;
-    #DeleteDigitalTaonga : Nat64;
+    // #DeleteDigitalTaonga : Nat64; // El id de un taonga es un Principal. Mapear <Nat64, {taonga: Principal; description: Text}>
+    #DeleteDigitalTaonga: Principal;
     #CreateDigitalTaonga : CreateDigitalTaongaArgs;
     #RequestDownloadPermision;
   };
