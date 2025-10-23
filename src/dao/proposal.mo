@@ -76,7 +76,7 @@ module {
       case _ {}
     };
 
-    let deadline = if(proposal.deadline < id) { // Consultar reglas relacionadas a establecer deadline en tiempo pasado
+    let deadline = if(proposal.deadline < id) { 
       id + 3 * 24 * 60 * 60 * 1000000000
     } else {
       proposal.deadline
@@ -86,7 +86,12 @@ module {
       proposal with
       id ;
       deadline ; 
-      active_members = Map.size(s.members);
+      active_members = 
+        Array.filter<(Principal, SharedTypes.Member)>(
+          Map.toArray<Principal, SharedTypes.Member>(s.members), 
+          func entrie = entrie.1.role == #Guardian or  entrie.1.role == #Admin
+        ).size()
+      ;
       comments = List.fromArray<SharedTypes.Comment>([]);
       creator = member.principal;
       creatorName = member.name;
@@ -99,6 +104,7 @@ module {
 
     newProposal
   };
+
 
   public func addChunk({s: Types.State; caller: Principal; fileId: Int; chunk: Blob; index: Nat; retry: Bool}): {#Ok; #Err} {
     switch (Map.get<Int, Types.File>(s.tempFiles, ihash, fileId)) {
@@ -242,20 +248,9 @@ module {
     switch (Map.get<Int, Proposal>(s.proposals, ihash, id)){
       case null { null };
       case ( ?proposal ) {
-        let _active_members = Member.get_active_members(s).size();
-        let _total_admins = Member.get_total_admins(s);
-        let roleOfCreatorProposal = Member.get_role_member(s, proposal.creator);
-        let guardiansQty = Array.filter<(Principal, SharedTypes.Member)>(
-          Map.toArray<Principal, SharedTypes.Member>(s.members), 
-          func entry = entry.1.role == #Guardian
-        ).size();
         if (proposal.status == #Open) { 
           print("Actulizando proposal " # debug_show(id));
-          if (roleOfCreatorProposal == ?#Admin and guardiansQty < 10) {
-            ignore await executeProposal(s, proposal, callback);
-            ignore Map.put<Int, SharedTypes.Proposal>(s.proposals, ihash, id, { proposal with status = #Approved});
-          } else {
-            // Si se superó el plazo se evalúa el la votación para ver si puede ser ejecutada.
+            // Si se superó el plazo se evalúa la votación para ver si puede ser ejecutada.
             if (now() > proposal.deadline ) {
               if (didProposalPass(proposal)) {
                 let resultProposalExecution = await executeProposal(s, proposal, callback);
@@ -266,7 +261,6 @@ module {
               }
             }
           };
-        };
         ?proposal
       }
     }
@@ -348,7 +342,11 @@ module {
         case _ {}
       }
     };
-    yes > no and yes > 1; // Nos aseguramos de que no se gane solo con el voto del creador. Revisar esto
+    let votes = pr.votes.size();
+    let activeMembers = pr.active_members;
+    let participation = (votes * 100) / activeMembers; //
+    let quorum = participation >=  20; // TODO: Reemplazar el '20' por una variable 'minQuorumPercentage' una vez que esté disponible y pueda ser seteable.
+    quorum and yes > no ; 
   };
 
 
@@ -428,6 +426,12 @@ module {
             };
             #Ok(#NewTaongaResult(taongaMetadata))
           };
+          case (#DeleteDigitalTaonga(id)){
+            /// TODO eliminar el canister class también
+            ignore Map.remove<Principal, SharedTypes.TaongaMetadata>(s.taongas, phash, id);
+            #Ok(#Void)
+
+          };
           case (_) {
             // TODO
             #Ok( #Void )
@@ -444,7 +448,7 @@ module {
                 #Err("Member not Found");
               };
               case ( ?member ) {
-                ignore Member.set_member_role(s, p,role);
+                ignore Member.set_member_role(s, p, role);
                 #Ok(#Guardian({}));
               }
             }
@@ -455,7 +459,7 @@ module {
                 ignore Member.set_member_role(s, user, #Observer );
                 #Ok(#Guardian({}));
               };
-              case (#Err(e)) {
+              case (#Err(_e)) {
                 #Err("Is Not a Member")
               }
             };       

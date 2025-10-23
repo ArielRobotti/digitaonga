@@ -3,7 +3,8 @@ import { Dialog, DialogContent, IconButton } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import Button from "../../../../components/shared/Button";
 import { CloseIcon } from "../../../../components/ui/icons";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+// import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import ProgressBar from "../../../../components/shared/ProgressBar";
@@ -107,7 +108,7 @@ const MotionProposalCreation = () => {
 
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DemoContainer components={["DatePicker"]}>
-            <DatePicker
+            <DateTimePicker
               label="Voting deadline"
               onChange={(v) => setForm({ ...form, deadline: v })}
               value={form.deadline}

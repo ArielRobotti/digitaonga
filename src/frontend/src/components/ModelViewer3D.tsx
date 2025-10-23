@@ -16,7 +16,7 @@ interface ModelProps {
 
 function Model({ url, rotation }: ModelProps) {
     const meshRef = useRef<Mesh>(null);
-    const { scene, animations } = useGLTF(url);
+    const { scene } = useGLTF(url);
     const { camera, controls } = useThree();
 
     const clonedScene = useMemo(() => scene.clone(), [scene]);
@@ -87,12 +87,13 @@ export const ModelViewer3D = forwardRef<HTMLDivElement, ModelViewer3DProps>(({ f
 
     return (
         <div className="w-full h-full flex flex-col" ref={ref}>
-            <div className="flex-1 bg-gradient-secondary rounded-lg overflow-hidden shadow-medium">
+            <div className="flex-1 rounded-lg overflow-hidden shadow-medium">
                 <Canvas
                     camera={{ position: [3, 5, 5], fov: 50 }}
-                    gl={{ preserveDrawingBuffer: true, antialias: true }}
+                    gl={{ preserveDrawingBuffer: true, antialias: true, alpha: true }}
+                    style={{ background: "transparent" }}
                     className="w-full h-full"
-                >
+                >    
                     <ambientLight intensity={1.5} />
                     <directionalLight
                         position={[-15, 15, 5]}

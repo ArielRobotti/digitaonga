@@ -56,9 +56,9 @@ const ProfileSettings = () => {
 
   return (
     <main>
-      <h3 className="uppercase p-6">Account Settings</h3>
+      {/* <h3 className="uppercase p-6">Account Settings</h3> */}
 
-      <section className="flex flex-col items-center gap-6 max-w-[340px] m-auto mt-6">
+      <section className="flex flex-col items-center gap-6 max-w-[340px] m-auto">
         <div className="relative">
           {/* Check for profilePic and ensure it's not an empty array */}
           {profilePic && profilePic[0] ? (
@@ -95,7 +95,7 @@ const ProfileSettings = () => {
           required
         />
 
-        <div className="absolute bottom-4 inset-x-0 z-10 grid gap-4 place-items-center">
+        <div className="">
           <Button onClick={handleSubmit} disabled={!isFormChanged} className="" variant="kokowai">
             Save Changes
           </Button>

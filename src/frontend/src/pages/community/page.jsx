@@ -7,10 +7,10 @@ import {
   Radio,
   RadioGroup,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 import Button from "../../components/shared/Button";
-import { CloseIcon } from "../../components/ui/icons";
+import { CloseIcon, FilterIcon } from "../../components/ui/icons";
 import LoadingIcon from "../../components/loading/LoadingIcon";
 import MemberCommunityCard from "../../components/community/MemberCommunityCard";
 import { memberParser } from "../../utils/parsers";
@@ -27,15 +27,22 @@ const Community = () => {
   const [members, setMembers] = useState({ loading: true, data: [] });
   const [selectedMembers, setSelectedMembers] = useState([]);
 
+  const [membersShown, setMembersShown] = useState([])
+  const [filterModal, setFilterModal] = useState(false)
+  // const [searchQuery, setSearchQuery] = useState("")
+  const [optionFilterSelected, setOptionFilterSelected] = useState("All Members")
+
   // Store
   const [daoAuth, dao] = useCanister();
   const { member } = useMemberStore();
-  const admin = member.data?.role
+  
+   const modalRef = useRef(null);
 
 
   // Dialog
   const toggleDialog = () => setOpen(!open);
   const toggleOpenDialog = () => setOpenDialog(!openDialog);
+  const toggleFilterModal = () => setFilterModal(!filterModal);
 
   // Handlers
   const handleChange = (e) => setValue(e.target.value);
@@ -44,6 +51,31 @@ const Community = () => {
       if (prev.includes(member)) return prev.filter((m) => m !== member);
       return [...prev, member];
     });
+  };
+
+  const handleFilter = (op = null) => {
+    console.log({op})
+    if(!op) {
+      setOptionFilterSelected("All Members");
+      setMembersShown(members.data)
+    } else {
+      console.log(op)
+      console.log(members.data[0].role)
+      setOptionFilterSelected(op + "s");
+      setMembersShown(members.data.filter(member => member.role == op))
+    }
+    toggleFilterModal(false)
+  };
+
+  const handleFilterSearch = (query) => {
+    if (!query.trim()) return;
+    const filtered = members.data.filter(
+      (member) => 
+        member.name[0]?.toLowerCase().includes(query.trim().toLowerCase()) ||
+        member.principal === query 
+    );
+    setMembersShown(filtered);
+    setOptionFilterSelected("Search")
   };
 
   const batchUpdateMemberRole = async () => {
@@ -76,6 +108,7 @@ const Community = () => {
         const data = members.map(memberParser);
 
         setMembers({ loading: false, data });
+        setMembersShown(data)
       } catch (err) {
         console.error("Error fetching members:", err);
         setMembers({ loading: false, data: [] });
@@ -84,15 +117,57 @@ const Community = () => {
     getAllMembers();
   }, [dao]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        setFilterModal(false);
+      }
+    };
+
+    if (filterModal) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [filterModal]);
+
+
   return (
     <main>
+      <header className="w-full flex p-[20px] md:p-[32px] justify-between select-none items-center">
+        <h4>MEMBERS</h4>
+        <div className="relative" ref={modalRef}>
+          <div className="flex items-center cursor-pointer" onClick={toggleFilterModal}>  
+            <p>{optionFilterSelected}</p>
+            <FilterIcon/>
+          </div>
+
+          {filterModal && (
+            <div className="absolute top-full right-0  bg-kokowai text-gray-300 w-54 shadow-lg rounded-lg py-4 z-50">
+              <p className="mx-4 py-3 hover:text-white cursor-pointer" onClick={() => handleFilter(null)}>All Members</p>
+              <p className="mx-4 py-3 hover:text-white cursor-pointer" onClick={() => handleFilter("Admin")}>Admins</p>
+              <p className="mx-4 py-3 hover:text-white cursor-pointer" onClick={() => handleFilter("Guardian")}>Guardians</p>
+              <p className="mx-4 py-3 hover:text-white cursor-pointer" onClick={() => handleFilter("Observer")}>Observers</p>
+              <input
+                className="mx-4 mt-2 flex-1 py-1 rounded w-50 bg-transparent text-gray-200 placeholder-gray-400 focus:outline-none focus:border-white"
+                type="text"
+                placeholder="Search by Name or ID"
+                onChange={(e) => handleFilterSearch(e.target.value)}
+              />
+
+            </div>
+          )}
+        </div>
+      </header>
       <section className="lg:max-w-[800px] lg:m-auto p-4 pb-20">
         {members.loading ? (
           <LoadingIcon />
         ) : members.data.length > 0 ? (
-          members.data.map((member) => (
+          membersShown.map((member) => (
             <MemberCommunityCard
-              key={member.id}
+              key={member.principal}
               {...member}
               handleSelectMember={handleSelectMember}
             />

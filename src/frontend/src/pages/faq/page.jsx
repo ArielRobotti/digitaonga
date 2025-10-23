@@ -18,11 +18,11 @@ const faqs = [
   },
   {
     title: "Who gets to make decisions about the digital collections?",
-    description: "",
+    description: "Decisions about each digital collection are made collectively by the community or group of kaitiaki (guardians) connected to it. This includes determining how the taonga is stored, who can view it, and how it may be shared or used in the future. The platform supports transparent, community-led governance, allowing decisions to reflect cultural protocols, values, and relationships. No outside organization or developer can override those choices — all authority stays with the community.",
   },
   {
     title: "Is this safe for sensitive cultural material?",
-    description: "",
+    description: "The technology we use puts a strong focus on data sovereignty, security, privacy, and long-term protection. Communities can control who sees what, and change those settings whenever they want.",
   },
   {
     title: "Will I need special technical skills to use it?",

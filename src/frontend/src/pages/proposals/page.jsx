@@ -10,16 +10,16 @@ import { useAuth } from "@nfid/identitykit/react";
 const Proposals = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [,dao] = useCanister(); // No hace falta que sea el agente autenticado
+  const [, dao] = useCanister(); // No hace falta que sea el agente autenticado
   const [createDisabled, setCreateDisabled] = useState()
-  
+
   const proposalsShown = useRef([])
   const [approved, setApproved] = useState([])
   const [rejected, setRejected] = useState([])
   const [active, setActive] = useState([])
-  
+
   const { proposals, setProposals } = useProposalStore();
-  
+
   useEffect(() => {
     const fetchProposals = async () => {
       if (dao) {
@@ -37,8 +37,8 @@ const Proposals = () => {
   }, [dao])
 
   useEffect(() => {
-    setCreateDisabled(user != undefined? false: true)
-  },[user])
+    setCreateDisabled(user != undefined ? false : true)
+  }, [user])
 
 
   const intervalRef = useRef(null);
@@ -71,23 +71,30 @@ const Proposals = () => {
 
 
   return (
-    <main className="p-4">
-      <section className="mb-6">
-        <h4 className="uppercase font-normal">Pending</h4>
-        {/* TODO (fran): hacer dinamico cantidad de proposals */}
-        <span className="leading-5">{active.length} pending proposals</span>
+    <main className="p-2 md:p-4">
+      <h3 className="font-bold flex flex-col items-center h-[97px] py-4">CURRENT PROPOSALS</h3>
+      <section className="my-6">
+        <div className="h-[96px]  flex flex-col justify-center">
+          <h4 className="uppercase font-normal">Pending</h4>
+          {/* TODO (fran): hacer dinamico cantidad de proposals */}
+          <span className="leading-5">{active.length} pending proposals</span>
+        </div>
         <ProposalContainer className="mt-4" status="Open" />
       </section>
       <section className="mb-6">
-        <h4 className="font-bold leading-6">Approved</h4>
-        {/* TODO (fran): hacer dinamico cantidad de proposals */}
-        <span className="leading-5">{approved.length} approved proposals</span>
+        <div className="h-[96px] flex flex-col justify-center">
+          <h4 className="uppercase leading-6">Approved</h4>
+          {/* TODO (fran): hacer dinamico cantidad de proposals */}
+          <span className="leading-5">{approved.length} approved proposals</span>
+        </div>
         <ProposalContainer className="mt-4" status="Approved" />
       </section>
       <section className="mb-16">
-        <h4 className="font-bold leading-6">Rejected</h4>
-        {/* TODO (fran): hacer dinamico cantidad de proposals */}
-        <span className="leading-5">{rejected.length} rejected proposals</span>
+        <div className="h-[96px] flex flex-col justify-center">
+          <h4 className="uppercase leading-6">Rejected</h4>
+          {/* TODO (fran): hacer dinamico cantidad de proposals */}
+          <span className="leading-5">{rejected.length} rejected proposals</span>
+        </div>
         <ProposalContainer className="mt-4" status="Rejected" />
       </section>
 

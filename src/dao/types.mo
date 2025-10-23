@@ -39,7 +39,6 @@ module {
       members = Map.new<Principal, Member>();
       tempFiles = Map.new<Int, File>();
       proposals = Map.new<Int, Proposal>();
-      // taongas = Map.new<Nat, SharedTypes.TaongaMetadata>();
       taongas = Map.new<Principal, SharedTypes.TaongaMetadata>();
       // callback;
       cyclesForTaongaDeploy;

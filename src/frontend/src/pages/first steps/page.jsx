@@ -1,9 +1,17 @@
 import Button from "../../components/shared/Button";
 import useMemberStore from "../../store/useMemberStore";
+import useMember from "../../hooks/useMember";
+// import { useNavigate } from "react-router";
 
 const FirstSteps = () => {
+
+  // const navigate = useNavigate()
   const { member } = useMemberStore();
-  // TODO (fran): continuar verificando el miembro
+  const { connect, disconnect, user } = useMember();
+
+  // if (!member.loading && !member.data){
+  //   navigate("/")
+  // }
 
   return (
     <main className="">
@@ -27,9 +35,12 @@ const FirstSteps = () => {
         </p>
 
         <div className="grid place-items-center gap-4 mt-40 w-full md:mt-0">
-          <Button variant="kokowai" onClick={() => (window.location.href = `/assign-role`)}>
+          {/* <Button variant="kokowai" onClick={() => (window.location.href = `/assign-role`)}>
             Assign roles
-          </Button>
+          </Button> */}
+          {user &&<Button variant="kokowai" onClick={() => (window.location.href = user? "/profile": "/")}>
+            Complete your profile
+          </Button >}
           {/* <Button variant="kokowai">Complete your profile</Button> */}
         </div>
       </section>

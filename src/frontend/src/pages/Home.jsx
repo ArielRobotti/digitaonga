@@ -5,7 +5,7 @@ import ProposalContainer from "../components/shared/ProposalContainer";
 const Home = () => {
   return (
     <main >
-      <NftsContainer />
+      {/* <NftsContainer /> */}
 {/*       
 
       // <ProposalCard />

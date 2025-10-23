@@ -11,116 +11,67 @@ const NftDetail = () => {
   const [modelUrl, setModelUrl] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-
-      const requestMetadata = await taongaRemoteActor.get_asset_metadata();
-
-      if (requestMetadata) {
-        const metadata = requestMetadata;
-        setMetadata(metadata);
-
-        // Generamos un array de promesas para todas las solicitudes de chunks
-        const chunkPromises = [];
-        for (let i = 0; i < metadata.chunkQty; i++) {
-          chunkPromises.push(
-            taongaRemoteActor.get_asset_data({ chunkIndex: BigInt(i) })
-          );
-        }
-
-        // Esperamos la resolución de todas las promesas de manera concurrente
-        const allChunkResponses = await Promise.all(chunkPromises);
-
-        // Extraemos los chunks del objeto de respuesta
-        const allChunks = allChunkResponses.map((response) => {
-          if ("Ok" in response) {
-            return response.Ok.chunk;
-          }
-          // Si hay un error, devolvemos un array vacío para no detener el proceso
-          return new Uint8Array();
-        });
-
-        // Creamos un Blob directamente desde el array de chunks. 
-        // Esto evita la concatenación en memoria.
-        const glbBlob = new Blob(allChunks, { type: 'model/gltf-binary' });
-
-        // Creamos una URL temporal para el Blob
-        const url = URL.createObjectURL(glbBlob);
-
-        // Actualizamos el estado con la URL del modelo
-        setModelUrl(url);
-
-      } else {
-        console.error("Error fetching metadata:", requestMetadata.Err);
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
-    // const fetchData = async () => {
-    //   try {
-    //     setLoading(true);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
 
-    //     // Fetch metadata first to get the total number of chunks.
-    //     const requestMetadata = await taongaRemoteActor.get_asset_metadata();
+        // Fetch metadata first to get the total number of chunks.
+        const requestMetadata = await taongaRemoteActor.get_asset_metadata();
 
-    //     if (requestMetadata) {
-    //       const metadata = requestMetadata;
-    //       setMetadata(metadata);
+        if (requestMetadata) {
+          const metadata = requestMetadata;
+          setMetadata(metadata);
 
-    //       // Generate promises for all chunk requests concurrently.
-    //       const chunkPromises = [];
-    //       for (let i = 0; i < metadata.chunkQty; i++) {
-    //         chunkPromises.push(
-    //           taongaRemoteActor.get_asset_data({ chunkIndex: BigInt(i) })
-    //         );
-    //       }
+          // Generate promises for all chunk requests concurrently.
+          const chunkPromises = [];
+          for (let i = 0; i < metadata.chunkQty; i++) {
+            chunkPromises.push(
+              taongaRemoteActor.get_asset_data({ chunkIndex: BigInt(i) })
+            );
+          }
 
-    //       // Wait for all promises to resolve.
-    //       const allChunkResponses = await Promise.all(chunkPromises);
+          // Wait for all promises to resolve.
+          const allChunkResponses = await Promise.all(chunkPromises);
 
-    //       // Extract the binary chunk data from each response.
-    //       const allChunks = allChunkResponses.map((response) => {
-    //         if ("Ok" in response) {
-    //           return response.Ok.chunk;
-    //         }
-    //         return new Uint8Array();
-    //       });
+          // Extract the binary chunk data from each response.
+          const allChunks = allChunkResponses.map((response) => {
+            if ("Ok" in response) {
+              return response.Ok.chunk;
+            }
+            return new Uint8Array();
+          });
 
-    //       // Efficiently concatenate all chunks into a single Uint8Array.
-    //       const totalLength = allChunks.reduce(
-    //         (sum, chunk) => sum + chunk.length,
-    //         0
-    //       );
-    //       const finalData = new Uint8Array(totalLength);
-    //       let offset = 0;
-    //       for (const chunk of allChunks) {
-    //         finalData.set(chunk, offset);
-    //         offset += chunk.length;
-    //       }
+          // Efficiently concatenate all chunks into a single Uint8Array.
+          const totalLength = allChunks.reduce(
+            (sum, chunk) => sum + chunk.length,
+            0
+          );
+          const finalData = new Uint8Array(totalLength);
+          let offset = 0;
+          for (const chunk of allChunks) {
+            finalData.set(chunk, offset);
+            offset += chunk.length;
+          }
 
-    //       // Create a Blob from the final data and a temporary URL for it.
-    //       const glbBlob = new Blob([finalData], {
-    //         type: "model/gltf-binary",
-    //       });
-    //       const url = URL.createObjectURL(glbBlob);
+          // Create a Blob from the final data and a temporary URL for it.
+          const glbBlob = new Blob([finalData], {
+            type: "model/gltf-binary",
+          });
+          const url = URL.createObjectURL(glbBlob);
 
-    //       // Update the state with the model URL.
-    //       setModelUrl(url);
-    //     } else {
-    //       console.error("Error fetching metadata:", requestMetadata.Err);
-    //     }
-    //   } catch (error) {
-    //     console.error("Error fetching data:", error);
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // };
+          // Update the state with the model URL.
+          setModelUrl(url);
+        } else {
+          console.error("Error fetching metadata:", requestMetadata.Err);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
     if (taongaRemoteActor && id) {
       fetchData();

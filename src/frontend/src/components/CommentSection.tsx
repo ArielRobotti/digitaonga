@@ -61,8 +61,8 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ rawICComments, o
   };
 
   return (
-    <div className="container mx-auto px-0 md:px-3 py-4 mb-10 max-w-7xl bg-gray-400 shadow-lg rounded-lg ">
-      <h4>Comments</h4>
+    <div className="container mx-auto px-0 md:px-3 py-4 mb-10 xl:w-[80vw] bg-white shadow-lg rounded-lg border">
+      <h4 className="my-2">Comments</h4>
       {/* <h2 className="text-3xl font-bold text-gray-800 mb-6"></h2> */}
 
 
@@ -73,7 +73,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ rawICComments, o
         className="comment-list max-h-[50vh] overflow-y-scroll custom-scrollbar"
       >
         {rawICComments.length === 0 ? (
-          <p className="text-gray-500 italic">No hay comentarios aún. ¡Sé el primero en comentar!</p>
+          <p className=" text-gray-600 italic">There are no comments yet. Be the first to comment!</p>
         ) : (
           <CommentListRenderer
             commentList={rawICComments}

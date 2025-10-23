@@ -28,29 +28,28 @@ const ProposalVotingStatus = ({
     deadline = null, // BigInt timestamp en nanosegundos
     participationRequired = 20,
     majorityRequired = 50,
-    status = "Open"
+    status = "Open",
+    className = "",
 }) => {
 
     const [isHovered, setIsHovered] = React.useState(false);
 
-    console.log(status)
-    
     // Convertir BigInt a Number
     const yesVotes = Number(partialResults.approving || 0n);
     const noVotes = Number(partialResults.disapproving || 0n);
     const abstentionVotes = Number(partialResults.abstentions || 0n);
-    
+
     // Calcular totales
     const totalVotes = yesVotes + noVotes + abstentionVotes;
-    
+
     // Calcular porcentajes basados en el total de votos
     const yesPercentage = totalVotes > 0 ? yesVotes / totalVotes * 100 : 0;
     const noPercentage = totalVotes > 0 ? noVotes / totalVotes * 100 : 0;
     const abstentionPercentage = totalVotes > 0 ? abstentionVotes / totalVotes * 100 : 0;
-    
+
     // Participación (sobre miembros activos)
     const participationPercentage = totalVotes / Number(activeMembers) * 100;
-    
+
     // Verificar condiciones
     const participationMet = participationPercentage >= participationRequired;
     const yesOfVoted = totalVotes > 0 ? Number(yesVotes / totalVotes) * 100 : 0;
@@ -59,21 +58,21 @@ const ProposalVotingStatus = ({
     // Formatear deadline
     const formatDeadline = (deadlineBigInt) => {
         if (!deadlineBigInt) return "No deadline set";
-        
+
         try {
             // Convertir de nanosegundos a milisegundos
             const milliseconds = Number(deadlineBigInt / 1000000n);
             const deadlineDate = new Date(milliseconds);
             const now = new Date();
-            
+
             const diffMs = deadlineDate - now;
-            
+
             if (diffMs < 0) return "Voting closed";
-            
+
             const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
             const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-            
+
             if (days > 0) {
                 return `${days} day${days !== 1 ? 's' : ''}, ${hours} hour${hours !== 1 ? 's' : ''}`;
             } else if (hours > 0) {
@@ -88,29 +87,34 @@ const ProposalVotingStatus = ({
     };
 
     return (
-        <div 
-            className="w-full max-w-2xl bg-slate-700 rounded-lg p-4 text-white"
+        <div
+            className={`bg-[#382027]  p-1 text-white md:mt-1 ${className}`}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <h2 className="text-xl font-semibold">Voting Results</h2>
+            <div className="flex flex-col items-center mt-2">
+                <h2 className="text-xl font-semibold">Voting Results</h2>
+            </div>
 
             {/* Barra de votación principal */}
             <div className="mb-2">
-                <div className="flex justify-between items-start mb-2">
-                    <div>
-                        <div className="text-emerald-400 text-sm font-medium">Yes</div>
+                <div className="flex justify-between items-start md:mb-2">
+                    <div className="ml-6">
+                        <span className="text-emerald-400 text-sm font-medium">Yes: </span>
+                        <span className="text-emerald-400 text-xs ml-2">{yesVotes} votes</span>
                         <div className="text-emerald-400 text-xl font-bold">
                             {yesPercentage.toFixed(2)}%
                         </div>
-                        <div className="text-emerald-400 text-xs">{yesVotes} votes</div>
                     </div>
-                    <div className="text-right">
-                        <div className="text-rose-400 text-sm font-medium">No</div>
+                    <div className="text-gray-400">
+                        Total: {totalVotes} votes
+                    </div>
+                    <div className="text-right mr-6">
+                        <span className="text-rose-400 text-sm font-medium">No: </span>
+                        <span className="text-rose-400 text-xs ml-2">{noVotes} votes</span>
                         <div className="text-rose-400 text-xl font-bold">
                             {noPercentage.toFixed(2)}%
                         </div>
-                        <div className="text-rose-400 text-xs">{noVotes} votes</div>
                     </div>
                 </div>
 
@@ -120,6 +124,7 @@ const ProposalVotingStatus = ({
                         className="absolute left-0 top-0 h-full bg-emerald-500 transition-all duration-500"
                         style={{ width: `${yesPercentage}%` }}
                     />
+                    
                     <div
                         className="absolute right-0 top-0 h-full bg-rose-500 transition-all duration-500"
                         style={{ width: `${noPercentage}%` }}
@@ -135,31 +140,29 @@ const ProposalVotingStatus = ({
                 </div>
 
                 {/* Información de deadline y abstenciones */}
-                <div className="flex justify-between items-center mt-3 text-sm">
+                <div className="flex flex-col items-center mt-3 text-sm">
                     <div className="text-gray-400">
                         {abstentionVotes > 0 && (
                             <span>Abstentions: {abstentionVotes}</span>
                         )}
                     </div>
-                    {status == "Open"? <div className="text-slate-300 text-center">
+                    {status == "Open" ? <div className="text-slate-300 text-center">
                         <Clock className="inline w-4 h-4 mr-1" />
                         Voting open until
                         <div className="font-semibold">{formatDeadline(deadline)}</div>
-                    </div>:
-                    <div className="text-slate-300 text-center">
-                        Proposal status: 
-                        <div className="font-semibold">{status}</div>
-                    </div>
+                    </div> :
+                        <div className="text-slate-300 text-center">
+                            Proposal status:
+                            <div className="font-semibold">{status}</div>
+                        </div>
                     }
-                    <div className="text-gray-400">
-                        Total: {totalVotes} votes
-                    </div>
+                    
                 </div>
             </div>
 
-            <div 
+            <div
                 className="overflow-hidden transition-all duration-500 ease-in-out"
-                style={{ 
+                style={{
                     maxHeight: isHovered ? '1000px' : '0',
                     opacity: isHovered ? 1 : 0
                 }}
@@ -214,25 +217,26 @@ const ProposalVotingStatus = ({
                 </div>
 
                 {/* Información adicional */}
-                <div className="mt-4 pt-4 border-t border-slate-600">
-                    <div className="grid grid-cols-3 gap-4 text-center text-sm">
-                        <div>
+                <div className="mt-4 pt-4 border-t border-slate-600 w-full flex flex-row gap-2 justify-around">
+           
+                        <div className="text-center">
                             <div className="text-slate-400 mb-1">Yes Votes</div>
                             <div className="font-semibold text-emerald-400">{yesVotes}</div>
                         </div>
-                        <div>
+                        <div className="text-center">
                             <div className="text-slate-400 mb-1">No Votes</div>
                             <div className="font-semibold text-rose-400">{noVotes}</div>
                         </div>
-                        <div>
+                        <div className="text-center">
                             <div className="text-slate-400 mb-1">Abstentions</div>
                             <div className="font-semibold text-gray-400">{abstentionVotes}</div>
                         </div>
-                    </div>
-                    <div className="mt-4 text-center">
-                        <div className="text-slate-400 mb-1">Active Members</div>
-                        <div className="font-semibold">{activeMembers}</div>
-                    </div>
+
+                        <div className="text-center">
+                            <div className="text-slate-400 mb-1">Active Members</div>
+                            <div className="font-semibold">{activeMembers}</div>
+                        </div>
+            
                 </div>
             </div>
         </div>

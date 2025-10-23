@@ -44,18 +44,32 @@ persistent actor {
     };
     canistersId
   };
-
-  public shared ({ caller }) func pushMembers(members: [SharedTypes.Member]): async (){
-    assert(Member.is_admin(state, caller));
-    for(member in members.vals()) {
-      ignore Map.put<Principal, SharedTypes.Member>(
-        state.members, 
-        phash, 
-        member.principal, 
-        member)
-    }
+  public shared ({ caller }) func addControllerTo(p: Principal, canister: Principal): async [Principal]{
+    assert (Member.is_admin(state, caller));
+    await ManagerCanister.addController(canister, p);
+    [canister]
   };
-  
+
+  public shared func isUpdating(): async Bool {
+    updatingProposals
+  };
+
+  public shared ({ caller }) func killUpdating(): async (){
+    assert(Member.is_admin(state, caller));
+    updatingProposals := false
+  };
+
+  ///////// Comentar luego de migración /////////
+  // public shared ({ caller }) func pushMembers(members: [SharedTypes.Member]): async (){
+  //   assert(Member.is_admin(state, caller));
+  //   for(member in members.vals()) {
+  //     ignore Map.put<Principal, SharedTypes.Member>(
+  //       state.members, 
+  //       phash, 
+  //       member.principal, 
+  //       member)
+  //   }
+  // };
 
   //////////// Clean functions ////////////
   public shared ({ caller }) func removeFailedProposals(id: Int): async {#Ok; #Err}{
@@ -145,7 +159,14 @@ persistent actor {
       case (#Err(e)) { throw Error.reject("Member not found or invalid: " # debug_show(e)); };
       case (#Ok(member)) {
         assert(member.role == #Admin or member.role== #Guardian);
-        Proposal.new_proposal(state, member, args)
+        let proposal = Proposal.new_proposal(state, member, args);
+        switch (args.kind) {
+          case (#DigitalTaonga(#DeleteDigitalTaonga(_id))) {
+            
+          };
+          case _ {}
+        };
+        proposal
       }
     }
   };
@@ -264,13 +285,20 @@ persistent actor {
       func p = p.id
     );
     for(id in proposalsId.vals()){
-      ignore await Proposal.refresh_proposal_status(
-        state,
-        id,
-        callbackRemoveTempFile
-      )
+      print("actualizanedo proposal: " # debug_show(id));
+      try {
+        ignore await Proposal.refresh_proposal_status(
+          state,
+          id,
+          callbackRemoveTempFile
+        )
+      } catch(_) {
+        print("Error on refresh proposal: " # debug_show(id));
+        updatingProposals := false;
+      }
     };
-    updatingProposals := false
+    updatingProposals := false;
+    
   };
 
   public query ({ caller })  func has_voted(id : Int) : async Bool {
@@ -359,20 +387,20 @@ persistent actor {
 
   //////////////////////////////////////////////////////////////////
 
-  public shared ({ caller })func callbackRemoveTempFile(tempFileId : Int) : () {
+ public shared ({ caller })func callbackRemoveTempFile(tempFileId : Int) : () {
     let recoveredBytes = switch (Map.get<Int, Types.File>(state.tempFiles, ihash, tempFileId)) {
       case null {0};
       case (?file) {
         if(file.owner == caller){
           ignore Map.remove<Int, Types.File>(state.tempFiles, ihash, tempFileId);
-          file.data.size() 
+          file.data.size() * (file.data[0].size() -1: Nat ) + file.data[file.data.size() - 1: Nat].size()
         } else {
           0
         }
         
       };
     };
-    print(Nat.toText(recoveredBytes * limit_payload_per_call - 1024) # " Bytes temporary file successfully deleted");
+    print(Nat.toText(recoveredBytes ) # " Bytes temporary file successfully deleted");
   };
   
 }

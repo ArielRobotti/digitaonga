@@ -73,7 +73,7 @@
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Poppins", serif;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -349,4 +349,50 @@ ul.MuiMenu-list li:hover {
 .custom-scrollbar {
   scrollbar-width: thin; /* Deshabilita el scrollbar por defecto */
   scrollbar-color: #6b7280 transparent; /* Color del thumb y del track */
+}
+
+/* Bloqueo total de modo dark */
+
+
+/* 1️⃣ Ignora la preferencia del sistema */
+@media (prefers-color-scheme: dark) {
+  :root,
+  html,
+  body {
+    color-scheme: light !important;
+    --background: #ffffff !important;
+    --foreground: #171717 !important;
+    background-color: #ffffff !important;
+    color: #171717 !important;
+  }
+}
+
+/* 2️⃣ Anula cualquier clase .dark o selector similar */
+:root,
+html,
+body,
+.dark,
+[data-theme="dark"],
+[class*="dark"] {
+  color-scheme: light !important;
+  --background: #ffffff !important;
+  --foreground: #171717 !important;
+  background-color: #ffffff !important;
+  color: #171717 !important;
+}
+
+/* 3️⃣ Previene que frameworks cambien los colores dinámicamente */
+[data-theme],
+[class*="theme-dark"],
+[class*="night"],
+[class*="darkmode"] {
+  all: unset !important;
+  color-scheme: light !important;
+  background: #ffffff !important;
+  color: #171717 !important;
+}
+
+
+* {
+  color-scheme: light !important;
 }

@@ -26,6 +26,7 @@ import { useParams } from "react-router";
 import useCanister from "../../../hooks/useCanister";
 import { useState, useEffect, useRef } from "react";
 import ProposalVotingStatus from "../../../components/ProposalVotingStatus";
+import { blobToImageUrl } from "../../../utils/imageManager";
 // import { useNavigate } from "react-router";
 // import ProposalComment from "../../../components/proposals/ProposalComment";
 // import { Principal } from "@dfinity/principal";
@@ -46,6 +47,7 @@ const ProposalDetail = () => {
   const loading = useRef(true)
   const { user, connect } = useAuth();
   const [dao] = useCanister()
+  const [taongaToDelete, setTaongaToDelete] = useState()
 
   const countTotalComments = (list) => {
     let count = 0;
@@ -67,7 +69,15 @@ const ProposalDetail = () => {
   }
 
   const shortPrincipal = (p) => {
-    return p.slice(0, 5) + "..." + p.slice(p.length - 5, p.length )
+    return p.slice(0, 5) + "..." + p.slice(p.length - 5, p.length)
+  }
+
+  const updateProposal = (p) => {
+    setProposal(p);
+    setComments(p.comments)
+    setLikes(p.likes.filter(item => 'Like' in item[1]).length)
+    setDislikes(p.likes.filter(item => 'Dislike' in item[1]).length)
+    setCommentsQty(countTotalComments(p.comments))
   }
 
   useEffect(() => {
@@ -75,14 +85,17 @@ const ProposalDetail = () => {
       loading.current = true
 
       const response = await dao.get_proposal(BigInt(id))
-      if("Ok" in response){
+      if ("Ok" in response) {
         setUserVote(response.Ok.callerVote[0])
-        setProposal(response.Ok.proposal);
-        setComments(response.Ok.proposal.comments)
-        setLikes(response.Ok.proposal.likes.filter(item => 'Like' in item[1]).length)
-        setDislikes(response.Ok.proposal.likes.filter(item => 'Dislike' in item[1]).length)
-        setCommentsQty(countTotalComments(response.Ok.proposal.comments))
-      } 
+        updateProposal(response.Ok.proposal)
+        if (response.Ok.proposal.kind.DigitalTaonga?.DeleteDigitalTaonga) {
+          const fetchTaongas = await dao.get_all_taongas()
+          const t = fetchTaongas.find((taonga) => taonga[0].toString() === response.Ok.proposal.kind.DigitalTaonga.DeleteDigitalTaonga.toString())
+          if (t) {
+            setTaongaToDelete(t[1])
+          }
+        }
+      }
 
       loading.current = false
     }
@@ -116,7 +129,11 @@ const ProposalDetail = () => {
 
     const response = await dao.vote_proposal(BigInt(id), options[vote.value])
     console.log(response)
-
+    if (response[0]) {
+      updateProposal(response[0])
+    }
+    setOpen(true)
+    setUserVote(options[vote.value])
     setVote({ ...vote, loading: false });
   };
 
@@ -142,7 +159,7 @@ const ProposalDetail = () => {
       Dislike: { Dislike: null },
     };
     const response = await dao.like_proposal(BigInt(id), options[type])
-    if (response[0]){
+    if (response[0]) {
       console.log(response[0])
       setProposal(response[0])
       setLikes(response[0].likes.filter(item => 'Like' in item[1]).length)
@@ -151,107 +168,143 @@ const ProposalDetail = () => {
   };
 
   return (
-    <main className="">
+    <main
+      className=""
+      style={{ fontFamily: "poppins" }}
+    >
       {proposal &&
         <div className="h-full flex flex-col">
-          <section className="flex justify-around items-center px-2 md:p-6 overflow-hidden">
-            <div className="space-y-1">
-              {/* Título Principal */}
-              <h3 className="uppercase text-clip text-[18px] md:text-[28px] font-bold">
-                {proposal.title}
-              </h3>
-
-              {/* Contenedor de Metadatos Alineados */}
-              <div className="mt-4 space-y-1">
-
-                {/* Campo 1: ID */}
-                <div className="flex flex-col md:flex-row">
-                  <p className="w-30 flex-shrink-0">ID:</p>
-                  <span className="font-semibold  ml-2 md:ml-6">{id}</span>
-                </div>
-
-                {/* Campo 2: GUARDIAN ID */}
-                <div className="flex flex-col md:flex-row">
-                  <span className="w-30 flex-shrink-0">GUARDIAN ID:</span>
-                  <span className="font-semibold ml-2 md:ml-6">{shortPrincipal(proposal.creator.toString())}</span>
-                </div>
-
-                {/* Campo 3: Guardian Name */}
-                <div className="flex flex-col md:flex-row">
-                  <span className="flex-shrink-0">GUARDIAN NAME:</span>
-                  <span className="font-semibold  ml-2 md:ml-6">{proposal.creatorName[0]? proposal.creatorName[0] : "No Name"}</span>
-                </div>
-
-                {/* Opcional: Proposal Type (Descomentar si lo usas) */}
-                {/* <div className="flex">
-                    <span className="font-semibold uppercase w-40 flex-shrink-0">Proposal Type:</span>
-                    <span>{proposal.kind}</span>
-                  </div> */}
-              </div>
-            </div>
-            <ProposalVotingStatus 
+          <div className="h-full flex flex-col items-center">
+            <ProposalVotingStatus
+              className={"center w-full md:w-[80vw] md:px-20"}
               activeMembers={proposal.active_members}
-              partialResults = {proposal.partialResults}
+              partialResults={proposal.partialResults}
               deadline={proposal.deadline}
               // participationRequired={20}
               status={Object.keys(proposal.status)[0]}
               majorityRequired={50}
             />
+          </div>
 
+          <div className="h-full flex flex-col items-center">
 
-            <div className="flex flex-col items-center gap-2 md:gap-4">
-              <span className="flex items-center gap-1">
-                <StatusBallProposal status={Object.keys(proposal.status)[0]} />
-                {Object.keys(proposal.status)[0]}
-              </span>
-              <section className="flex items-center gap-2 md:gap-4">
-                <h5 className="flex items-center cursor-pointer" onClick={() => handleLike("Like")}>
-                  {likes} <LikeIcon />
-                </h5>
-                <h5 className="flex items-center cursor-pointer" onClick={() => handleLike("Dislike")}>
-                  {dislikes} <DislikeIcon />
-                </h5>
-                <h5
-                  className="flex items-center"
-                  onClick={() => {
-                    if (proposal.status !== "Open") return;
+            <section className="w-full md:w-[80vw] flex justify-between items-center px-4 md:px-40 overflow-hidden">
+              <div className="space-y-1">
+                {/* Título Principal */}
+                <h3 className="uppercase text-clip text-[18px] md:text-[28px] font-bold">
+                  {proposal.title}
+                </h3>
 
-                    setNewComment({ ...newComment, want: true }) ||
-                      document.getElementById("comments").scrollIntoView({ behavior: "smooth" });
-                  }}
-                >
-                  {commentsQty} <CommentIcon />
-                </h5>
-              </section>
-              {userVote &&
-                <div className="flex flex-col items-center">
-                  <p className="text-[14px]"> Your vote was:</p>
-                  <p className="text-"> {Object.keys(userVote)[0]} </p>
+                {/* Contenedor de Metadatos Alineados */}
+                <div className="mt-4 space-y-1">
+
+                  {/* Campo 1: ID */}
+                  <div className="flex flex-col md:flex-row">
+                    <p className="w-30 flex-shrink-0">ID:</p>
+                    <span className="font-semibold  ml-2 md:ml-6">{id}</span>
+                  </div>
+
+                  {/* Campo 2: GUARDIAN ID */}
+                  <div className="flex flex-col md:flex-row">
+                    <span className="w-30 flex-shrink-0">GUARDIAN ID:</span>
+                    <span className="font-semibold ml-2 md:ml-6">{shortPrincipal(proposal.creator.toString())}</span>
+                  </div>
+
+                  {/* Campo 3: Guardian Name */}
+                  <div className="flex flex-col md:flex-row">
+                    <span className="flex-shrink-0">GUARDIAN NAME:</span>
+                    <span className="font-semibold  ml-2 md:ml-6">{proposal.creatorName[0] ? proposal.creatorName[0] : "No Name"}</span>
+                  </div>
+
                 </div>
+              </div>
+
+
+              <div className="flex flex-col items-center gap-2 md:gap-4 my-20" >
+                <span className="flex items-center gap-1">
+                  <StatusBallProposal status={Object.keys(proposal.status)[0]} />
+                  {Object.keys(proposal.status)[0]}
+                </span>
+                <section
+                  className="flex items-center gap-2 md:gap-4"
+
+                >
+                  <h5 className="flex items-center cursor-pointer gap-2" onClick={() => handleLike("Like")}>
+                    {likes} <LikeIcon />
+                  </h5>
+                  <h5 className="flex items-center cursor-pointer gap-2" onClick={() => handleLike("Dislike")}>
+                    {dislikes} <DislikeIcon />
+                  </h5>
+                  <h5
+                    className="flex items-center gap-2 "
+                    onClick={() => {
+                      if (proposal.status !== "Open") return;
+
+                      setNewComment({ ...newComment, want: true }) ||
+                        document.getElementById("comments").scrollIntoView({ behavior: "smooth" });
+                    }}
+                  >
+                    {commentsQty} <CommentIcon />
+                  </h5>
+                </section>
+                {userVote &&
+                  <div className="flex flex-col items-center">
+                    <p className="text-[14px]"> Your vote was:</p>
+                    <p className="text-"> {Object.keys(userVote)[0]} </p>
+                  </div>
+                }
+
+              </div>
+            </section>
+          </div>
+          <div className="flex flex-col items-center">
+            <div className="flex flex-row">
+              <section
+                className={`p-6 gap-4 ${"DigitalTaonga" in proposal.kind
+                    ? 'w-[50vw]'
+                    : 'md:w-[80vw]'
+                  }`}
+              >
+                <div className="md:w-full">
+                  <h4 className="my-6 px-10">DESCRIPTION</h4>
+                  <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.description}</p>
+                </div>
+
+                <div className=" md:w-full">
+                  <h4 className="my-6 px-10">IMPACT</h4>
+                  <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.impact}</p>
+                </div>
+              </section>
+              {"DigitalTaonga" in proposal.kind &&
+                ("CreateDigitalTaonga" in proposal.kind.DigitalTaonga
+                ?
+                <div className="flex flex-col items-center p-6 md:w-[30vw] ">
+                  <h4 className="mb-4">New Digital Taonga Proposal</h4>
+                  <img className="max-h-140 rounded-[40px] " src={blobToImageUrl(proposal.kind.DigitalTaonga.CreateDigitalTaonga.thumbnail)} alt="" />
+                </div>
+                :
+                <>
+                  {"Open" in proposal.status && <div className="flex flex-col items-center p-6 md:w-[30vw]">
+                    <img src={blobToImageUrl(taongaToDelete?.thumbnail)} alt="" />
+                  </div>}
+                </>)
               }
-
             </div>
-          </section>
-
-          <section className="p-6 text-center">
-            <h4 className="pb-2">DESCRIPTION</h4>
-            <p className="text-center">{proposal.description}</p>
-            <h4 className="py-2">IMPACT</h4>
-            <p>{proposal.impact}</p>
-          </section>
+          </div>
 
           {/* --- Comments section --- */}
+          <div className="flex flex-col items-center w-full">
+            <section className="mt-auto w-full">
+              <CommentSection
+                rawICComments={comments}
+                currentPath={[]}
+                canComment={user ? true : false}
+                onNewComment={onNewComment}
+              />
+            </section>
+          </div>
 
-          <section className="mt-auto">
-            <CommentSection 
-              rawICComments={comments} 
-              currentPath={[]} 
-              canComment={user? true: false} 
-              onNewComment={onNewComment} 
-            />
-          </section>
-
-          {"Open" in proposal.status && !userVote && (
+          {"Open" in proposal.status && user && !userVote && (
             <section className="grid place-items-center gap-4 p-6">
               <div className="bg-kokowai p-2 max-w-[302px] rounded-[5px]">
                 <p className="text-white">
@@ -260,22 +313,31 @@ const ProposalDetail = () => {
               </div>
 
               <FormControl className="max-w-[302px] w-full !mb-12">
-                {/* <InputLabel id="vote-select-label">Your vote</InputLabel> */}
                 <Select
                   labelId="vote-select-label"
                   id="vote-select"
                   value={vote.value}
-                  label="Your vote"
                   onChange={handleChange}
+                  displayEmpty
                   className="material_select"
+                  sx={{
+                    color: "white", // texto seleccionado en blanco
+                    "& .MuiSvgIcon-root": { color: "white" }, // icono dropdown en blanco
+                  }}
                 >
-                  <MenuItem value={"Approve"} className="material_menu-item">
+                  {/* Placeholder */}
+                  <MenuItem value="" disabled>
+                    <span className="text-gray-400">Select your vote</span>
+                  </MenuItem>
+
+                  {/* Opciones */}
+                  <MenuItem value="Approve" sx={{ color: "white" }}>
                     Approve
                   </MenuItem>
-                  <MenuItem value={"Disapprove"} className="material_menu-item">
+                  <MenuItem value="Disapprove" sx={{ color: "white" }}>
                     Disapprove
                   </MenuItem>
-                  <MenuItem value={"Abstain"} className="material_menu-item">
+                  <MenuItem value="Abstain" sx={{ color: "white" }}>
                     Abstain
                   </MenuItem>
                 </Select>

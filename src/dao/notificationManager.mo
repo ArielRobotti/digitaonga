@@ -9,16 +9,20 @@ module {
     reactions
   };
 
-  public type NotificationKind = {
 
-    #ReactComment : { // Notificacion a usuarios especificos
-      root : Int; // Elemento donde fue efectuado el comentario. Ej: Proposal Id
-      path : [Int]; // Ruta hasta el comentario o subcomentario
-      sender : Principal;
-      senderName : Text;
-      reaction : Nat8; // La reaccion se especifica con el indice del array reactions
-      date: Int;
-      read: Bool;
+  public type NotificationContext = {
+    root : Int;   // ID del elemento principal (Ej: Proposal Id, Post Id, etc.)
+    path : [Int]; // Ruta jerárquica hasta el subelemento específico (Ej: comentario, subcomentario ID)
+    senderName : Text;
+};
+
+  public type NotificationKind = {
+    #ReactComment : NotificationContext and { // Notificacion a usuarios especificos
+      reaction : Nat8; // La reaccion se especifica con el indice del array reactions    
+    };
+    
+    #CommentReply : NotificationContext and {
+      msg: Text;
     };
 
     #ProposalEvent: { // Notificaion global
@@ -31,6 +35,8 @@ module {
 
   public type Notification = {
     id : Int;
+    date: Int;
+    read: Bool;
     title : Text;
     kind : NotificationKind;
   };
