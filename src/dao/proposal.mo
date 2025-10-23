@@ -76,7 +76,7 @@ module {
       case _ {}
     };
 
-    let deadline = if(proposal.deadline < id) { // Consultar reglas relacionadas a establecer deadline en tiempo pasado
+    let deadline = if(proposal.deadline < id) { 
       id + 3 * 24 * 60 * 60 * 1000000000
     } else {
       proposal.deadline
@@ -248,20 +248,9 @@ module {
     switch (Map.get<Int, Proposal>(s.proposals, ihash, id)){
       case null { null };
       case ( ?proposal ) {
-        let _active_members = Member.get_active_members(s).size();
-        let _total_admins = Member.get_total_admins(s);
-        let roleOfCreatorProposal = Member.get_role_member(s, proposal.creator);
-        let guardiansQty = Array.filter<(Principal, SharedTypes.Member)>(
-          Map.toArray<Principal, SharedTypes.Member>(s.members), 
-          func entry = entry.1.role == #Guardian
-        ).size();
         if (proposal.status == #Open) { 
           print("Actulizando proposal " # debug_show(id));
-          if (roleOfCreatorProposal == ?#Admin and guardiansQty < 10) {
-            ignore await executeProposal(s, proposal, callback);
-            ignore Map.put<Int, SharedTypes.Proposal>(s.proposals, ihash, id, { proposal with status = #Approved});
-          } else {
-            // Si se superó el plazo se evalúa el la votación para ver si puede ser ejecutada.
+            // Si se superó el plazo se evalúa la votación para ver si puede ser ejecutada.
             if (now() > proposal.deadline ) {
               if (didProposalPass(proposal)) {
                 let resultProposalExecution = await executeProposal(s, proposal, callback);
@@ -272,7 +261,6 @@ module {
               }
             }
           };
-        };
         ?proposal
       }
     }
@@ -354,7 +342,11 @@ module {
         case _ {}
       }
     };
-    yes > no and yes > 1; // Nos aseguramos de que no se gane solo con el voto del creador. Revisar esto
+    let votes = pr.votes.size();
+    let activeMembers = pr.active_members;
+    let participation = (votes * 100) / activeMembers; //
+    let quorum = participation >=  20; // TODO: Reemplazar el '20' por una variable 'minQuorumPercentage' una vez que esté disponible y pueda ser seteable.
+    quorum and yes > no ; 
   };
 
 
@@ -433,6 +425,12 @@ module {
               name = argsCreateTaonga.name;
             };
             #Ok(#NewTaongaResult(taongaMetadata))
+          };
+          case (#DeleteDigitalTaonga(id)){
+            /// TODO eliminar el canister class también
+            ignore Map.remove<Principal, SharedTypes.TaongaMetadata>(s.taongas, phash, id);
+            #Ok(#Void)
+
           };
           case (_) {
             // TODO
