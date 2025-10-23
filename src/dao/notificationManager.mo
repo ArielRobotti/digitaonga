@@ -35,6 +35,8 @@ module {
 
   public type Notification = {
     id : Int;
+    date: Int;
+    read: Bool;
     title : Text;
     kind : NotificationKind;
   };
