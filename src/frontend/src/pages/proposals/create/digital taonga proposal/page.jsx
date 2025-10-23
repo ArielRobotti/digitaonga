@@ -1,5 +1,5 @@
 import { CloseIcon, SimpleCheckIcon, UploadIcon } from "../../../../components/ui/icons";
-import { Dialog, DialogContent, IconButton, styled } from "@mui/material";
+import { Dialog, DialogContent, IconButton, styled, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { digitalTaongaProposals, updateAnExistingDigitalTaonga } from "../../../../utils/data";
 import { useNavigate, useSearchParams } from "react-router";
 import { ModelViewer3D } from "../../../../components/ModelViewer3D"; 
@@ -10,6 +10,7 @@ import ActionCard from "../../../../components/proposals/create/ActionCard";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import Button from "../../../../components/shared/Button";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { Button as MUIButton } from "@mui/material";
@@ -19,8 +20,9 @@ import dayjs from "dayjs";
 // import useAssetCanister from "../../../../hooks/useAssetCanister";
 import useCanister from "../../../../hooks/useCanister";
 // import useProposal from "../../../../hooks/useProposal";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { uploadFile } from "../../../../utils/fileManager"
+import { blobToImageUrl } from "../../../../utils/imageManager"
 
 
 const DigitalTaongaProposalCreation = () => {
@@ -33,6 +35,7 @@ const DigitalTaongaProposalCreation = () => {
     date: dayjs(new Date().toDateString()),
     screenshot: null, // Nuevo estado para guardar el screenshot
   });
+  const [deleteTaongaForm, setDeleteTaongaForm] = useState({ });
   const [open, setOpen] = useState(false);
   const [responseDialog, setResponseDialog] = useState({ success: false, error: false });
   const [selectedValue, setSelectedValue] = useState(null);
@@ -44,6 +47,7 @@ const DigitalTaongaProposalCreation = () => {
   const [isCapturing, setIsCapturing] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState(null);
   const [disableButtons, setDisableButtons] = useState(false);
+  const [taongas, setTaongas] = useState([])
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -84,6 +88,15 @@ const DigitalTaongaProposalCreation = () => {
   const [totalChunks, setTotalChuncks] = useState(0) 
 
   const [ dao ] = useCanister();
+  const [taongaToDelete, setTaongaToDelete] = useState(null)
+
+  useEffect(() => {
+    const fetchTaongas = async () => {
+      const response = await dao?.get_all_taongas() || []
+      setTaongas(response.map((tuple) => tuple[1]))
+    }
+    fetchTaongas()
+  }, [dao])
 
   // const chunkSize = 1024 * 2047 // 2 MiB - 1 KB
   const chunkSize = 1024 * 1023 // 1 MiB - 1 KB
@@ -125,7 +138,7 @@ const DigitalTaongaProposalCreation = () => {
   };
 
   const handleSubmit = async () => {
-    let digitalTaongaProposalAction;
+    // let digitalTaongaProposalAction;
     let proposalData;
     setDisableButtons(true)
     console.log({ selectedValue });
@@ -135,7 +148,6 @@ const DigitalTaongaProposalCreation = () => {
 
       switch (selectedValue) {
         case "Create or Upload a New Digital Taonga":
-
           const rawGLBFile = form.file   
           const name = form.name;
           const description = form.description;
@@ -180,19 +192,54 @@ const DigitalTaongaProposalCreation = () => {
           dao.refresh_all_proposals()
           break;
         case "":
-          digitalTaongaProposalAction = "UpdateDigitalTaonga";
+          // digitalTaongaProposalAction = "UpdateDigitalTaonga";
           proposalData = {
             UpdateDigitalTaongaProposal: {
               [updateType]: [updatedValue],
             },
           };
           break;
-        case "":
-          digitalTaongaProposalAction = "DeleteDigitalTaonga";
-          proposalData = ""; // id
+        case "Delete an Existing Digital Taonga":
+          // digitalTaongaProposalAction = "DeleteDigitalTaonga";
+          // const deleteTaongaArgs = {canisterId: taongaToDelete, description: form.description}
+
+          const deleteTaongaArgs = {
+            title: "Delete Taonga proposal",
+            description: form.description,
+            impact: "",
+            kind: {
+              DigitalTaonga: {
+                DeleteDigitalTaonga: taongaToDelete
+              },
+            },
+            deadline: form.date.unix() * 1_000_000_000,
+            extendedData: [],
+          }
+          const response = await dao.create_proposal(deleteTaongaArgs);
+          console.log(response)
+          /*
+            title: Text;
+            description: Text;
+            impact: Text;
+            kind: SharedTypes.ProposalType;
+            deadline: Int;
+            extendedData: SharedTypes.Metadata;
+          */
+          console.log(deleteTaongaArgs)
           break;
-        case "":
-          digitalTaongaProposalAction = "RequestDownloadPermision";
+        case "Request Download Permission":
+          // digitalTaongaProposalAction = "RequestDownloadPermision";
+          const requestDownloadArgs = {
+            title: form.title,
+            description: form.title,
+            impact: "",
+            kind: {
+              DigitalTaonga: { RequestDownloadPermision: null }
+            },
+            deadline: form.date.unix() * 1_000_000_000,
+            extendedData: SharedTypes.Metadata,
+          };
+
           break;
         default:
           break;
@@ -210,6 +257,7 @@ const DigitalTaongaProposalCreation = () => {
   };
 
   const SelectedProposal = () => {
+    console.log(selectedValue)
     switch (action) {
       case "Create or Upload a New Digital Taonga":
         return (
@@ -282,7 +330,7 @@ const DigitalTaongaProposalCreation = () => {
 
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DemoContainer components={["DatePicker"]}>
-                <DatePicker
+                <DateTimePicker
                   label="Voting deadline"
                   onChange={(v) => setForm({ ...form, date: v })}
                   value={form.date}
@@ -307,6 +355,70 @@ const DigitalTaongaProposalCreation = () => {
             ))}
           </section>
         );
+      case "Delete an Existing Digital Taonga":
+        return (
+          <section className="flex flex-col md:items-center gap-8 p-12">
+
+            <FormControl 
+              variant="outlined" 
+              className="material_input md:max-w-[500px] md:w-full bg-white"
+              required
+            >
+              <InputLabel id="taonga-select-label">Choose Digital Taonga</InputLabel>
+              
+              <Select
+                labelId="taonga-select-label"
+                value={form.taongaId || ""}
+                onChange={handleSelectTaonga }
+                label="Choose Digital Taonga"
+                className="h-14 bg-white!"
+              >
+
+                {taongas.map((t) => {
+                  const imageUrl = blobToImageUrl(t.thumbnail); 
+                  
+                  return (
+                    <MenuItem key={t.canisterId} value={t.canisterId} className="">
+                      {/* 🖼️ Estructura que permite texto y imagen */}
+                      <Box className="flex items-center justify-between w-full pr-4">
+                        <span className="text-gray-600">{t.name}</span>
+                        <img 
+                          src={imageUrl} 
+                          alt={t.name} 
+                          className="w-14 h-14 rounded-full object-cover ml-4" // Clases Tailwind para estilo
+                        />
+                      </Box>
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+
+            <TextField
+              label="Reason for Deletion"
+              variant="outlined"
+              onChange={handleChange}
+              value={form.description}
+              name="description"
+              required
+              className="material_input md:max-w-[500px] md:w-full"
+            />
+
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DemoContainer components={["DatePicker"]}>
+                <DateTimePicker
+                  label="Voting deadline"
+                  onChange={(v) => setForm({ ...form, date: v })}
+                  value={form.date}
+                  name="date"
+                  disablePast
+                  className="material_input md:w-[500px]"
+                />
+              </DemoContainer>
+            </LocalizationProvider>
+          </section>
+        )
+
       default:
         break;
     }
@@ -361,6 +473,18 @@ const DigitalTaongaProposalCreation = () => {
     background: "#F8F8F8",
     boxShadow: "0px 4px 8px 0px rgba(0, 0, 0, 0.15), 0px 1px 3px 0px rgba(0, 0, 0, 0.30)",
   });
+
+
+  const handleSelectTaonga = (e) => {
+    setForm({ ...form, taongaId: e.target.value, impact: " ", history: " ", })
+    console.log(e.target.value)
+
+    // setReadyToUpdate(true)
+    // const history = form.history;
+    // const impact = form.impact;
+    // const deadline = form.date.unix() * 1_000_000_000;
+    setTaongaToDelete(e.target.value)
+  }
 
   return (
     <main>
@@ -440,7 +564,8 @@ const DigitalTaongaProposalCreation = () => {
             Cancel
           </Button>
           <Button size="small" variant="kokowai" onClick={handleSubmit} 
-            disabled={!form.screenshot ||  disableButtons}>
+            disabled={disableButtons || (action === "Create or Upload a New Digital Taonga" && !form.screenshot)}
+          >
             Submit
           </Button>
         </section>
@@ -566,8 +691,13 @@ const DigitalTaongaProposalCreation = () => {
               ? true
               : action === "Update an Existing Digital Taonga"
               ? !updateType
-              : action
-              ? !form.name || !form.description || !form.history || !form.file || !form.screenshot // Deshabilitar si no hay screenshot
+              : action === "Create or Upload a New Digital Taonga"
+              ? !form.name || !form.description || !form.history || !form.file || !form.screenshot
+              
+              // 🆕 NUEVA VALIDACIÓN: Borrado
+              : action === "Delete an Existing Digital Taonga"
+              ? !form.taongaId || !form.description || !form.date || form.date.isBefore(dayjs())
+              
               : !selectedValue
           }
         >

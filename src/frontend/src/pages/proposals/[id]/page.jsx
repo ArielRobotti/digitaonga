@@ -47,6 +47,7 @@ const ProposalDetail = () => {
   const loading = useRef(true)
   const { user, connect } = useAuth();
   const [dao] = useCanister()
+  const [taongaToDelete, setTaongaToDelete] = useState()
 
   const countTotalComments = (list) => {
     let count = 0;
@@ -71,6 +72,14 @@ const ProposalDetail = () => {
     return p.slice(0, 5) + "..." + p.slice(p.length - 5, p.length)
   }
 
+  const updateProposal = (p) => {
+    setProposal(p);
+    setComments(p.comments)
+    setLikes(p.likes.filter(item => 'Like' in item[1]).length)
+    setDislikes(p.likes.filter(item => 'Dislike' in item[1]).length)
+    setCommentsQty(countTotalComments(p.comments))
+  }
+
   useEffect(() => {
     const fetchProposal = async () => {
       loading.current = true
@@ -78,11 +87,14 @@ const ProposalDetail = () => {
       const response = await dao.get_proposal(BigInt(id))
       if ("Ok" in response) {
         setUserVote(response.Ok.callerVote[0])
-        setProposal(response.Ok.proposal);
-        setComments(response.Ok.proposal.comments)
-        setLikes(response.Ok.proposal.likes.filter(item => 'Like' in item[1]).length)
-        setDislikes(response.Ok.proposal.likes.filter(item => 'Dislike' in item[1]).length)
-        setCommentsQty(countTotalComments(response.Ok.proposal.comments))
+        updateProposal(response.Ok.proposal)
+        if (response.Ok.proposal.kind.DigitalTaonga?.DeleteDigitalTaonga) {
+          const fetchTaongas = await dao.get_all_taongas()
+          const t = fetchTaongas.find((taonga) => taonga[0].toString() === response.Ok.proposal.kind.DigitalTaonga.DeleteDigitalTaonga.toString())
+          if (t) {
+            setTaongaToDelete(t[1])
+          }
+        }
       }
 
       loading.current = false
@@ -117,7 +129,11 @@ const ProposalDetail = () => {
 
     const response = await dao.vote_proposal(BigInt(id), options[vote.value])
     console.log(response)
-
+    if (response[0]) {
+      updateProposal(response[0])
+    }
+    setOpen(true)
+    setUserVote(options[vote.value])
     setVote({ ...vote, loading: false });
   };
 
@@ -243,12 +259,11 @@ const ProposalDetail = () => {
           </div>
           <div className="flex flex-col items-center">
             <div className="flex flex-row">
-              <section 
-              className={`p-6 gap-4 ${
-                  "DigitalTaonga" in proposal.kind
-                    ? 'w-[50vw]' 
-                    : 'md:w-[80vw]' 
-                }`}
+              <section
+                className={`p-6 gap-4 ${"DigitalTaonga" in proposal.kind
+                    ? 'w-[50vw]'
+                    : 'md:w-[80vw]'
+                  }`}
               >
                 <div className="md:w-full">
                   <h4 className="my-6 px-10">DESCRIPTION</h4>
@@ -260,11 +275,19 @@ const ProposalDetail = () => {
                   <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.impact}</p>
                 </div>
               </section>
-              {"DigitalTaonga" in proposal.kind && 
+              {"DigitalTaonga" in proposal.kind &&
+                ("CreateDigitalTaonga" in proposal.kind.DigitalTaonga
+                ?
                 <div className="flex flex-col items-center p-6 md:w-[30vw] ">
                   <h4 className="mb-4">New Digital Taonga Proposal</h4>
                   <img className="max-h-140 rounded-[40px] " src={blobToImageUrl(proposal.kind.DigitalTaonga.CreateDigitalTaonga.thumbnail)} alt="" />
                 </div>
+                :
+                <>
+                  {"Open" in proposal.status && <div className="flex flex-col items-center p-6 md:w-[30vw]">
+                    <img src={blobToImageUrl(taongaToDelete?.thumbnail)} alt="" />
+                  </div>}
+                </>)
               }
             </div>
           </div>

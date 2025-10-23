@@ -167,7 +167,7 @@ const Community = () => {
         ) : members.data.length > 0 ? (
           membersShown.map((member) => (
             <MemberCommunityCard
-              key={member.id}
+              key={member.principal}
               {...member}
               handleSelectMember={handleSelectMember}
             />

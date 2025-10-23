@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import useMember from "../../hooks/useMember";
 import useMemberStore from "../../store/useMemberStore"
 import useNotification from "../../store/useNotifications";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 // import ThemeToggle from "../../components/ThemeToggle"
 
 
@@ -17,7 +17,7 @@ const Header = () => {
   // Store
   const navigate = useNavigate();
   const { notifications } = useNotification();
-  const { connect, disconnect, user } = useMember();
+  const { connect, disconnect, user, isConnecting } = useMember();
   const { member } = useMemberStore()
 
   const links = [
@@ -53,7 +53,37 @@ const Header = () => {
     setOpen(false)
 
   }
-  const handleLogin = () => (user ? disconnect() : connect());
+
+  const handleLogin = async () => { 
+    if (user) {
+      await disconnect();
+      navigate("/login") 
+    } else {
+      connect()
+    }   
+  };
+
+  /// Evitar redireccion antes de establecerse el estado user
+
+  const [hasWaited, setHasWaited] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setHasWaited(true);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!hasWaited) {
+      return; 
+    }
+    if(!user) {
+      navigate("/login")
+    }
+  }, [user, navigate, hasWaited])
+
+  ////
 
   return (
     <header className="h-[60px] xl:h-[70px] w-screen bg-kokowai text-white flex xl:justify-between items-center fixed top-0 xl:px-4 z-10 select-none">

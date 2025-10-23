@@ -14,7 +14,7 @@ import { proposalsArrayParser } from "../../utils/parsers";
 import ProfileSettings from "../../pages/profile/settings/page";
 import ProfileProposals from "../../pages/profile/proposals/page";
 import ProfileDigitalAccess from '../../pages/profile/digital access/page';
-import ProfileHelp from "../../pages/profile/help/page";
+// import ProfileHelp from "../../pages/profile/help/page";
 
 
 // --- Secciones internas que podrías reemplazar luego por componentes reales ---
@@ -23,7 +23,7 @@ const pages = {
   settings: <ProfileSettings />,
   proposals: <ProfileProposals />,
   "digital-access": <ProfileDigitalAccess />,
-  help: <ProfileHelp />,
+  // help: <ProfileHelp />,
 };
 
 // --- Menú lateral ---
@@ -31,7 +31,7 @@ const links = [
   { title: "Account settings", key: "settings" },
   { title: "Sent proposals", key: "proposals" },
   { title: "Digital Taonga Access", key: "digital-access" },
-  { title: "Help", key: "help" },
+  // { title: "Help", key: "help" },
 ];
 
 const Profile = () => {

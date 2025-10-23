@@ -16,7 +16,7 @@ interface ModelProps {
 
 function Model({ url, rotation }: ModelProps) {
     const meshRef = useRef<Mesh>(null);
-    const { scene, animations } = useGLTF(url);
+    const { scene } = useGLTF(url);
     const { camera, controls } = useThree();
 
     const clonedScene = useMemo(() => scene.clone(), [scene]);

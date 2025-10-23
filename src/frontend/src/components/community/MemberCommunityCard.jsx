@@ -16,6 +16,26 @@ const MemberCommunityCard = ({
   handleSelectMember,
 }) => {
   const [checked, setChecked] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+
+  const handleCopy = async (memberPrincipal) => {
+    try {
+      // 1. Copiar al portapapeles
+      await navigator.clipboard.writeText(memberPrincipal); 
+
+      // 2. Mostrar el cartelito
+      setIsCopied(true);
+
+      // 3. Programar la desaparición (ej. 1500 milisegundos = 1.5 segundos)
+      setTimeout(() => {
+        setIsCopied(false);
+      }, 1500); 
+
+    } catch (err) {
+      console.error('Error al copiar:', err);
+      // Opcional: Mostrar un mensaje de error si la copia falla.
+    }
+  };
 
   const handleChange = () => {
     handleSelectMember(principal);
@@ -58,10 +78,18 @@ const MemberCommunityCard = ({
             </span>
             
               <div className="flex flex-col items-center mr-4">
+                {isCopied && (
+                  <div 
+                  className="absolute z-10 p-2 text-sm text-white bg-gray-800 rounded shadow-lg whitespace-nowrap"
+                  style={{ top: '-30%', left: '72%', transform: 'translate(-50%, 10px)' }} // Posicionamiento básico
+                  >
+                    ID copied successfully
+                  </div>
+                )}
                 <span className="mr-1">Copy Id</span>
                 <CopyIcon
                   className="cursor-pointer h-[14px] w-[14px] md:h-6 md:w-6"
-                  onClick={() => copyToClipboard(principal.toString())}
+                  onClick={() => handleCopy(principal.toString())}
                 />
               </div>
 

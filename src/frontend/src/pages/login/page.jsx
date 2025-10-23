@@ -1,6 +1,7 @@
 import { DigitaongaCompleteIcon, NFIDIcon } from "../../components/ui/icons";
 import { p2str, shortP } from "../../utils/functions";
 import { useNavigate } from "react-router";
+import { useEffect } from "react";
 
 import Button from "../../components/shared/Button";
 import useMember from "../../hooks/useMember";
@@ -9,6 +10,10 @@ const Login = () => {
   // Store
   const { user, connect, isConnecting } = useMember();
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if(user) navigate("/")
+  }, [user])
 
   return (
     <main>
