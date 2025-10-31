@@ -2,10 +2,14 @@
 dfx stop
 dfx start --clean --background
 
+
 dfx identity list | grep -q "^000Admin$" || dfx identity new 000Admin
 export PrincipalAdmin=$(dfx identity get-principal --identity 000Admin)
 dfx identity use 000Admin
 dfx deploy motokoDao
+
+# Push members from backup file
+# dfx canister call motokoDao pushMembers --argument-file - < members.txt
 
 dfx wallet send uxrrr-q7777-77774-qaaaq-cai 50TC
 

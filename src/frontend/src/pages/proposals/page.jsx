@@ -59,7 +59,7 @@ const Proposals = () => {
 
   useEffect(() => {
     if (dao && !intervalRef.current) {
-      intervalRef.current = setInterval(pulling, 10000);
+      intervalRef.current = setInterval(pulling, 2000);
     }
     return () => {
       if (intervalRef.current) {

@@ -12,6 +12,7 @@ import Iter "mo:base/Iter";
 import Principal "mo:base/Principal";
 import { print } "mo:base/Debug";
 import Error "mo:base/Error";
+import Buffer "mo:base/Buffer";
 
 
 module {
@@ -105,6 +106,19 @@ module {
     newProposal
   };
 
+  public func checkFileIntegrity(s: Types.State, fileId: Int): Bool {
+    switch (Map.get<Int, Types.File>(s.tempFiles, ihash, fileId)) {
+      case null { false };
+      case ( ?file ) {
+        var byteCounter = 0;
+        for (chunk in file.data.vals()){
+          byteCounter += chunk.size();
+          print(debug_show(byteCounter))
+        };
+        return file.size == byteCounter
+      }
+    }
+  };
 
   public func addChunk({s: Types.State; caller: Principal; fileId: Int; chunk: Blob; index: Nat; retry: Bool}): {#Ok; #Err} {
     switch (Map.get<Int, Types.File>(s.tempFiles, ihash, fileId)) {
@@ -249,7 +263,6 @@ module {
       case null { null };
       case ( ?proposal ) {
         if (proposal.status == #Open) { 
-          print("Actulizando proposal " # debug_show(id));
             // Si se superó el plazo se evalúa la votación para ver si puede ser ejecutada.
             if (now() > proposal.deadline ) {
               if (didProposalPass(proposal)) {
@@ -257,8 +270,9 @@ module {
                 print("resultProposalExecution ----> " # debug_show(resultProposalExecution));
                 ignore Map.put<Int, SharedTypes.Proposal>(s.proposals, ihash, id, { proposal with status = #Approved})
               } else {
-                ignore Map.put<Int, SharedTypes.Proposal>(s.proposals, ihash, id, { proposal with status = #Rejected})
-              }
+                ignore Map.put<Int, SharedTypes.Proposal>(s.proposals, ihash, id, { proposal with status = #Rejected});
+              };
+              ignore Map.remove<Int, Types.File>(s.tempFiles, ihash, id);
             }
           };
         ?proposal
@@ -349,9 +363,29 @@ module {
     quorum and yes > no ; 
   };
 
+  func uploadFile(chunks: [{index: Nat; chunk: Blob}], remoteActorReference: Taonga.Taonga) : async [Nat] {
+    let responsesUpload = Array.init<(Nat, async { #Err : Text; #Ok })>(chunks.size(), (0, async #Err("not yet")));
+    let bufferFailleds = Buffer.fromArray<Nat>([]);
+    var i = 0;
+    for ({ chunk; index } in chunks.vals()) {
+      responsesUpload[i] := (index, remoteActorReference.uploadTaonga({ chunk; index }));
+      i += 1;
+    };
+    for (response in responsesUpload.vals()){
+      let resolved = await response.1;
+      switch resolved {
+        case (#Err(e)) {
+          print(debug_show(resolved) # e);
+          bufferFailleds.add(response.0)}
+        ;
+        case (_) {}
+      } 
+    };
+    Buffer.toArray<Nat>(bufferFailleds)
+  };
 
   func deployTaonga(s: Types.State, init : TaongaTypes.InitArgs, callback: shared Int -> ()) : async Principal {
-    let tempFile = switch (Map.get<Int, Types.File>(s.tempFiles , ihash, init.tempFileId)) {
+    let tempFile = switch (Map.remove<Int, Types.File>(s.tempFiles , ihash, init.tempFileId)) {
       case null throw Error.reject("No data found in tempFiles for the given id");
       case (?file) { file };
     };
@@ -374,35 +408,23 @@ module {
       date = now()
     };
     ignore Map.put<Principal, SharedTypes.TaongaMetadata>(s.taongas, phash, canisterId, metadata);
-    // Esperar todos los responses juntos
-    let responsesUpload = Array.init<async { #Err : Text; #Ok }>(data.size(), async #Err("not yet"));
 
-    // Pruebas en local: El canister se Taonga se despliega sin problemas y acto seguido se envian todos los chunks del archivo GLB simulado
-    // sin esperar el retorno de las llamadas. Todos los chunks de 2 MiB - 1 KB son cargados exitosamente. Prueba maxima 250 (aprox 500 MiB) resultado Ok
-    var index = 0;
-    for (chunk in data.vals()) {
-      responsesUpload[index] := newTaonga.uploadTaonga({ chunk; index }); // Probar sin esperar retorno del Taonga para ver si sube mas rapido
-      index += 1;
+    var chunkIndexesToRetry = await uploadFile(
+      Array.tabulate<{index: Nat; chunk: Blob}>(data.size(), func x = {index = x; chunk = data[x]}),
+      newTaonga 
+    );
+
+    while (chunkIndexesToRetry.size() > 0 ){
+      print("Retry upload " #  debug_show(chunkIndexesToRetry.size()) # " chunks");
+      chunkIndexesToRetry := await uploadFile(
+        Array.tabulate<{index: Nat; chunk: Blob}>(
+          chunkIndexesToRetry.size(), 
+          func x = {index = chunkIndexesToRetry[x]; chunk = data[chunkIndexesToRetry[x]]}
+        ),
+        newTaonga
+      )
     };
-    // index := 0;
-    // /// Probar si esto es necesario. Edit: Funciona sin esto en local, si anda bien en mainnet omitir el array responsesUpload tambien
-    // for (response in responsesUpload.vals()){
-    //     print("Esperando acuse de recibo de chunk numero " # Nat.toText(index) # " subido al Taonga");
-    //     let responseAwaited = await response; // El primer chunck deberia ser el que mas demora
-    //     switch responseAwaited {
-    //         case (#Err(_)) {
-    //             print("Reintentando subir chunk numero " # Nat.toText(index));
-    //             let retry = await newTaonga.uploadTaonga({chunk = data[index]; index});
-    //             switch ( retry ) {
-    //                 case (#Err(e)) {throw Error.reject("Error uploading glb file. Taonga Canister sai: " # e)};
-    //                 case ( _ ){}
-    //             }
-    //         };
-    //         case (#Ok) { }
-    //     };
-    //     print("Chunk numero " # Nat.toText(index) # " subido exitosamente");
-    //     index += 1;
-    // };
+
     ignore Map.put<Int, Types.File>(s.tempFiles, ihash, init.tempFileId, {owner = canisterId; data; size });
     canisterId;
   };
@@ -412,6 +434,9 @@ module {
       case ( #DigitalTaonga(dt)){
         switch (dt) {
           case (#CreateDigitalTaonga(argsCreateTaonga)) {
+            if(not checkFileIntegrity(s, pr.id)){
+
+            };
             let argsDeploy = { 
               argsCreateTaonga with
               admin = pr.creator;

@@ -22,17 +22,13 @@ const NftCard = ({ asset }) => {
         {/* Info */}
         <div className="hidden  md:flex flex-col gap-4 select-none">
           <div  className="flex flex-row items-center">
-            <p className="mr-2">CID:</p>
-            {/* <span className="text-gray-500 text-[12px]">{asset.canisterId.toString()}</span> */}
+            <p className="mr-2 text-[16px]">CID:</p>
             <a 
               href={`https://dashboard.internetcomputer.org/canister/${asset.canisterId.toString()}`}
               target="_blank"
               rel="noopener noreferrer"
-              
-
             >
-              <p className=" hover:underline text-[18px]">{asset.canisterId.toString()}</p>
-              
+              <p className=" hover:underline text-[16px]">{asset.canisterId.toString()}</p> 
             </a>
           </div>
           <div className="flex flex-row items-center">

@@ -99,8 +99,7 @@ const DigitalTaongaProposalCreation = () => {
   }, [dao])
 
   // const chunkSize = 1024 * 2047 // 2 MiB - 1 KB
-  const chunkSize = 1024 * 1023 // 1 MiB - 1 KB
-
+  const chunkSize = 1024 * 1024
 
   // Nueva función para manejar la captura de pantalla
   const handleCapture = async () => {
@@ -108,7 +107,6 @@ const DigitalTaongaProposalCreation = () => {
     if (viewerRef.current) {
       const canvas = viewerRef.current.querySelector('canvas');
       if (canvas) {
-        console.log("Canva")
         try {
           // Obtener el blob del canvas
           const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
@@ -139,10 +137,7 @@ const DigitalTaongaProposalCreation = () => {
 
   const handleSubmit = async () => {
     // let digitalTaongaProposalAction;
-    let proposalData;
     setDisableButtons(true)
-    console.log({ selectedValue });
-
     try {
       // upload file to asset canister
 
@@ -160,7 +155,6 @@ const DigitalTaongaProposalCreation = () => {
           const dataSize = rawGLBFile.size;
 
           const chunksQty = Math.ceil(dataSize / chunkSize)
-          console.log({chunksQty})
 
           const newProposalArgs = {
             title: name,
@@ -184,7 +178,6 @@ const DigitalTaongaProposalCreation = () => {
             extendedData: [],
           }
 
-          console.log(newProposalArgs)
           const proposalResponse = await dao.create_proposal(newProposalArgs);
           const fileId =  proposalResponse.id;
           await uploadFile(dao, fileId, rawGLBFile, chunksQty, chunkSize, setUploadProgress)
@@ -217,15 +210,7 @@ const DigitalTaongaProposalCreation = () => {
           }
           const response = await dao.create_proposal(deleteTaongaArgs);
           console.log(response)
-          /*
-            title: Text;
-            description: Text;
-            impact: Text;
-            kind: SharedTypes.ProposalType;
-            deadline: Int;
-            extendedData: SharedTypes.Metadata;
-          */
-          console.log(deleteTaongaArgs)
+
           break;
         case "Request Download Permission":
           // digitalTaongaProposalAction = "RequestDownloadPermision";
@@ -257,7 +242,7 @@ const DigitalTaongaProposalCreation = () => {
   };
 
   const SelectedProposal = () => {
-    console.log(selectedValue)
+    // console.log(selectedValue)
     switch (action) {
       case "Create or Upload a New Digital Taonga":
         return (
@@ -477,12 +462,6 @@ const DigitalTaongaProposalCreation = () => {
 
   const handleSelectTaonga = (e) => {
     setForm({ ...form, taongaId: e.target.value, impact: " ", history: " ", })
-    console.log(e.target.value)
-
-    // setReadyToUpdate(true)
-    // const history = form.history;
-    // const impact = form.impact;
-    // const deadline = form.date.unix() * 1_000_000_000;
     setTaongaToDelete(e.target.value)
   }
 

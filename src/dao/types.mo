@@ -1,4 +1,5 @@
 import Map "mo:map/Map";
+import Set "mo:map/Set";
 // import Buffer "mo:base/Buffer";
 // import { phash; ihash } "mo:map/Map";
 // import { now } "mo:base/Time";
@@ -24,6 +25,7 @@ module {
     proposals : Map.Map<Int, Proposal>; // El id puede ser el Timestamp en lugar del tamaño actual del Map
     // taongas: Map.Map<Nat, SharedTypes.TaongaMetadata>;
     taongas: Map.Map<Principal, SharedTypes.TaongaMetadata>;
+    blacklist: Set.Set<Principal>;
     // callback: shared Int -> ();
     cyclesForTaongaDeploy: Nat;
   };
@@ -40,6 +42,7 @@ module {
       tempFiles = Map.new<Int, File>();
       proposals = Map.new<Int, Proposal>();
       taongas = Map.new<Principal, SharedTypes.TaongaMetadata>();
+      blacklist = Set.new<Principal>();
       // callback;
       cyclesForTaongaDeploy;
     };
