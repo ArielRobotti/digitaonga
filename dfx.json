@@ -12,6 +12,7 @@
     "motokoDaoDev": {
       "main": "src/dao/main.mo",
       "type": "motoko",
+      "args": "--enhanced-orthogonal-persistence",
       "declarations": {
         "output": "./src/frontend/declarations/backend/dao"
       },
@@ -21,6 +22,7 @@
     "motokoDao": {
       "main": "src/dao/main.mo",
       "type": "motoko",
+      "args": "--enhanced-orthogonal-persistence",
       "declarations": {
         "output": "./src/frontend/declarations/backend/dao"
       },
@@ -59,5 +61,5 @@
   },
   "output_env_file": ".env",
   "version": 1,
-  "dfx": "0.28.0"
+  "dfx": "0.29.2"
 }

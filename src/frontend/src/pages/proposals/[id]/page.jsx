@@ -275,6 +275,7 @@ const ProposalDetail = () => {
                   <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.impact}</p>
                 </div>
               </section>
+              {/* TODO Mostrar captura de glb en el proposal de actualizacion de archivo */}
               {"DigitalTaonga" in proposal.kind &&
                 ("CreateDigitalTaonga" in proposal.kind.DigitalTaonga
                 ?

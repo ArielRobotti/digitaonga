@@ -52,62 +52,62 @@ else
     echo "❌ Update Role test failed: The second member's role is not NFTCreator."
 fi
 
-dfx identity use 000Admin
+#---------------- Proposal test Start -----------------------------
+# dfx identity use 000Admin
+# echo "Test push proposal to create taonga from admin whitout votation instance"
 
+# export timestamp=$(dfx canister call motokoDao time)
+# timestamp_number=$(echo "$timestamp" | sed -E 's/^\((.*) : int\)$/\1/' | tr -d '_')
+# incremento=120000000000
+# export deadline=$(echo "$timestamp_number + $incremento" | bc)
 
-echo "Test push proposal to create taonga from admin whitout votation instance"
+# CreateTaongaProposal=$(dfx canister call motokoDao create_proposal '(
+#   record {
+#     impact = "Tets Impacto field";
+#     title = "Test Title Field";
+#     kind = variant {
+#       DigitalTaonga = variant {
+#         CreateDigitalTaonga = record {
+#           thumbnail = blob "\00\11\22";
+#           name = "Test Name Taonga Field";
+#           description = "Test Description field";
+#           deadline = '$deadline';
+#           history = "Test History field";
+#           dataSize = 4 : nat;
+#           chunksQty = 1 : nat;
+#           imageID = 0 : nat;
+#         }
+#       }
+#     };
+#     description = "Test Proposal Description Field";
+#     deadline = '$deadline';
+#     extendedData = vec {};
+#   },
+# )')
+# echo "Response from create_proposal: $CreateTaongaProposal"
 
-export timestamp=$(dfx canister call motokoDao time)
-timestamp_number=$(echo "$timestamp" | sed -E 's/^\((.*) : int\)$/\1/' | tr -d '_')
-incremento=120000000000
-export deadline=$(echo "$timestamp_number + $incremento" | bc)
+# # Corrected variable assignment
+# FileId=$(echo "$CreateTaongaProposal" | grep -o 'id = [0-9_]\+' | head -n 1 | awk '{print $NF}' | tr -d '_')
+# echo "Extracted ID: $FileId"
 
-CreateTaongaProposal=$(dfx canister call motokoDao create_proposal '(
-  record {
-    impact = "Tets Impacto field";
-    title = "Test Title Field";
-    kind = variant {
-      DigitalTaonga = variant {
-        CreateDigitalTaonga = record {
-          thumbnail = blob "\00\11\22";
-          name = "Test Name Taonga Field";
-          description = "Test Description field";
-          deadline = '$deadline';
-          history = "Test History field";
-          dataSize = 4 : nat;
-          chunksQty = 1 : nat;
-          imageID = 0 : nat;
-        }
-      }
-    };
-    description = "Test Proposal Description Field";
-    deadline = '$deadline';
-    extendedData = vec {};
-  },
-)')
-echo "Response from create_proposal: $CreateTaongaProposal"
+# echo " ⬆️  uploading file chunk..."
 
-# Corrected variable assignment
-FileId=$(echo "$CreateTaongaProposal" | grep -o 'id = [0-9_]\+' | head -n 1 | awk '{print $NF}' | tr -d '_')
-echo "Extracted ID: $FileId"
+# dfx canister call motokoDao uploadFileChunk "(
+#   record {
+#     chunk = blob \"\\99\\99\\99\\77\";
+#     fileId = $FileId;
+#     index = 0 : nat;
+#     retry = false;
+#   },
+# )"
 
-echo " ⬆️  uploading file chunk..."
-
-
-dfx canister call motokoDao uploadFileChunk "(
-  record {
-    chunk = blob \"\\99\\99\\99\\77\";
-    fileId = $FileId;
-    index = 0 : nat;
-    retry = false;
-  },
-)"
-
-echo "... Refreshing the status of the proposals and performing the corresponding executions"
-# echo "⏳ Waiting for 10 seconds before uploading file chunk..."
-# sleep 10
+# echo "... Refreshing the status of the proposals and performing the corresponding executions"
+# # echo "⏳ Waiting for 10 seconds before uploading file chunk..."
+# # sleep 10
 
 # dfx canister call motokoDao refresh_all_proposals
+
+#---------------- Proposal test Finish -----------------------------
 
 echo "📝 We register 10 more members and then the admin grants them the Guardian role to activate the consensus mechanism."
 

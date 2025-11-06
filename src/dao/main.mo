@@ -4,6 +4,7 @@ import Member "./member";
 import Proposal "./proposal";
 import Comment "./commentsManager";
 // import Error "mo:base/Error";
+import Set "mo:map/Set";
 import Map "mo:map/Map";
 import { ihash; phash } "mo:map/Map";
 import Array "mo:base/Array";
@@ -21,6 +22,7 @@ persistent actor {
   let cyclesForTaongaDeploy = 1_000_000_000_000; // Cyclos necesarios para desplegar un canister class Taonga... probar cuantos se requieren en mainnet
 
   let state : Types.State = Types.initState({ cyclesForTaongaDeploy });
+  var deployTaongaCycles = 2_000_000_000_000;
 
   // Registro de eventos y cambios DAO
 
@@ -30,10 +32,10 @@ persistent actor {
 
   var updatingProposals : Bool = false;
 
-  /// Variables que no se estan usando
+  ////// Variables para incluir en state en proximo upgrade ///////
 
-  // var limit_payload_per_call = 1024 * 1024 * 2; // Carga maxima en Bytes para llamadas query "MiB"
-  // let deleteTaongaProposals = Map.new<Int, Principal>();
+
+  let downloadPermisionMap = Map.new<Principal, Set.Set<Principal>>();
 
   ///// Admin functions /////////////
 
@@ -65,6 +67,18 @@ persistent actor {
     Proposal.checkFileIntegrity(state, id);
   };
 
+  public shared ({ caller }) func getFileMetadata(id: Nat): (){
+    assert (Member.is_admin(state, caller));
+    switch(Map.get<Int, Types.File>(state.tempFiles, ihash, id)) {
+      case (?file){
+        print("size -> " # debug_show(file.size));
+        print("owner -> " # debug_show(file.owner));
+        print("chunkQty -> " # debug_show(file.data.size()))
+      };
+      case _{}
+    }
+  };
+
   public shared ({ caller }) func setRole(p: Principal, role: SharedTypes.MemberRole): async (){
     assert(Principal.isController(caller));
     switch (Map.get<Principal, SharedTypes.Member>(state.members , phash, p)){
@@ -84,6 +98,18 @@ persistent actor {
         phash,
         member.principal,
         member,
+      );
+    };
+  };
+
+   public shared ({ caller }) func pushTaongas(_taongas: [SharedTypes.TaongaMetadata]): async (){
+    assert (Member.is_admin(state, caller));
+    for (_taonga in _taongas.vals()) {
+      ignore Map.put<Principal, SharedTypes.TaongaMetadata>(
+        state.taongas,
+        phash,
+        _taonga.canisterId,
+        _taonga,
       );
     };
   };
@@ -151,10 +177,8 @@ persistent actor {
   public shared ({ caller }) func batch_update_member_role(principals : [Principal], role : SharedTypes.MemberRole) : async [(Principal, SharedTypes.MemberError)] {
     assert (Member.is_admin(state, caller));
     print(debug_show (caller));
-    // TODO. Regla: los admin pueden otorgar roles solo cuando no hay la cantidad suficiente de guardians en la DAO
-    // En caso de que haya la cantidad de guardians requerida, generar una proposal (Nueva variante #Guardian{#BatchUpdateRoles})
     Member.batch_update_member_role(state, principals, role);
-    // TODO. Registrar Fecha, Cambio y autor del autor del cambio?
+    // TODO. Registrar Fecha, Cambio y autor del cambio?
   };
 
   // Revisar politicas de acceso a esta informacion
@@ -317,19 +341,67 @@ persistent actor {
       func p = p.id,
     );
     for (id in proposalsId.vals()) {
+
       try {
-        ignore await Proposal.refresh_proposal_status(
+        let response = await Proposal.refresh_proposal_status(
           state,
           id,
           callbackRemoveTempFile,
         );
+        switch (response) {
+          case null {};
+          case (?proposalResponse) {
+            // TODO En el proximo upgrade pasar esta logica al modulo proposal.mo luego de incluir downloadPermisionMap en state
+            if(proposalResponse.kind == #DigitalTaonga(#RequestDownloadPermision) and proposalResponse.status == #Approved){
+              func getTaongaId(metadata: SharedTypes.Metadata): ?Text {
+                for((key, value) in metadata.vals()){
+                  if (key == "taongaId") {
+                    switch value {
+                      case (#Text(id)) { return ?id};
+                      case _ {}
+                    };
+                  }
+                };
+                return null
+              };
+              switch(getTaongaId(proposalResponse.extendedData)){
+                case null {};
+                case (?principalText) {
+                  let membersWithAccess = Map.get<Principal, Set.Set<Principal>>(downloadPermisionMap, phash, Principal.fromText(principalText));
+                  let updatedMembersWithAccess = switch membersWithAccess {
+                    case null {
+                      Set.make<Principal>(phash, proposalResponse.creator)
+                    };
+                    case ( ?membersWithAccess ) {
+                      ignore Set.put<Principal>(membersWithAccess, phash, proposalResponse.creator);
+                      membersWithAccess
+                    };
+                  };
+                  ignore Map.put<Principal, Set.Set<Principal>>(
+                    downloadPermisionMap, 
+                    phash, 
+                    Principal.fromText(principalText),
+                    updatedMembersWithAccess
+                  )
+                }
+              }
+
+            }
+          }
+        };
       } catch (_) {
         print("Error on refresh proposal: " # debug_show (id));
         updatingProposals := false;
       };
     };
     updatingProposals := false;
+  };
 
+  public shared ({ caller }) func accessTo(taongaId: Principal): async [Principal]{
+    switch (Map.get<Principal, Set.Set<Principal>>(downloadPermisionMap, phash, taongaId)){
+      case null {[]};
+      case ( ?set ) {Set.toArray(set) }
+    }
   };
 
   public query ({ caller }) func has_voted(id : Int) : async Bool {

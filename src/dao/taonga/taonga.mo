@@ -17,14 +17,16 @@ import { now } "mo:base/Time";
 
     var taongaIsReady = false;
     var creation_date = now(): Int;
+    var lastUpdate = now(): Int;
     var chunkQty = initArgs.chunksQty;
+    var assetDataBackup = Array.init<Blob>(initArgs.chunksQty, "" : Blob);
 
     var assetData = Array.init<Blob>(initArgs.chunksQty, "" : Blob); // Array mut para guardar los chuncks del asset
 
     var assetMetadata : Types.AssetMetadata = {
       description : Text = initArgs.description;
       history : Text = initArgs.history;
-      image : ?Blob = null;
+      image : ?Blob = ?initArgs.thumbnail;
       name : Text = initArgs.name;
       symbol : Text = ""; 
       token_uri : ?Text = null; //
@@ -32,11 +34,34 @@ import { now } "mo:base/Time";
       chunkQty;
     };
 
+    public shared ({ caller }) func updateDescription(description: Text): async {#Ok}{
+      assert (isAdmin(caller));
+      assetMetadata := {assetMetadata with description};
+      lastUpdate := now();
+      #Ok
+    };
+
+    public shared ({ caller }) func updateHistory(history: Text): async {#Ok}{
+      assert (isAdmin(caller));
+      assetMetadata := {assetMetadata with history};
+      lastUpdate := now();
+      #Ok
+    };
+
+    public shared ({ caller }) func updateFileRequest({thumbnail: Blob; chunksQty: Nat}): async {#Ok}{
+      assert (isAdmin(caller));
+      taongaIsReady := false;
+      assetMetadata := {assetMetadata with image = ?thumbnail; chunkQty = chunksQty};
+      assetDataBackup := assetData;
+      assetData := Array.init<Blob>(chunksQty, "" : Blob);
+      #Ok
+    };
+
     public shared ({ caller }) func uploadTaonga({ chunk : Blob; index : Nat }) : async {
       #Ok;
       #Err : Text;
     } {
-      //Carga del GLB en fragmentos de 1.8 MiB despues del deploy
+      //Carga del GLB en fragmentos de 1 MiB despues del deploy
       assert (isAdmin(caller));
       if (taongaIsReady) { // Quitar esta validación si existe la posibilidad de actualizar el archivo GLB
         return #Err("Error: Taonga is already initialized");
@@ -55,6 +80,7 @@ import { now } "mo:base/Time";
         print("Upload file process complete");
         callback(initArgs.tempFileId)
       };
+      lastUpdate := now();
       #Ok
 
     };

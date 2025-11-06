@@ -11,11 +11,11 @@ const DAO_CANISTER_ID = JSON.stringify(import.meta.env.VITE_DEPLOY_DEV) == "true
 
 const AUTHORITY_SEED = import.meta.env.AUTHORITY_SEED;
 
-console.log("=== ENV DEBUG ===");
-console.log({ ICP_API_HOST });
-console.log({ DAO_CANISTER_ID });
-console.log({ DFX_NETWORK: import.meta.env.DFX_NETWORK });
-console.log({ CANISTER_ID: import.meta.env.CANISTER_ID });
+// console.log("=== ENV DEBUG ===");
+// console.log({ ICP_API_HOST });
+// console.log({ DAO_CANISTER_ID });
+// console.log({ DFX_NETWORK: import.meta.env.DFX_NETWORK });
+// console.log({ CANISTER_ID: import.meta.env.CANISTER_ID });
 
 export const env = {
   ICP_API_HOST,

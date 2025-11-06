@@ -1,5 +1,6 @@
 import Taonga "./taonga/taonga";
 import List "mo:base/List";
+import Set "mo:map/Set";
 
 module {
 
@@ -151,5 +152,6 @@ module {
     description : Text;
     thumbnail: Blob;
     date: Int;
+    // accessTo: [Principal];
   };
 }
