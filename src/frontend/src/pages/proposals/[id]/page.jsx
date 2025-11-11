@@ -21,6 +21,7 @@ import {
 import Button from "../../../components/shared/Button";
 import { CommentSection } from "../../../components/CommentSection"
 import StatusBallProposal from "../../../components/shared/StatusBallProposal";
+import { useNavigate } from "react-router";
 import { useAuth } from "@nfid/identitykit/react";
 import { useParams } from "react-router";
 import useCanister from "../../../hooks/useCanister";
@@ -48,6 +49,8 @@ const ProposalDetail = () => {
   const { user, connect } = useAuth();
   const [dao] = useCanister()
   const [taongaToDelete, setTaongaToDelete] = useState()
+
+  const navigate = useNavigate();
 
   const countTotalComments = (list) => {
     let count = 0;
@@ -284,11 +287,27 @@ const ProposalDetail = () => {
                   <img className="max-h-140 rounded-[40px] " src={blobToImageUrl(proposal.kind.DigitalTaonga.CreateDigitalTaonga.thumbnail)} alt="" />
                 </div>
                 :
-                <>
-                  {"Open" in proposal.status && <div className="flex flex-col items-center p-6 md:w-[30vw]">
-                    <img src={blobToImageUrl(taongaToDelete?.thumbnail)} alt="" />
-                  </div>}
-                </>)
+                "UpdateDigitalTaonga" in proposal.kind.DigitalTaonga &&
+                  "UpdateImageURL"  in proposal.kind.DigitalTaonga.UpdateDigitalTaonga
+                ? 
+                  <div className="flex flex-col items-center p-6 md:w-[30vw] ">
+                    <p
+                      className="mb-4 hover:text-blue-800 cursor-pointer transition duration-300 hover:scale-105!"
+                      onClick={() => navigate(`/digital-taonga/${proposal.extendedData[0][1].Text}`)}
+                      target="_blank"
+                    >
+                      👉 Show Current Taonga Status 👈
+                    </p>
+                    <h4 className="mb-4">Update Digital Taonga File</h4>
+
+                    <img className="max-h-140 rounded-[40px] " src={blobToImageUrl(proposal.extendedData[1][1].Blob)} alt="" />
+                  </div>
+                :
+                  (<>
+                    {"Open" in proposal.status && <div className="flex flex-col items-center p-6 md:w-[30vw]">
+                      <img src={blobToImageUrl(taongaToDelete?.thumbnail)} alt="" />
+                    </div>}
+                  </>))
               }
             </div>
           </div>

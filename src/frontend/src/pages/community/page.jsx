@@ -102,9 +102,9 @@ const Community = () => {
 
   useEffect(() => {
     const getAllMembers = async () => {
-      if (!dao) return;
+      if (!daoAuth) return;
       try {
-        const members = await dao.get_all_members();
+        const members = await daoAuth.get_all_members();
         const data = members.map(memberParser);
 
         setMembers({ loading: false, data });
@@ -115,7 +115,7 @@ const Community = () => {
       }
     };
     getAllMembers();
-  }, [dao]);
+  }, [daoAuth]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {

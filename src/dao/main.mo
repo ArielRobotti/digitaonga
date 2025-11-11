@@ -78,7 +78,6 @@ persistent actor {
     cyclesForTaongaDeploy := cycles;
   };
 
-  ///////// Comentar luego de migración /////////
   public shared ({ caller }) func pushMembers(members : [SharedTypes.Member]) : async () {
     assert (Principal.isController(caller));
     for (member in members.vals()) {

@@ -10,7 +10,7 @@ import { useAuth } from "@nfid/identitykit/react";
 const Proposals = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [, dao] = useCanister(); // No hace falta que sea el agente autenticado
+  const [dao] = useCanister(); 
   const [createDisabled, setCreateDisabled] = useState()
 
   const proposalsShown = useRef([])
@@ -44,7 +44,6 @@ const Proposals = () => {
   const intervalRef = useRef(null);
 
   const pulling = async () => {
-    console.log("pulling...");
     try {
       if (dao) {
         dao.refresh_all_proposals()
@@ -59,7 +58,7 @@ const Proposals = () => {
 
   useEffect(() => {
     if (dao && !intervalRef.current) {
-      intervalRef.current = setInterval(pulling, 2000);
+      intervalRef.current = setInterval(pulling, 4000);
     }
     return () => {
       if (intervalRef.current) {

@@ -8,7 +8,7 @@ import { useNavigate } from "react-router";
 import { useAuth } from "@nfid/identitykit/react";
 
 const ProposalCard = ({
-  title, status, id, creator, deadline, creatorName, impact,
+  title, status, hasVoted, id, creator, deadline, creatorName, impact,
   likes, dislikes, comments, description, className = "", kind
 } = {}) => {
 
@@ -189,7 +189,7 @@ const ProposalCard = ({
           </div>
         </div>
 
-        {status === "Open" && (
+        {status === "Open" && !hasVoted && (
           <Button className="w-fit text-white bg-kokowai shadow-[0px_1px_3px_0px_#0000004D]">
             Vote
           </Button>

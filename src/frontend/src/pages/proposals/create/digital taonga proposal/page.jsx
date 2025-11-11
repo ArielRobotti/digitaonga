@@ -218,12 +218,10 @@ const DigitalTaongaProposalCreation = () => {
             description: form.description,
             impact: "",
             kind: {
-              DigitalTaonga: { RequestDownloadPermision: null }
+              DigitalTaonga: { RequestDownloadPermision: selectedTaonga }
             },
             deadline,
-            extendedData: [
-              ["taongaId", {Text: selectedTaonga.toString()}]
-            ],
+            extendedData: []
           };
           const responseDownloadRequest = await dao.create_proposal(requestDownloadArgs);
           console.log(responseDownloadRequest)
@@ -332,7 +330,7 @@ const DigitalTaongaProposalCreation = () => {
 
 
   const SelectedProposal = () => {
-    console.log(action)
+    // console.log(action)
     switch (action) {
       case "Create or Upload a New Digital Taonga":
         return (
