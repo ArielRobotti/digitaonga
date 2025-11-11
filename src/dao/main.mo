@@ -19,23 +19,19 @@ import ManagerCanister "./interfaces/ic-management-interface";
 
 persistent actor {
 
-  let cyclesForTaongaDeploy = 1_000_000_000_000; // Cyclos necesarios para desplegar un canister class Taonga... probar cuantos se requieren en mainnet
-
-  let state : Types.State = Types.initState({ cyclesForTaongaDeploy });
-  var deployTaongaCycles = 2_000_000_000_000;
+  let state : Types.State = Types.initState();
+  var cyclesForTaongaDeploy = 2_000_000_000_000;
+  var updatingProposals : Bool = false;
 
   // Registro de eventos y cambios DAO
 
-  public query func time() : async Int {
-    now();
-  };
-
-  var updatingProposals : Bool = false;
-
-  ////// Variables para incluir en state en proximo upgrade ///////
+  public query func time() : async Int { now() };
 
 
-  let downloadPermisionMap = Map.new<Principal, Set.Set<Principal>>();
+
+
+
+  // let downloadPermisionMap = Map.new<Principal, Set.Set<Principal>>();
 
   ///// Admin functions /////////////
 
@@ -67,18 +63,6 @@ persistent actor {
     Proposal.checkFileIntegrity(state, id);
   };
 
-  public shared ({ caller }) func getFileMetadata(id: Nat): (){
-    assert (Member.is_admin(state, caller));
-    switch(Map.get<Int, Types.File>(state.tempFiles, ihash, id)) {
-      case (?file){
-        print("size -> " # debug_show(file.size));
-        print("owner -> " # debug_show(file.owner));
-        print("chunkQty -> " # debug_show(file.data.size()))
-      };
-      case _{}
-    }
-  };
-
   public shared ({ caller }) func setRole(p: Principal, role: SharedTypes.MemberRole): async (){
     assert(Principal.isController(caller));
     switch (Map.get<Principal, SharedTypes.Member>(state.members , phash, p)){
@@ -89,9 +73,14 @@ persistent actor {
     }
   };
 
+  public shared ({ caller }) func setCyclesForTaongaDeploy(cycles: Nat): async (){
+    assert (Member.is_admin(state, caller));
+    cyclesForTaongaDeploy := cycles;
+  };
+
   ///////// Comentar luego de migración /////////
   public shared ({ caller }) func pushMembers(members : [SharedTypes.Member]) : async () {
-    assert (Member.is_admin(state, caller));
+    assert (Principal.isController(caller));
     for (member in members.vals()) {
       ignore Map.put<Principal, SharedTypes.Member>(
         state.members,
@@ -176,23 +165,23 @@ persistent actor {
 
   public shared ({ caller }) func batch_update_member_role(principals : [Principal], role : SharedTypes.MemberRole) : async [(Principal, SharedTypes.MemberError)] {
     assert (Member.is_admin(state, caller));
-    print(debug_show (caller));
     Member.batch_update_member_role(state, principals, role);
     // TODO. Registrar Fecha, Cambio y autor del cambio?
   };
 
   // Revisar politicas de acceso a esta informacion
-  public query func get_active_members() : async [SharedTypes.Member] {
-    // Peligro de desbordamiento de response sobre los 2 MiB
+  public query ({ caller }) func get_active_members() : async [SharedTypes.Member] {
+    assert (not Principal.isAnonymous(caller));
     Member.get_active_members(state);
   };
-  // Quienes tienen acceso a estos datos?
-  public query func get_all_members() : async [SharedTypes.Member] {
-    // Peligro de desbordamiento de response sobre los 2 MiB
+  
+  public query ({ caller }) func get_all_members() : async [SharedTypes.Member] {
+    assert (not Principal.isAnonymous(caller));
     Member.get_all_members(state);
   };
 
-  public query func get_member(p : Principal) : async Member.Result {
+  public query ({ caller }) func get_member(p : Principal) : async Member.Result {
+    assert (not Principal.isAnonymous(caller));
     Member.get_member(state, p);
   };
 
@@ -243,8 +232,7 @@ persistent actor {
   };
 
   public query ({ caller }) func get_proposal(id : Int) : async ProposalResponse {
-    // En ProposalPublicData se omiten los votos y el creador
-    // assert(not Principal.isAnonymous(caller));
+    assert(not Principal.isAnonymous(caller));
     let proposalOpt = Proposal.get_proposal(state, id);
     switch proposalOpt {
       case null {
@@ -267,8 +255,18 @@ persistent actor {
     Proposal.delete_proposal(state, caller, id);
   };
 
-  public query func get_all_proposals() : async [SharedTypes.ProposalPublicData] {
-    Proposal.get_all_proposals(state);
+  public shared query ({ caller }) func get_all_proposals() : async [SharedTypes.ProposalPublicData and {hasVoted: Bool} ] {
+    let proposals = Iter.toArray(Map.vals<Int, SharedTypes.Proposal>(state.proposals));
+    func voted(votes: [(Principal, SharedTypes.Vote)]): Bool {
+      for (v in votes.vals()){
+        if (v.0 == caller) { return true}
+      };
+      false
+    };
+    Array.map<SharedTypes.Proposal, SharedTypes.ProposalPublicData and {hasVoted: Bool}>(
+      proposals,
+      func proposal = {proposal with hasVoted = voted(proposal.votes)}
+    )
   };
 
   public shared ({ caller }) func vote_proposal(id : Int, vote : SharedTypes.Vote) : async ?SharedTypes.ProposalPublicData {
@@ -316,8 +314,21 @@ persistent actor {
     Array.filter<SharedTypes.Proposal>(all_proposals, func p = p.creator == principal);
   };
 
-  public query func get_all_taongas() : async [(Principal, SharedTypes.TaongaMetadata)] {
-    Map.toArray<Principal, SharedTypes.TaongaMetadata>(state.taongas);
+  public shared query ({caller}) func get_all_taongas() : async [(Principal, SharedTypes.TaongaMetadata and {canDownload: Bool})] {
+    let entries = Map.toArray<Principal, SharedTypes.TaongaMetadata>(state.taongas);
+    func canDownload(authorizedDownloaders: [Principal]): Bool{
+      for(m in authorizedDownloaders.vals()){
+        if (caller == m) { return true };
+      };
+      false
+    };
+    Array.map<(Principal, SharedTypes.TaongaMetadata), (Principal, SharedTypes.TaongaMetadata and {canDownload: Bool})>(
+      entries,
+      func entrie = (
+        entrie.0, 
+        { entrie.1 with canDownload = canDownload(entrie.1.authorizedDownloaders) }
+      )
+    )
   };
 
   // check_proposal_status : shared Nat -> async Result_2;
@@ -343,65 +354,18 @@ persistent actor {
     for (id in proposalsId.vals()) {
 
       try {
-        let response = await Proposal.refresh_proposal_status(
+        ignore await Proposal.refresh_proposal_status(
           state,
           id,
           callbackRemoveTempFile,
         );
-        switch (response) {
-          case null {};
-          case (?proposalResponse) {
-            // TODO En el proximo upgrade pasar esta logica al modulo proposal.mo luego de incluir downloadPermisionMap en state
-            if(proposalResponse.kind == #DigitalTaonga(#RequestDownloadPermision) and proposalResponse.status == #Approved){
-              func getTaongaId(metadata: SharedTypes.Metadata): ?Text {
-                for((key, value) in metadata.vals()){
-                  if (key == "taongaId") {
-                    switch value {
-                      case (#Text(id)) { return ?id};
-                      case _ {}
-                    };
-                  }
-                };
-                return null
-              };
-              switch(getTaongaId(proposalResponse.extendedData)){
-                case null {};
-                case (?principalText) {
-                  let membersWithAccess = Map.get<Principal, Set.Set<Principal>>(downloadPermisionMap, phash, Principal.fromText(principalText));
-                  let updatedMembersWithAccess = switch membersWithAccess {
-                    case null {
-                      Set.make<Principal>(phash, proposalResponse.creator)
-                    };
-                    case ( ?membersWithAccess ) {
-                      ignore Set.put<Principal>(membersWithAccess, phash, proposalResponse.creator);
-                      membersWithAccess
-                    };
-                  };
-                  ignore Map.put<Principal, Set.Set<Principal>>(
-                    downloadPermisionMap, 
-                    phash, 
-                    Principal.fromText(principalText),
-                    updatedMembersWithAccess
-                  )
-                }
-              }
 
-            }
-          }
-        };
       } catch (_) {
         print("Error on refresh proposal: " # debug_show (id));
         updatingProposals := false;
       };
     };
     updatingProposals := false;
-  };
-
-  public shared ({ caller }) func accessTo(taongaId: Principal): async [Principal]{
-    switch (Map.get<Principal, Set.Set<Principal>>(downloadPermisionMap, phash, taongaId)){
-      case null {[]};
-      case ( ?set ) {Set.toArray(set) }
-    }
   };
 
   public query ({ caller }) func has_voted(id : Int) : async Bool {
@@ -444,10 +408,6 @@ persistent actor {
         if (not canComment(caller)) {
           return proposal.comments;
         };
-        // var currentList = switch (Map.get<Int, CommentList>(comments, ihash, proposalId)) {
-        //   case null { List.nil<Comment.Comment>() };
-        //   case ( ?list ) { list }
-        // };
         var comments = proposal.comments;
 
         let newComment : Comment.Comment = {
@@ -462,25 +422,10 @@ persistent actor {
         comments := Comment.push(comments, newComment, path);
         ignore Map.put<Int, SharedTypes.Proposal>(state.proposals, ihash, proposalId, { proposal with comments });
 
-        // ignore Map.put<Int, CommentList>(comments, ihash, proposalId, currentList);
         comments;
       };
     };
   };
-
-  // public shared ({ caller }) func new_comment_proposal({proposalId : Int; msg : Text; path: [Int]}): async CommentList {
-  //   switch(Proposal.get_proposal(state, proposalId)) {
-  //     case null null;
-  //     case ( ?proposal ){
-  //       if (canComment(caller)){
-
-  //       } else {
-  //         return proposal.comments
-  //       }
-
-  //     }
-  //   }
-  // };
 
   public query func loadComments(id : Int) : async CommentList {
     switch (Map.get<Int, CommentList>(comments, ihash, id)) {
@@ -492,19 +437,14 @@ persistent actor {
   //////////////////////////////////////////////////////////////////
 
   public shared ({ caller }) func callbackRemoveTempFile(tempFileId : Int) : () {
-    let recoveredBytes = switch (Map.get<Int, Types.File>(state.tempFiles, ihash, tempFileId)) {
-      case null { 0 };
+    switch (Map.get<Int, Types.File>(state.tempFiles, ihash, tempFileId)) {
+      case null {  };
       case (?file) {
         if (file.owner == caller) {
           ignore Map.remove<Int, Types.File>(state.tempFiles, ihash, tempFileId);
-          file.data.size() * (file.data[0].size() -1 : Nat) + file.data[file.data.size() - 1 : Nat].size();
-        } else {
-          0;
         }
-
       };
     };
-    print(Nat.toText(recoveredBytes) # " Bytes temporary file successfully deleted");
   };
 
 };

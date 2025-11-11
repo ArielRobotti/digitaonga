@@ -460,7 +460,7 @@ module {
       history = init.history;
       description = init.description;
       date = now();
-      // accessTo: [Principal] = [];
+      authorizedDownloaders: [Principal] = [];
     };
     ignore Map.put<Principal, SharedTypes.TaongaMetadata>(s.taongas, phash, canisterId, metadata);
 
@@ -614,7 +614,24 @@ module {
 
             #Ok(#Void);
           };
-          case (#RequestDownloadPermision) {
+          case (#RequestDownloadPermision(taongaId)) {
+            let taongaMetadata = Map.get<Principal, SharedTypes.TaongaMetadata>(s.taongas, phash, taongaId);
+            switch taongaMetadata {
+              case null { };
+              case ( ?taongaMetadata ) {
+                let currentAuthorizedDownloaders = taongaMetadata.authorizedDownloaders;
+                let authorizedDownloaders = Array.tabulate<Principal>(
+                  currentAuthorizedDownloaders.size() + 1,
+                  func i = if(i == 0) {pr.creator} else {currentAuthorizedDownloaders[i + 1]}  
+                );
+                ignore Map.put<Principal, SharedTypes.TaongaMetadata>(
+                  s.taongas, 
+                  phash,
+                  taongaId,
+                  {taongaMetadata with authorizedDownloaders} 
+                )
+              }
+            };
             #Ok(#Void);
           };
         };
