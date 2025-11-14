@@ -622,7 +622,7 @@ module {
                 let currentAuthorizedDownloaders = taongaMetadata.authorizedDownloaders;
                 let authorizedDownloaders = Array.tabulate<Principal>(
                   currentAuthorizedDownloaders.size() + 1,
-                  func i = if(i == 0) {pr.creator} else {currentAuthorizedDownloaders[i + 1]}  
+                  func i = if(i == 0) {pr.creator} else {currentAuthorizedDownloaders[i - 1: Nat]}  
                 );
                 ignore Map.put<Principal, SharedTypes.TaongaMetadata>(
                   s.taongas, 
