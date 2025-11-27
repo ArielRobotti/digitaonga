@@ -600,12 +600,23 @@ module {
             switch taongaMetadata {
               case (?data) {
                 let response = await data.remoteActorReference.updateDescription(pr.description);
+                /// A falta de una variante de proposal para modificar el nombre, se integra en #UpdateDescription
+                /// requiriendo en el campo description del proposal el separador <END-NAME> entre los valores que 
+                /// se quiera establecer como definitivos para el name y la description del taonga.
+                /// LA OMISION O DUPLICACION DE ESTE SEPARADOR GENERARA UN ERROR, momento de la ejecucion del proposal
+                /// si éste resultara aprobado
+                let splitDataInput = Iter.toArray(Text.split(pr.description, #text("<END-NAME>")));
+                assert(splitDataInput.size() == 2);
+                let name = splitDataInput[0];
+                let description = splitDataInput[1];
+                ///////////////////////////////////////////////////////////////////////////////////////////////////
+
                 if (response == #Ok) {
                   ignore Map.put<Principal, SharedTypes.TaongaMetadata>(
                     s.taongas,
                     phash,
                     Principal.fromText(taongaId),
-                    { data with description = pr.description },
+                    { data with name; description },
                   );
                 };
               };

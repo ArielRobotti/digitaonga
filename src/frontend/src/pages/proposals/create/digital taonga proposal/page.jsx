@@ -1,10 +1,10 @@
 import { CloseIcon, SimpleCheckIcon, UploadIcon } from "../../../../components/ui/icons";
-import { Dialog, DialogContent, IconButton, styled, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import { Dialog, DialogContent, IconButton, styled, FormControl, InputLabel, Select, MenuItem, Box } from "@mui/material";
 import { digitalTaongaProposals, updateAnExistingDigitalTaonga } from "../../../../utils/data";
 import { useNavigate, useSearchParams } from "react-router";
 import { ModelViewer3D } from "../../../../components/ModelViewer3D";
 import { compressAndConvertImage } from "../../../../utils/imageManager";
-import { Modal, Box, Tooltip, CircularProgress } from "@mui/material";
+import { Modal, Tooltip, CircularProgress } from "@mui/material";
 
 import ActionCard from "../../../../components/proposals/create/ActionCard";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -23,6 +23,7 @@ import useCanister from "../../../../hooks/useCanister";
 import { useState, useRef, useEffect } from "react";
 import { uploadFile } from "../../../../utils/fileManager"
 import { blobToImageUrl } from "../../../../utils/imageManager"
+import EditIcon from '@mui/icons-material/Edit';
 
 
 const DigitalTaongaProposalCreation = () => {
@@ -35,7 +36,7 @@ const DigitalTaongaProposalCreation = () => {
     date: dayjs(new Date().toDateString()),
     screenshot: null, // Nuevo estado para guardar el screenshot
   });
-  const [selectedTaonga, setSelectedTaonga] = useState(null);
+  const [selectedTaongaObject, setSelectedTaongaObject] = useState(null);
   const [open, setOpen] = useState(false);
   const [responseDialog, setResponseDialog] = useState({ success: false, error: false });
   const [selectedValue, setSelectedValue] = useState(null);
@@ -48,6 +49,7 @@ const DigitalTaongaProposalCreation = () => {
   const [previewImageUrl, setPreviewImageUrl] = useState(null);
   const [disableButtons, setDisableButtons] = useState(false);
   const [taongas, setTaongas] = useState([])
+  const [isEditing, setIsEditing] = useState({ name: false, description: false });
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -96,6 +98,16 @@ const DigitalTaongaProposalCreation = () => {
     }
     fetchTaongas()
   }, [dao])
+
+  useEffect(() => {
+    if (readyToUpdate && selectedTaongaObject && updateType === "Update Digital Taonga Description") {
+      setForm(prevForm => ({
+        ...prevForm,
+        name: selectedTaongaObject.name,
+        description: selectedTaongaObject.description
+      }));
+    }
+  }, [readyToUpdate, selectedTaongaObject, updateType]);
 
   // const chunkSize = 1024 * 2047 // 2 MiB - 1 KB
   const chunkSize = 1024 * 1024
@@ -201,7 +213,7 @@ const DigitalTaongaProposalCreation = () => {
             impact: "",
             kind: {
               DigitalTaonga: {
-                DeleteDigitalTaonga: selectedTaonga
+                DeleteDigitalTaonga: selectedTaongaObject?.canisterId
               },
             },
             deadline,
@@ -218,7 +230,7 @@ const DigitalTaongaProposalCreation = () => {
             description: form.description,
             impact: "",
             kind: {
-              DigitalTaonga: { RequestDownloadPermision: selectedTaonga }
+              DigitalTaonga: { RequestDownloadPermision: selectedTaongaObject?.canisterId }
             },
             deadline,
             extendedData: []
@@ -239,7 +251,7 @@ const DigitalTaongaProposalCreation = () => {
               console.log({ dataSize })
               console.log({ chunksQty })
               const extendedMetadata = [
-                ["taongaId", { Text: selectedTaonga.toString() }],
+                ["taongaId", { Text: selectedTaongaObject?.canisterId.toString() }],
                 ["thumbnail", { Blob: thumbnail }],
                 ["size", { Nat: BigInt(dataSize) }],
                 ["chunksQty", { Nat: BigInt(chunksQty) }]
@@ -250,7 +262,7 @@ const DigitalTaongaProposalCreation = () => {
                 impact: "",
                 kind: {
                   DigitalTaonga: {
-                    UpdateDigitalTaonga: { UpdateImageURL: selectedTaonga.toString() }
+                    UpdateDigitalTaonga: { UpdateImageURL: selectedTaongaObject?.canisterId.toString() }
                   }
                 },
                 extendedData: extendedMetadata,
@@ -265,12 +277,12 @@ const DigitalTaongaProposalCreation = () => {
             case "updateDescription":
 
               const updateDescriptionTaongaArgs = {
-                title: "Update Description Taonga",
-                description: form.description,
+                title: "Update Name and/or Description Taonga",
+                description: form.name + "<END-NAME>" + form.description,
                 impact: "",
                 kind: {
                   DigitalTaonga: {
-                    UpdateDigitalTaonga: { UpdateDescription: selectedTaonga.toString() }
+                    UpdateDigitalTaonga: { UpdateDescription: selectedTaongaObject?.canisterId.toString() }
                   }
                 },
                 extendedData: [],
@@ -307,19 +319,45 @@ const DigitalTaongaProposalCreation = () => {
         value={form.taongaId || ""}
         onChange={handleSelectTaonga}
         label="Choose Digital Taonga"
-        className="h-14 bg-white!"
+        className="pt-0!"
+        renderValue={(selectedTaongaId) => {
+          const selected = taongas.find((t) => t.canisterId.toString() === selectedTaongaId.toString());
+          if (selected) {
+            const imageUrl = blobToImageUrl(selected.thumbnail);
+            return (
+              <Box
+                className= "flex items-center justify-between w-full pr-4" 
+              >
+                <span>{selected.name}</span>
+                <img 
+                  src={imageUrl} 
+                  alt={selected.name}
+                  className="w-14 h-14 rounded-full object-cover ml-4" 
+                />
+              </Box>
+            );
+          }
+          return '';
+        }}
+        MenuProps={{
+          sx: {
+            "& .MuiMenu-list": {
+              padding: "2px",
+            },
+          },
+        }}
       >
         {taongas.map((t) => {
           const imageUrl = blobToImageUrl(t.thumbnail);
           return (
-            <MenuItem key={t.canisterId} value={t.canisterId} className="">
+            <MenuItem key={t.canisterId} value={t.canisterId} className="bg-gray-100! hover:bg-gray-200!">
               {/* 🖼️ Estructura que permite texto y imagen */}
-              <Box className="flex items-center justify-between w-full pr-4">
-                <span className="text-gray-600">{t.name}</span>
+              <Box className="flex items-center justify-between w-full pr-4 ">
+                <span className="text-black!">{t.name}</span>
                 <img
                   src={imageUrl}
                   alt={t.name}
-                  className="w-14 h-14 rounded-full object-cover ml-4" // Clases Tailwind para estilo
+                  className="w-14 h-14 rounded-full object-cover ml-4"
                 />
               </Box>
             </MenuItem>
@@ -498,15 +536,41 @@ const DigitalTaongaProposalCreation = () => {
         return (
           <section className="flex flex-col md:items-center gap-8 p-12">
             {taongaSelector()}
-            <TextField
-              label="Cultural Description"
-              variant="outlined"
-              onChange={handleChange}
-              value={form.description}
-              name="description"
-              required
-              className="material_input md:max-w-[500px] md:w-full"
-            />
+
+            <div className="flex items-center gap-4 w-full md:max-w-[500px]">
+              <TextField
+                label= {isEditing.name? "Edit Name": "Taonga Name"}
+                variant="outlined"
+                onChange={handleChange}
+                value={form.name || ''}
+                name="name"
+                disabled={!isEditing.name}
+                className="flex-grow"
+              />
+              {!isEditing.name && selectedTaongaObject && (
+                <IconButton onClick={() => setIsEditing(prev => ({ ...prev, name: true }))} color="action" size="small">
+                  <EditIcon />
+                </IconButton>
+              )}
+            </div>
+
+            <div className="flex items-center gap-4 w-full md:max-w-[500px]">
+              <TextField
+                label={isEditing.description? "Edit Cultural Description": "Cultural Description"}
+                variant="outlined"
+                onChange={handleChange}
+                value={form.description || ''}
+                name="description"
+                disabled={!isEditing.description}
+                className="flex-grow"
+              />
+              {!isEditing.description && selectedTaongaObject && (
+                <IconButton onClick={() => setIsEditing(prev => ({ ...prev, description: true }))} color="action" size="small">
+                  <EditIcon />
+                </IconButton>
+              )}
+            </div>
+
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DemoContainer components={["DatePicker"]}>
                 <DateTimePicker
@@ -587,9 +651,12 @@ const DigitalTaongaProposalCreation = () => {
 
 
   const handleSelectTaonga = (e) => {
-    setForm({ ...form, taongaId: e.target.value, impact: " ", history: " ", })
-    setSelectedTaonga(e.target.value)
-    // console.log({selectedTaonga})
+    const taongaId = e.target.value; // e.target.value is now the canisterId
+    const taongaObject = taongas.find(t => t.canisterId.toString() === taongaId.toString());
+    setForm({ ...form, taongaId: taongaId, impact: " ", history: " ", })
+    setSelectedTaongaObject(taongaObject)
+
+    console.log(taongaId) // console.log the ID
   }
 
   return (
@@ -787,8 +854,9 @@ const DigitalTaongaProposalCreation = () => {
             readyToUpdate
               ? // A. Validar Actualización de Descripción
               updateType === "Update Digital Taonga Description"
-                ? // REGLAS: Descripción, TaongaId, Fecha y Fecha NO pasada
-                  !form.description || !form.taongaId || !form.date || form.date.isBefore(dayjs())
+                ? // REGLAS: No hay cambios, O faltan otros datos
+                  (form.name === selectedTaongaObject?.name && form.description === selectedTaongaObject?.description) ||
+                  !form.taongaId || !form.date || form.date.isBefore(dayjs())
                 : // B. Validar Actualización de Archivo (el otro caso de updateType)
                   updateType === "Update Digital Taonga File"
                   ? // REGLAS: Todos los campos + Archivo y Screenshot

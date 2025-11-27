@@ -188,7 +188,13 @@ const GuardianProposalCreation = () => {
             onChange={handleSelectMember}
             label="Choose Member"
             className="h-14 bg-white!"
+            
             MenuProps={{
+              sx: {
+                "& .MuiMenu-list": {
+                  padding: "2px"
+                },
+              },
               PaperProps: {
                 className: "custom-scrollbar",
                 style: {
@@ -210,7 +216,7 @@ const GuardianProposalCreation = () => {
                 <AvatarIcon className="w-13 h-13 rounded-full object-cover"/>;
 
               return (
-                <MenuItem key={principalText} value={principalText} className="">
+                <MenuItem key={principalText} value={principalText} className="bg-gray-100! hover:bg-gray-200!">
                   <Box className="flex items-center justify-between w-full pr-2">
                     <span className="text-gray-600 w-20">{m.name[0]? m.name[0]: "No name"}</span>
                     <span className="text-gray-600">({Object.keys(m.role)[0] })</span>

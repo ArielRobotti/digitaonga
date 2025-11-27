@@ -7,6 +7,8 @@ import { print } "mo:base/Debug";
 import Nat "mo:base/Nat";
 import Cycles "mo:base/ExperimentalCycles";
 import { now } "mo:base/Time";
+import Text "mo:base/Text";
+import Iter "mo:base/Iter";
 
   shared ({ caller = DEPLOYER }) persistent actor class Taonga(initArgs : Types.InitArgs, callback: shared Int -> ()) {
     let admins = Set.fromIter<Principal>([DEPLOYER, initArgs.admin].vals(), phash); // Los administradores iniciales son el canister principal y el admin pasado como parametro
@@ -34,9 +36,13 @@ import { now } "mo:base/Time";
       chunkQty;
     };
 
-    public shared ({ caller }) func updateDescription(description: Text): async {#Ok}{
+    public shared ({ caller }) func updateDescription(titleAnddescription: Text): async {#Ok}{
       assert (isAdmin(caller));
-      assetMetadata := {assetMetadata with description};
+      let arrayDataInput = Iter.toArray(Text.split(titleAnddescription, #text("<END-NAME>"))); // enviar desde DAO "titulo<END-TITLE>descripcion" siempre
+      assert(arrayDataInput.size() == 2);
+      let name = arrayDataInput[0];
+      let description = arrayDataInput[1];
+      assetMetadata := {assetMetadata with description; name};
       lastUpdate := now();
       #Ok
     };

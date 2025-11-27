@@ -4,7 +4,7 @@ import Member "./member";
 import Proposal "./proposal";
 import Comment "./commentsManager";
 // import Error "mo:base/Error";
-import Set "mo:map/Set";
+// import Set "mo:map/Set";
 import Map "mo:map/Map";
 import { ihash; phash } "mo:map/Map";
 import Array "mo:base/Array";
@@ -16,6 +16,7 @@ import { now } "mo:base/Time";
 import List "mo:base/List";
 import Error "mo:base/Error";
 import ManagerCanister "./interfaces/ic-management-interface";
+import CommentsManager "commentsManager";
 
 persistent actor {
 
@@ -411,6 +412,8 @@ persistent actor {
 
         let newComment : Comment.Comment = {
           msg;
+          // edited = null;
+          // prevMsg = null;
           creator = caller;
           created_at = now();
           likes = [];
@@ -426,11 +429,39 @@ persistent actor {
     };
   };
 
+  public shared ({ caller }) func like_comment({root: Int; _paht: [Int]; _like: ?Bool}): async CommentList{ // true -> Like | false -> Dislike | null clean
+    switch (Proposal.get_proposal(state, root)) {
+      case null { return null };
+      case (?proposal) {
+        if (not canComment(caller)) {
+          return proposal.comments;
+        };
+        var comments = proposal.comments;
+
+
+        // comments := Comment.push(comments, newComment, path);
+        ignore Map.put<Int, SharedTypes.Proposal>(state.proposals, ihash, root, { proposal with comments });
+
+        comments;
+      };
+    };
+  };
+
   public query func loadComments(id : Int) : async CommentList {
     switch (Map.get<Int, CommentList>(comments, ihash, id)) {
       case null { null };
       case (?list) { list };
     };
+  };
+
+  public shared ({ caller }) func get_comment(proposalId: Int, path: [Int]): async ?SharedTypes.Comment {
+    let proposal = Proposal.get_proposal(state, proposalId);
+    switch proposal {
+      case null return null;
+      case (?proposal) {
+        CommentsManager.getComment(proposal.comments, path)
+      }
+    }
   };
 
   //////////////////////////////////////////////////////////////////
