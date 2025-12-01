@@ -3,8 +3,8 @@ import { CircularProgress } from "@mui/material";
 import NftCard from "./NftCard";
 import useCanister from "../../hooks/useCanister";
 
-const NftsContainer = ({ className }) => {
-  const [, dao] = useCanister("dao");
+const NftsContainer = ({ className, filter = (asset) => true, defaultNotAssets = <p>No assets found</p> }) => {
+  const [dao] = useCanister("dao");
   const [assets, setAssets] = useState({ loading: true, array: [] });
 
   useEffect(() => {
@@ -18,10 +18,12 @@ const NftsContainer = ({ className }) => {
           description: entry[1].description,
           history: entry[1].history,
           thumbnail: entry[1].thumbnail,
-          date: entry[1].date
+          date: entry[1].date,
+          canDownload: entry[1].canDownload,
+          authorizedDownloaders: entry[1].authorizedDownloaders
         }));
-        
-        setAssets({ loading: false, array: taongasArray });
+        taongasArray.map(a => {console.log(a.canDownload)})
+        setAssets({ loading: false, array: taongasArray.filter(filter) });
         
       } catch (err) {
         console.error("Error fetching assets:", err);
@@ -30,8 +32,8 @@ const NftsContainer = ({ className }) => {
       }
     };
 
-    fetchData();
-  }, [dao]); 
+    if (dao) {fetchData()};
+  }, [dao, filter]); 
 
   return (
     <section className={`${className}`}>
@@ -45,7 +47,7 @@ const NftsContainer = ({ className }) => {
             ))}
           </>
         ) : (
-          <p>No assets found</p>
+          defaultNotAssets
         )}
       </div>
     </section>

@@ -21,6 +21,7 @@ import {
 import Button from "../../../components/shared/Button";
 import { CommentSection } from "../../../components/CommentSection"
 import StatusBallProposal from "../../../components/shared/StatusBallProposal";
+import { useNavigate } from "react-router";
 import { useAuth } from "@nfid/identitykit/react";
 import { useParams } from "react-router";
 import useCanister from "../../../hooks/useCanister";
@@ -48,6 +49,9 @@ const ProposalDetail = () => {
   const { user, connect } = useAuth();
   const [dao] = useCanister()
   const [taongaToDelete, setTaongaToDelete] = useState()
+  const [descriptionContainName, setDescriptionContainName] = useState(false);
+
+  const navigate = useNavigate();
 
   const countTotalComments = (list) => {
     let count = 0;
@@ -74,6 +78,7 @@ const ProposalDetail = () => {
 
   const updateProposal = (p) => {
     setProposal(p);
+    setDescriptionContainName(p.description.includes("<END-NAME>"))
     setComments(p.comments)
     setLikes(p.likes.filter(item => 'Like' in item[1]).length)
     setDislikes(p.likes.filter(item => 'Dislike' in item[1]).length)
@@ -266,15 +271,26 @@ const ProposalDetail = () => {
                   }`}
               >
                 <div className="md:w-full">
-                  <h4 className="my-6 px-10">DESCRIPTION</h4>
-                  <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.description}</p>
+                  {descriptionContainName ? 
+                    <>
+                      <h4 className="my-6 px-10"> TAONGA NEW NAME:</h4>
+                      <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.description.split("<END-NAME>")[0]}</p>
+                      <h4 className="my-6 px-10">NEW TAONGA DESCRIPTION</h4>
+                      <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.description.split("<END-NAME>")[1]}</p>
+                    </> :
+                    <>
+                      <h4 className="my-6 px-10">PROPOSAL DESCRIPTION</h4>
+                      <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.description}</p>
+                    </>
+                  }
                 </div>
 
-                <div className=" md:w-full">
+                {proposal.impact.length > 0 && <div className=" md:w-full">
                   <h4 className="my-6 px-10">IMPACT</h4>
                   <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.impact}</p>
-                </div>
+                </div>}
               </section>
+              {/* TODO Mostrar captura de glb en el proposal de actualizacion de archivo */}
               {"DigitalTaonga" in proposal.kind &&
                 ("CreateDigitalTaonga" in proposal.kind.DigitalTaonga
                 ?
@@ -283,11 +299,27 @@ const ProposalDetail = () => {
                   <img className="max-h-140 rounded-[40px] " src={blobToImageUrl(proposal.kind.DigitalTaonga.CreateDigitalTaonga.thumbnail)} alt="" />
                 </div>
                 :
-                <>
-                  {"Open" in proposal.status && <div className="flex flex-col items-center p-6 md:w-[30vw]">
-                    <img src={blobToImageUrl(taongaToDelete?.thumbnail)} alt="" />
-                  </div>}
-                </>)
+                "UpdateDigitalTaonga" in proposal.kind.DigitalTaonga &&
+                  "UpdateImageURL"  in proposal.kind.DigitalTaonga.UpdateDigitalTaonga
+                ? 
+                  <div className="flex flex-col items-center p-6 md:w-[30vw] ">
+                    <p
+                      className="mb-4 hover:text-blue-800 cursor-pointer transition duration-300 hover:scale-105!"
+                      onClick={() => navigate(`/digital-taonga/${proposal.extendedData[0][1].Text}`)}
+                      target="_blank"
+                    >
+                      👉 Show Current Taonga Status 👈
+                    </p>
+                    <h4 className="mb-4">Update Digital Taonga File</h4>
+
+                    <img className="max-h-140 rounded-[40px] " src={blobToImageUrl(proposal.extendedData[1][1].Blob)} alt="" />
+                  </div>
+                :
+                  (<>
+                    {"Open" in proposal.status && <div className="flex flex-col items-center p-6 md:w-[30vw]">
+                      <img src={blobToImageUrl(taongaToDelete?.thumbnail)} alt="" />
+                    </div>}
+                  </>))
               }
             </div>
           </div>

@@ -8,7 +8,7 @@ import { useNavigate } from "react-router";
 import { useAuth } from "@nfid/identitykit/react";
 
 const ProposalCard = ({
-  title, status, id, creator, deadline, creatorName, impact,
+  title, status, hasVoted, id, creator, deadline, creatorName, impact,
   likes, dislikes, comments, description, className = "", kind
 } = {}) => {
 
@@ -63,7 +63,7 @@ const ProposalCard = ({
   return (
     <article
       className={`flex flex-col justify-between
-            h-[251px] md:h-[422px]
+            h-[251px] md:h-[636px]
             w-full md:w-[528px]
             p-[24px]
             transition duration-300 ease-in-out
@@ -81,7 +81,21 @@ const ProposalCard = ({
         <div className="flex justify-between items-center h-[64px]">
           {/* <span>{startDate.toLocaleDateString()}</span> */}
           {/* <h4 className="font-bold text-black mt-1 ">{title.slice(0, 22)} {title.length > 22 ? "..." : ""}</h4> */}
-          <h4 className="font-bold text-black mt-1 truncate max-w-[160px] sm:max-w-[382px]">{title}</h4>
+          {/* <h4 className="font-bold text-black mt-1 truncate w-95 sm:max-w-[382px]">{title}</h4> */}
+
+          <div className="flex flex-col">
+
+              <span className="group relative mb-2">
+               <h4 className="font-bold text-black mt-1 truncate w-95 sm:max-w-[382px]">{title}</h4>
+
+                {title.length > 22 && <div className="hidden group-hover:block absolute z-20 -bottom-5
+                  bg-gray-700 text-white text-md rounded py-1 px-2 shadow-lg whitespace-nowrap"
+                >
+                  {title}
+                </div>}
+              </span>
+            </div>
+
           <span className="text-kokowai font-medium flex items-center gap-1 justify-end">
             <StatusBallProposal status={status} />
             {status}
@@ -89,57 +103,73 @@ const ProposalCard = ({
         </div>
 
         {/* Barra de progreso deadline */}
-        {/* <div className="relative pt-1">
-          
+        <div className="relative pt-1">
+
           <div className="flex justify-between mb-2">
-            <span className="text-xs text-gray-500">Start</span>
+            {/* <span className="text-sm text-gray-500">START ({startDate.toLocaleDateString()})</span> */}
             <div className="flex flex-col">
 
-              <span className="group relative mb-2"> 
-                  <span className="text-sm text-gray-500">
-                  {deadlineDate.toLocaleDateString()} 
+              <span className="group relative mb-2">
+                <span className="text-sm text-gray-500">
+                  Created on ({startDate.toLocaleDateString()})
                 </span>
-                
+
                 <div className="hidden group-hover:block absolute z-20 
-                                bottom-2  -translate-x-1/2 
+                                bottom-0 -start-5 
                                 bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-lg whitespace-nowrap">
-                    {deadlineDate.toLocaleDateString()} - {deadlineDate.toLocaleTimeString()}
+                  Created on {startDate.toLocaleDateString()} at {startDate.toLocaleTimeString()}
+                </div>
+              </span>
+            </div>
+            
+            <div className="flex flex-col">
+
+              <span className="group relative mb-2">
+                <span className="text-sm text-gray-500">
+                  Deadline ({deadlineDate.toLocaleDateString()})
+                </span>
+
+                <div className="hidden group-hover:block absolute z-20 
+                                bottom-0 -end-5
+                                bg-gray-800 text-white text-xs rounded py-1 px-2 shadow-lg whitespace-nowrap">
+                  {status == "Open" ? "Ends ": "Ended "} 
+                  on {deadlineDate.toLocaleDateString()} at {deadlineDate.toLocaleTimeString()}
                 </div>
               </span>
             </div>
           </div>
 
-          <div className="h-2 w-full bg-gray-200 rounded-full relative">
-            
-            <div 
-              className="h-full bg-green-700 rounded-full absolute" 
-              style={{ width: `${progressPercentage}%` }} 
+          {/* <div className="h-2 w-full bg-gray-200 rounded-full relative">
+
+            <div
+              className="h-full bg-green-700 rounded-full absolute"
+              style={{ width: `${progressPercentage}%` }}
             ></div>
-            
-            <div 
+
+            <div
               className="absolute bottom-0 -translate-y-1/2 w-4 h-4  "
               style={{ left: `${progressPercentage}%`, transform: 'translateX(-50%) translateY(-50%)' }}
               title={`Hoy: ${today.toLocaleDateString()}`}
             >
               <VotationIcon />
             </div>
-          </div>
-        </div> */}
+          </div> */}
+        </div>
 
       </section>
 
       <div className="md:w-[480px] h-[225px] mt-2">
 
-        <section className=" text-gray-900 flex flex-col gap-4">
-          {/* <div className="text-[20px] font-semibold pb-2 text-center">{kindProposal} Proposal</div> */}
+        <section className=" text-gray-900 flex flex-col gap-3">
+          <div className="text-[20px] font-semibold pb-2 text-center">{kindProposal} Proposal</div>
           <p># {id}</p>
-          {/* <p>Delegate ID: {creator.slice(0, 7)}...{creator.slice(creator.length - 7, creator.length)}</p> */}
-          <p>Delagate: {creatorName}</p>
+          <p className="truncate w-110">Delegate ID: {creator}</p>
+          <p className="truncate w-110">Delagate Name: {creatorName}</p>
         </section>
 
         <section className="hidden sm:block h-[161px] pr-2">
           <h5 className="h-[53px] flex items-center my-2">Impact</h5>
-          <p>{impact.slice(0, 180)} {impact.length > 180 ? "...": ""}</p>
+          <p>{impact.slice(0, 180)} {impact.length > 180 ? "..." : ""}</p>
         </section>
 
       </div>
@@ -159,7 +189,7 @@ const ProposalCard = ({
           </div>
         </div>
 
-        {status === "Open" && (
+        {status === "Open" && !hasVoted && (
           <Button className="w-fit text-white bg-kokowai shadow-[0px_1px_3px_0px_#0000004D]">
             Vote
           </Button>

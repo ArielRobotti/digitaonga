@@ -12,6 +12,7 @@ export const proposalParser = (proposal) => ({
   // created_at: BigInt(proposal.created_at), // Ya es BigInt
   creator: p2str(proposal.creator),
   status: Object.keys(proposal.status)[0],
+  hasVoted: proposal.hasVoted,
   // thread: Vec<ProposalComment>,
   likers: proposal.likes.map((like) => ({
     principal: p2str(like[0]),

@@ -7,6 +7,8 @@ import { print } "mo:base/Debug";
 import Nat "mo:base/Nat";
 import Cycles "mo:base/ExperimentalCycles";
 import { now } "mo:base/Time";
+import Text "mo:base/Text";
+import Iter "mo:base/Iter";
 
   shared ({ caller = DEPLOYER }) persistent actor class Taonga(initArgs : Types.InitArgs, callback: shared Int -> ()) {
     let admins = Set.fromIter<Principal>([DEPLOYER, initArgs.admin].vals(), phash); // Los administradores iniciales son el canister principal y el admin pasado como parametro
@@ -17,14 +19,16 @@ import { now } "mo:base/Time";
 
     var taongaIsReady = false;
     var creation_date = now(): Int;
+    var lastUpdate = now(): Int;
     var chunkQty = initArgs.chunksQty;
+    var assetDataBackup = Array.init<Blob>(initArgs.chunksQty, "" : Blob);
 
     var assetData = Array.init<Blob>(initArgs.chunksQty, "" : Blob); // Array mut para guardar los chuncks del asset
 
     var assetMetadata : Types.AssetMetadata = {
       description : Text = initArgs.description;
       history : Text = initArgs.history;
-      image : ?Blob = null;
+      image : ?Blob = ?initArgs.thumbnail;
       name : Text = initArgs.name;
       symbol : Text = ""; 
       token_uri : ?Text = null; //
@@ -32,11 +36,38 @@ import { now } "mo:base/Time";
       chunkQty;
     };
 
+    public shared ({ caller }) func updateDescription(titleAnddescription: Text): async {#Ok}{
+      assert (isAdmin(caller));
+      let arrayDataInput = Iter.toArray(Text.split(titleAnddescription, #text("<END-NAME>"))); // enviar desde DAO "titulo<END-TITLE>descripcion" siempre
+      assert(arrayDataInput.size() == 2);
+      let name = arrayDataInput[0];
+      let description = arrayDataInput[1];
+      assetMetadata := {assetMetadata with description; name};
+      lastUpdate := now();
+      #Ok
+    };
+
+    public shared ({ caller }) func updateHistory(history: Text): async {#Ok}{
+      assert (isAdmin(caller));
+      assetMetadata := {assetMetadata with history};
+      lastUpdate := now();
+      #Ok
+    };
+
+    public shared ({ caller }) func updateFileRequest({thumbnail: Blob; chunksQty: Nat}): async {#Ok}{
+      assert (isAdmin(caller));
+      taongaIsReady := false;
+      assetMetadata := {assetMetadata with image = ?thumbnail; chunkQty = chunksQty};
+      assetDataBackup := assetData;
+      assetData := Array.init<Blob>(chunksQty, "" : Blob);
+      #Ok
+    };
+
     public shared ({ caller }) func uploadTaonga({ chunk : Blob; index : Nat }) : async {
       #Ok;
       #Err : Text;
     } {
-      //Carga del GLB en fragmentos de 1.8 MiB despues del deploy
+      //Carga del GLB en fragmentos de 1 MiB despues del deploy
       assert (isAdmin(caller));
       if (taongaIsReady) { // Quitar esta validación si existe la posibilidad de actualizar el archivo GLB
         return #Err("Error: Taonga is already initialized");
@@ -55,6 +86,7 @@ import { now } "mo:base/Time";
         print("Upload file process complete");
         callback(initArgs.tempFileId)
       };
+      lastUpdate := now();
       #Ok
 
     };

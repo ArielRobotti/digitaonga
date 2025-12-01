@@ -1,19 +1,5 @@
 {
   "canisters": {
-    "dao": {
-      "candid": "src/dao/dao.did",
-      "package": "dao",
-      "type": "rust"
-    },
- 
-    "motokoDao": {
-      "main": "src/dao/main.mo",
-      "type": "motoko",
-      "declarations": {
-        "output": "./src/frontend/declarations/backend/dao"
-      },
-      "specified_id": "m42ja-nqaaa-aaaap-qqdoa-cai"
-    },
 
     "taonga" : {
       "main": "src/dao/taonga/taonga.mo",
@@ -23,25 +9,48 @@
       }
     },
 
-    "digital_asset": {
-      "candid": "src/digital_asset/digital_asset.did",
-      "package": "digital_asset",
-      "type": "rust"
+    "motokoDaoDev": {
+      "main": "src/dao/main.mo",
+      "type": "motoko",
+      "args": "--enhanced-orthogonal-persistence",
+      "declarations": {
+        "output": "./src/frontend/declarations/backend/dao"
+      },
+      "specified_id": "m42ja-nqaaa-aaaap-qqdoa-cai"
     },
+ 
+    "motokoDao": {
+      "main": "src/dao/main.mo",
+      "type": "motoko",
+      "args": "--enhanced-orthogonal-persistence",
+      "declarations": {
+        "output": "./src/frontend/declarations/backend/dao"
+      },
+      "specified_id": "xgvpj-2iaaa-aaaap-qqgba-cai"
+    },
+
     "frontend": {
       "source": [
         "src/frontend/dist"
       ],
       "type": "assets",
       "workspace": "frontend",
-      "specified_id": "m33pu-aiaaa-aaaap-qqdoq-cai"
+      "specified_id": "xbuj5-xqaaa-aaaap-qqgbq-cai",
+      "dependencies": [
+        "motokoDao"
+      ]  
     },
+
     "frontend-dev": {
       "source": [
         "src/frontend/dist"
       ],
       "type": "assets",
-      "workspace": "frontend"
+      "workspace": "frontend",
+      "specified_id": "m33pu-aiaaa-aaaap-qqdoq-cai",
+      "dependencies": [
+        "motokoDaoDev"
+      ]
     }
   },
   "defaults": {
@@ -51,5 +60,6 @@
     }
   },
   "output_env_file": ".env",
-  "version": 1
+  "version": 1,
+  "dfx": "0.29.2"
 }

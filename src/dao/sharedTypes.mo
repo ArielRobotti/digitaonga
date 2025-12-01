@@ -1,5 +1,6 @@
 import Taonga "./taonga/taonga";
 import List "mo:base/List";
+import Set "mo:map/Set";
 
 module {
 
@@ -73,10 +74,9 @@ module {
 
   public type DigitalTaongaProposal = {
     #UpdateDigitalTaonga : UpdateDigitalTaongaProposal;
-    // #DeleteDigitalTaonga : Nat64; // El id de un taonga es un Principal. Mapear <Nat64, {taonga: Principal; description: Text}>
     #DeleteDigitalTaonga: Principal;
     #CreateDigitalTaonga : CreateDigitalTaongaArgs;
-    #RequestDownloadPermision;
+    #RequestDownloadPermision: Principal;
   };
 
   public type UpdateDigitalTaongaProposal = {
@@ -106,7 +106,6 @@ module {
   };
 
   public type Vote = { #Approve; #Abstain; #Disapprove };
-
 
   public type Comment = {
     msg : Text;
@@ -151,5 +150,6 @@ module {
     description : Text;
     thumbnail: Blob;
     date: Int;
+    authorizedDownloaders: [Principal];
   };
 }

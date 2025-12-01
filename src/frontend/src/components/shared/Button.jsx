@@ -8,7 +8,7 @@ const Button = ({ children, className, onClick, variant, size, loading, disabled
 
   return (
     <button
-      className={`rounded-[5px] font-medium text-[16px] leading-4 p-4 cursor-pointer ${styles} ${width} disabled:bg-gray-100 disabled:border-none disabled:text-gray-500 disabled:cursor-default ${className} custom__button`}
+      className={`rounded-[5px] font-medium text-[16px] leading-4 p-4 cursor-pointer ${styles} ${width} disabled:bg-gray-100 disabled:border-none disabled:text-gray-500 disabled:cursor-default custom__button ${className} `}
       onClick={onClick}
       disabled={loading || disabled}
       type={type || "button"}

@@ -12,7 +12,7 @@ const Login = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    if(user) navigate("/")
+    if(user) navigate("/digital-taonga")
   }, [user])
 
   return (

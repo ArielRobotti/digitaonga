@@ -6,8 +6,14 @@
   "scripts": {
     "setup": "npm i && dfx canister create dao && dfx generate dao && dfx deploy",
     "dev": "vite --port 3000",
-    "prebuild": "dfx generate motokoDao",
+    "prebuild": "",
     "build": "tsc && vite build",
+    "build:dev": "sed -i.bak 's/VITE_DEPLOY_DEV=.*/VITE_DEPLOY_DEV=true/' .env && tsc && vite build",
+    "build:prod": "sed -i.bak 's/VITE_DEPLOY_DEV=.*/VITE_DEPLOY_DEV=false/' .env && tsc && vite build",
+    "deploy:front:dev": "dfx generate motokoDao && npm run build:dev && dfx deploy frontend-dev",
+    "deploy:front:prod": "dfx generate motokoDao && npm run build:prod && dfx deploy frontend",
+    "deploy:front:dev:ic": "dfx generate motokoDao && npm run build:dev && dfx deploy frontend-dev --ic",
+    "deploy:front:prod:ic": "dfx generate motokoDao && npm run build:prod && dfx deploy frontend --ic",
     "format": "prettier --write \"src/**/*.{json,js,jsx,ts,tsx,css,scss}\""
   },
   "dependencies": {
@@ -43,9 +49,9 @@
     "@types/react-dom": "^19.1.2",
     "@types/three": "^0.180.0",
     "@vitejs/plugin-react": "^4.4.0",
+    "cross-env": "^7.0.3",
     "dotenv": "^16.5.0",
     "typescript": "^5.8.3",
-    "vite": "^6.3.0",
-    "vite-plugin-environment": "^1.1.3"
+    "vite": "^6.3.0"
   }
 }

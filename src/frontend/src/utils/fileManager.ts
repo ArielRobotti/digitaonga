@@ -10,7 +10,6 @@ export const uploadFile = async (dao: any ,fileId: BigInt, file: File, chunksQty
 
         const arrayBuffer = await slice.arrayBuffer();
         const chunk = new Uint8Array(arrayBuffer);
-        console.log("Subiendo ", chunk.length, " Bytes from Chunck Nro ", i);
 
         if (i == chunksQty - 1) { await Promise.all(promises) } // si es el ultimo chunk esperamos los promises anteriores
 
@@ -30,3 +29,38 @@ export const uploadFile = async (dao: any ,fileId: BigInt, file: File, chunksQty
     }
 
 }
+
+export const rebuildAndDownloadFile = (chunks: Blob[], fileName: string): void => {
+    if (chunks.length === 0) {
+        return;
+    }
+
+    try {
+        // 1. UNIR LOS BLOBS
+        const mimeType = 'model/gltf-binary'; 
+        const fileBlob = new Blob(chunks, { type: mimeType });
+
+        // 2. CREAR URL DE OBJETO
+        const url = URL.createObjectURL(fileBlob);
+
+        // 3. FORZAR LA DESCARGA
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        
+        // Asigna la URL del objeto y el nombre de archivo.
+        a.href = url;
+        a.download = fileName; // Esto le dice al navegador el nombre de archivo a guardar.
+
+        // Simula el clic.
+        document.body.appendChild(a);
+        a.click();
+        
+        // Limpieza: Revoca la URL y elimina el elemento <a>.
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+
+    } catch (error) {
+        console.error("Error al reconstruir o forzar la descarga del archivo:", error);
+    }
+};
