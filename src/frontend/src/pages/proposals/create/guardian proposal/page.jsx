@@ -147,7 +147,6 @@ const GuardianProposalCreation = () => {
         description: form.description,
         extendedData: [],
         impact: selectedValue,
-        extendedData: [],
         kind: {
           Guardian: guardianSelectedAction
         },

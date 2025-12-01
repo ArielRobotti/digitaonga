@@ -49,6 +49,7 @@ const ProposalDetail = () => {
   const { user, connect } = useAuth();
   const [dao] = useCanister()
   const [taongaToDelete, setTaongaToDelete] = useState()
+  const [descriptionContainName, setDescriptionContainName] = useState(false);
 
   const navigate = useNavigate();
 
@@ -77,6 +78,7 @@ const ProposalDetail = () => {
 
   const updateProposal = (p) => {
     setProposal(p);
+    setDescriptionContainName(p.description.includes("<END-NAME>"))
     setComments(p.comments)
     setLikes(p.likes.filter(item => 'Like' in item[1]).length)
     setDislikes(p.likes.filter(item => 'Dislike' in item[1]).length)
@@ -269,14 +271,24 @@ const ProposalDetail = () => {
                   }`}
               >
                 <div className="md:w-full">
-                  <h4 className="my-6 px-10">DESCRIPTION</h4>
-                  <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.description}</p>
+                  {descriptionContainName ? 
+                    <>
+                      <h4 className="my-6 px-10"> TAONGA NEW NAME:</h4>
+                      <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.description.split("<END-NAME>")[0]}</p>
+                      <h4 className="my-6 px-10">NEW TAONGA DESCRIPTION</h4>
+                      <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.description.split("<END-NAME>")[1]}</p>
+                    </> :
+                    <>
+                      <h4 className="my-6 px-10">PROPOSAL DESCRIPTION</h4>
+                      <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.description}</p>
+                    </>
+                  }
                 </div>
 
-                <div className=" md:w-full">
+                {proposal.impact.length > 0 && <div className=" md:w-full">
                   <h4 className="my-6 px-10">IMPACT</h4>
                   <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.impact}</p>
-                </div>
+                </div>}
               </section>
               {/* TODO Mostrar captura de glb en el proposal de actualizacion de archivo */}
               {"DigitalTaonga" in proposal.kind &&
