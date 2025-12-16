@@ -121,12 +121,25 @@ const NftDetail = () => {
             <h1 className="text-4xl font-extrabold text-gray-900">
               {metadata.name}
             </h1>
+            {metadata.description.includes("<END-DESCRIPTION>") ?
+              <>
+              <p className="text-gray-700 leading-relaxed">
+                <span className="font-bold mr-2">Description:</span>
+                {metadata.description.split("<END-DESCRIPTION>")[0]}:
+              </p>  
+              <p className="text-gray-700 leading-relaxed">
+                <span className="font-bold mr-2">Impact:</span>
+                {metadata.description.split("<END-DESCRIPTION>")[1]}:
+              </p>
+              </>
+              :
+              <p className="text-gray-700 leading-relaxed">
+                <span className="font-bold mr-2">Description:</span>
+                {metadata.description}:
+              </p>
+            }
             <p className="text-gray-700 leading-relaxed">
-              <span className="font-bold">Description:</span>{" "}
-              {metadata.description}
-            </p>
-            <p className="text-gray-700 leading-relaxed">
-              <span className="font-bold">History:</span> {metadata.history}
+              <span className="font-bold mr-2">History:</span> {metadata.history}
             </p>
             <p className="text-sm text-gray-500">
               Created at:{" "}

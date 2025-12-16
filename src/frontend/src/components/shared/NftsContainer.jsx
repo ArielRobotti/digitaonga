@@ -22,7 +22,7 @@ const NftsContainer = ({ className, filter = (asset) => true, defaultNotAssets =
           canDownload: entry[1].canDownload,
           authorizedDownloaders: entry[1].authorizedDownloaders
         }));
-        taongasArray.map(a => {console.log(a.canDownload)})
+        // taongasArray.map(a => {console.log(a.canDownload)})
         setAssets({ loading: false, array: taongasArray.filter(filter) });
         
       } catch (err) {
@@ -33,7 +33,7 @@ const NftsContainer = ({ className, filter = (asset) => true, defaultNotAssets =
     };
 
     if (dao) {fetchData()};
-  }, [dao, filter]); 
+  }, [dao]); 
 
   return (
     <section className={`${className}`}>

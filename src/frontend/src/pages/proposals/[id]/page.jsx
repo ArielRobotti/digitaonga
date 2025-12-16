@@ -49,7 +49,7 @@ const ProposalDetail = () => {
   const { user, connect } = useAuth();
   const [dao] = useCanister()
   const [taongaToDelete, setTaongaToDelete] = useState()
-  const [descriptionContainName, setDescriptionContainName] = useState(false);
+  // const [descriptionContainName, setDescriptionContainName] = useState(false);
 
   const navigate = useNavigate();
 
@@ -78,7 +78,7 @@ const ProposalDetail = () => {
 
   const updateProposal = (p) => {
     setProposal(p);
-    setDescriptionContainName(p.description.includes("<END-NAME>"))
+    // setDescriptionContainName(p.description.includes("<END-NAME>"))
     setComments(p.comments)
     setLikes(p.likes.filter(item => 'Like' in item[1]).length)
     setDislikes(p.likes.filter(item => 'Dislike' in item[1]).length)
@@ -266,61 +266,108 @@ const ProposalDetail = () => {
             <div className="flex flex-row">
               <section
                 className={`p-6 gap-4 ${"DigitalTaonga" in proposal.kind
-                    ? 'w-[50vw]'
-                    : 'md:w-[80vw]'
+                  ? 'w-[50vw]'
+                  : 'md:w-[80vw]'
                   }`}
               >
                 <div className="md:w-full">
-                  {descriptionContainName ? 
-                    <>
-                      <h4 className="my-6 px-10"> TAONGA NEW NAME:</h4>
-                      <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.description.split("<END-NAME>")[0]}</p>
-                      <h4 className="my-6 px-10">NEW TAONGA DESCRIPTION</h4>
-                      <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.description.split("<END-NAME>")[1]}</p>
-                    </> :
-                    <>
-                      <h4 className="my-6 px-10">PROPOSAL DESCRIPTION</h4>
-                      <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.description}</p>
-                    </>
+                  {"DigitalTaonga" in proposal.kind && "UpdateDigitalTaonga" in proposal.kind.DigitalTaonga && "UpdateDescription" in proposal.kind.DigitalTaonga.UpdateDigitalTaonga ?
+                    (
+                      <>
+                        <h4 className="my-6 px-10"> TAONGA NEW NAME:</h4>
+                        <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.description.split("<END-NAME>")[0]}</p>
+                        {proposal.description.split("<END-NAME>")[1]?.includes("<END-DESCRIPTION>") ? 
+                        <> 
+                          <h4 className="my-6 px-10">NEW TAONGA DESCRIPTION</h4>
+                          <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{
+                            proposal.description.split("<END-NAME>")[1].split("<END-DESCRIPTION>")[0]}
+                          </p>
+                          <h4 className="my-6 px-10">NEW TAONGA HISTORY</h4>
+                          <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{
+                            proposal.description.split("<END-NAME>")[1].split("<END-DESCRIPTION>")[1]}
+                          </p>
+                        </>
+                        :
+                        <> 
+                          <h4 className="my-6 px-10">NEW TAONGA DESCRIPTION</h4>
+                          <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{
+                            proposal.description.split("<END-NAME>")[1]}
+                          </p>
+                        </>
+                        }
+                      </>
+                    )
+                    :
+                    (
+                      <>
+                        <h4 className="my-6 px-10">PROPOSAL DESCRIPTION</h4>
+                        <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.description}</p>
+                      </>
+                    )
                   }
                 </div>
 
+                {proposal.kind.DigitalTaonga?.CreateDigitalTaonga?.history?.length > 0 && <div className=" md:w-full">
+                  <h4 className="my-6 px-10">HISTORY</h4>
+                  <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.kind.DigitalTaonga?.CreateDigitalTaonga?.history}</p>
+                </div>}
                 {proposal.impact.length > 0 && <div className=" md:w-full">
                   <h4 className="my-6 px-10">IMPACT</h4>
                   <p className="md:px-2 h-40 overflow-y-scroll custom-scrollbar">{proposal.impact}</p>
                 </div>}
               </section>
-              {/* TODO Mostrar captura de glb en el proposal de actualizacion de archivo */}
-              {"DigitalTaonga" in proposal.kind &&
-                ("CreateDigitalTaonga" in proposal.kind.DigitalTaonga
-                ?
-                <div className="flex flex-col items-center p-6 md:w-[30vw] ">
-                  <h4 className="mb-4">New Digital Taonga Proposal</h4>
-                  <img className="max-h-140 rounded-[40px] " src={blobToImageUrl(proposal.kind.DigitalTaonga.CreateDigitalTaonga.thumbnail)} alt="" />
-                </div>
-                :
-                "UpdateDigitalTaonga" in proposal.kind.DigitalTaonga &&
-                  "UpdateImageURL"  in proposal.kind.DigitalTaonga.UpdateDigitalTaonga
-                ? 
-                  <div className="flex flex-col items-center p-6 md:w-[30vw] ">
-                    <p
-                      className="mb-4 hover:text-blue-800 cursor-pointer transition duration-300 hover:scale-105!"
-                      onClick={() => navigate(`/digital-taonga/${proposal.extendedData[0][1].Text}`)}
-                      target="_blank"
-                    >
-                      👉 Show Current Taonga Status 👈
-                    </p>
-                    <h4 className="mb-4">Update Digital Taonga File</h4>
 
-                    <img className="max-h-140 rounded-[40px] " src={blobToImageUrl(proposal.extendedData[1][1].Blob)} alt="" />
+              {/* RIGHT SIDE */}
+              {"DigitalTaonga" in proposal.kind &&
+                ("CreateDigitalTaonga" in proposal.kind.DigitalTaonga ? (
+                  <div className="flex flex-col items-center p-6 md:w-[30vw] ">
+                    <h4 className="mb-4">New Digital Taonga Proposal</h4>
+                    <img className="max-h-140 rounded-[40px] " src={blobToImageUrl(proposal.kind.DigitalTaonga.CreateDigitalTaonga.thumbnail)} alt="" />
                   </div>
-                :
-                  (<>
-                    {"Open" in proposal.status && <div className="flex flex-col items-center p-6 md:w-[30vw]">
-                      <img src={blobToImageUrl(taongaToDelete?.thumbnail)} alt="" />
-                    </div>}
-                  </>))
-              }
+                ) : "UpdateDigitalTaonga" in proposal.kind.DigitalTaonga ? (
+                  "UpdateImageURL" in proposal.kind.DigitalTaonga.UpdateDigitalTaonga ? (
+                    <div className="flex flex-col items-center p-6 md:w-[30vw] ">
+                      <p
+                        className="mb-4 hover:text-blue-800 cursor-pointer transition duration-300 hover:scale-105!"
+                        onClick={() => navigate(`/digital-taonga/${proposal.extendedData[0][1].Text}`)}
+                        target="_blank"
+                      >
+                        👉 Show Current Taonga Status 👈
+                      </p>
+                      <h4 className="mb-4">Update Digital Taonga File</h4>
+                      <img className="max-h-140 rounded-[40px] " src={blobToImageUrl(proposal.extendedData[1][1].Blob)} alt="" />
+                    </div>
+                  ) : "UpdateDescription" in proposal.kind.DigitalTaonga.UpdateDigitalTaonga ? (
+                    <div className="flex flex-col items-center p-6 md:w-[30vw] ">
+                      <p
+                        className="mb-4 hover:text-blue-800 cursor-pointer transition duration-300 hover:scale-105!"
+                        onClick={() => navigate(`/digital-taonga/${proposal.kind.DigitalTaonga.UpdateDigitalTaonga.UpdateDescription}`)}
+                        target="_blank"
+                      >
+                        👉 Show Current Taonga Status 👈
+                      </p>
+                    </div>
+                  ) : null
+                ) : "DeleteDigitalTaonga" in proposal.kind.DigitalTaonga ? (
+                  <>
+                    {"Open" in proposal.status && (
+                      <div className="flex flex-col items-center p-6 md:w-[30vw]">
+                        <img src={blobToImageUrl(taongaToDelete?.thumbnail)} alt="" />
+                      </div>
+                    )}
+                  </>
+                ) : "RequestDownloadPermision" in proposal.kind.DigitalTaonga ?
+                  <div className="flex flex-col items-center p-6 md:w-[30vw] ">
+                      <p
+                        className="mb-4 hover:text-blue-800 cursor-pointer transition duration-300 hover:scale-105!"
+                        onClick={() => navigate(`/digital-taonga/${proposal.kind.DigitalTaonga.RequestDownloadPermision}`)}
+                        target="_blank"
+                      >
+                        👉 Taonga to download 👈
+                      </p>
+                    </div>
+                    : null 
+                )}
             </div>
           </div>
 
