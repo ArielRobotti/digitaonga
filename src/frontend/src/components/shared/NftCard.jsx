@@ -42,7 +42,7 @@ const NftCard = ({ asset }) => {
             {/* Contenedor de la descripción con scroll */}
             <div className="flex flex-row items-center">
               <p className="mr-2">Cultural description:</p>
-              <p className="truncate w-38">{asset.description}</p>
+              <p className="truncate w-38">{asset.description.split("<END-DESCRIPTION>")[0].split("<END-NAME>")[1]}</p>
               {/* <div className="text-gray-100 max-h-24 overflow-y-auto custom-scrollbar">
                 {asset.description.slice(0, 25)}
               </div> */}

@@ -67,7 +67,7 @@ const DigitalTaongaProposalCreation = () => {
 
   const handleRadioChange = (e) => setSelectedValue(e.target.value);
   const handleRadioUpdateChange = (e) => setUpdateType(e.target.value);
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
   const handleResponseError = () => setResponseDialog({ success: false, error: true });
   const handleResponseSuccess = () => setResponseDialog({ success: true, error: false });
   const handleCloseResponseDialog = () => setResponseDialog({ success: false, error: false });
@@ -101,10 +101,15 @@ const DigitalTaongaProposalCreation = () => {
 
   useEffect(() => {
     if (readyToUpdate && selectedTaongaObject && updateType === "Update Digital Taonga Description") {
+      const splitedDescriptionTaonga = selectedTaongaObject.description.split("<END-DESCRIPTION>");
+      const description = splitedDescriptionTaonga[0].split("<END-NAME>")[1] || splitedDescriptionTaonga
+      // console.log(selectedTaongaObject)
       setForm(prevForm => ({
         ...prevForm,
         name: selectedTaongaObject.name,
-        description: selectedTaongaObject.description
+        description:  description,
+        impact: splitedDescriptionTaonga[1] || "",
+        history: selectedTaongaObject.history || "",
       }));
     }
   }, [readyToUpdate, selectedTaongaObject, updateType]);
@@ -259,7 +264,7 @@ const DigitalTaongaProposalCreation = () => {
               const updateFileTaongaArgs = {
                 title: "Update Taonga File",
                 description: form.description,
-                impact: "",
+                impact: form.impact,
                 kind: {
                   DigitalTaonga: {
                     UpdateDigitalTaonga: { UpdateImageURL: selectedTaongaObject?.canisterId.toString() }
@@ -278,8 +283,8 @@ const DigitalTaongaProposalCreation = () => {
 
               const updateDescriptionTaongaArgs = {
                 title: "Update Name and/or Description Taonga",
-                description: form.name + "<END-NAME>" + form.description,
-                impact: "",
+                description: form.name + "<END-NAME>" + form.description + ((form.history != "") ? "<END-DESCRIPTION>"+ form.history : ""),
+                impact: form.impact,
                 kind: {
                   DigitalTaonga: {
                     UpdateDigitalTaonga: { UpdateDescription: selectedTaongaObject?.canisterId.toString() }
@@ -571,6 +576,41 @@ const DigitalTaongaProposalCreation = () => {
               )}
             </div>
 
+            <div className="flex items-center gap-4 w-full md:max-w-[500px]">
+              <TextField
+                label={isEditing.history? "Edit Taonga History": "Taonga History"}
+                variant="outlined"
+                onChange={handleChange}
+                value={form.history || ''}
+                name="history"
+                disabled={!isEditing.history}
+                className="flex-grow"
+              />
+              {!isEditing.history && selectedTaongaObject && (
+                <IconButton onClick={() => setIsEditing(prev => ({ ...prev, history: true }))} color="action" size="small">
+                  <EditIcon />
+                </IconButton>
+              )}
+            </div>
+
+
+            <div className="flex items-center gap-4 w-full md:max-w-[500px]">
+              <TextField
+                label={isEditing.impact? "Impact": "Edit Impact"}
+                variant="outlined"
+                onChange={handleChange}
+                value={form.impact || ''}
+                name="impact"
+                disabled={!isEditing.impact}
+                className="flex-grow"
+              />
+              {!isEditing.impact && selectedTaongaObject && (
+                <IconButton onClick={() => setIsEditing(prev => ({ ...prev, impact: true }))} color="action" size="small">
+                  <EditIcon />
+                </IconButton>
+              )}
+            </div>
+
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DemoContainer components={["DatePicker"]}>
                 <DateTimePicker
@@ -653,7 +693,7 @@ const DigitalTaongaProposalCreation = () => {
   const handleSelectTaonga = (e) => {
     const taongaId = e.target.value; // e.target.value is now the canisterId
     const taongaObject = taongas.find(t => t.canisterId.toString() === taongaId.toString());
-    setForm({ ...form, taongaId: taongaId, impact: " ", history: " ", })
+    setForm({ ...form, taongaId: taongaId, })
     setSelectedTaongaObject(taongaObject)
 
     console.log(taongaId) // console.log the ID
@@ -855,7 +895,11 @@ const DigitalTaongaProposalCreation = () => {
               ? // A. Validar Actualización de Descripción
               updateType === "Update Digital Taonga Description"
                 ? // REGLAS: No hay cambios, O faltan otros datos
-                  (form.name === selectedTaongaObject?.name && form.description === selectedTaongaObject?.description) ||
+                  (form.name === selectedTaongaObject?.name 
+                    && form.description === selectedTaongaObject?.description.split("<END-DESCRIPTION>")[0].split("<END-NAME>")[1]
+                    && form.impact === selectedTaongaObject?.description.split("<END-DESCRIPTION>")[1]  
+                    && form.history === selectedTaongaObject?.history
+                  ) ||
                   !form.taongaId || !form.date || form.date.isBefore(dayjs())
                 : // B. Validar Actualización de Archivo (el otro caso de updateType)
                   updateType === "Update Digital Taonga File"

@@ -30,9 +30,7 @@
     },
 
     "frontend": {
-      "source": [
-        "src/frontend/dist"
-      ],
+      "source": [ "src/frontend/dist" ],
       "type": "assets",
       "workspace": "frontend",
       "specified_id": "xbuj5-xqaaa-aaaap-qqgbq-cai",
@@ -42,15 +40,11 @@
     },
 
     "frontend-dev": {
-      "source": [
-        "src/frontend/dist"
-      ],
+      "source": [ "src/frontend/dist" ],
       "type": "assets",
       "workspace": "frontend",
       "specified_id": "m33pu-aiaaa-aaaap-qqdoq-cai",
-      "dependencies": [
-        "motokoDaoDev"
-      ]
+      "dependencies": [ "motokoDaoDev" ]
     }
   },
   "defaults": {

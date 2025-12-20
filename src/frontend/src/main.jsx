@@ -41,7 +41,10 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <IdentityKitProvider
       authType={IdentityKitAuthType.DELEGATION}
-      signers={[InternetIdentity, NFIDW]}
+      signers={[
+        {...InternetIdentity, label: "Internet Identity 2.0 (Recommended)",  id:"InternetIdentity2.0", providerUrl:"https://id.ai/"},
+        {...InternetIdentity, label: "Internet Identity 1.0 (Legacy)" },
+        NFIDW]}
       theme="light"
       // featureSigner={}
       // signerClientOptions={{
