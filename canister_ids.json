@@ -2,14 +2,13 @@
   "frontend": {
     "ic": "xbuj5-xqaaa-aaaap-qqgbq-cai"
   },
-  "motokoDao": {
-    "ic": "xgvpj-2iaaa-aaaap-qqgba-cai"
-  },
-  
   "frontend-dev": {
     "ic": "m33pu-aiaaa-aaaap-qqdoq-cai"
   },
+  "motokoDao": {
+    "ic": "xgvpj-2iaaa-aaaap-qqgba-cai"
+  },
   "motokoDaoDev": {
-    "ic": "m42ja-nqaaa-aaaap-qqdoa-cai"
+    "ic": "36akd-uqaaa-aaaap-qu4aq-cai"
   }
 }
